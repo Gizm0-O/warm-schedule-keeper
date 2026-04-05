@@ -185,7 +185,9 @@ const Index = () => {
             // move
             const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
             const newStart = Math.max(0, Math.min(newHour, 24 - duration));
-            const targetDay = weekDays[newDayIdx];
+            const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+            const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
+            const targetDay = wd[newDayIdx];
             return { ...e, hour: newStart, endHour: newStart + duration, date: format(targetDay, "yyyy-MM-dd") };
           }
         })
