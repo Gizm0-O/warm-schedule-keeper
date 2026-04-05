@@ -122,8 +122,14 @@ const Index = () => {
   const getEventsForDateAndHour = (date: Date, hour: number) =>
     events.filter((e) => e.date === format(date, "yyyy-MM-dd") && e.hour === hour);
 
+  // Cumulative top position for each hour
+  const getHourTop = (hour: number) =>
+    HOURS.slice(0, hour).reduce((sum, h) => sum + getHourHeight(h), 0);
+  const totalGridHeight = HOURS.reduce((sum, h) => sum + getHourHeight(h), 0);
+
   // Current time line position
-  const currentTimeTop = (now.getHours() + now.getMinutes() / 60) * HOUR_HEIGHT;
+  const currentHour = now.getHours();
+  const currentTimeTop = getHourTop(currentHour) + (now.getMinutes() / 60) * getHourHeight(currentHour);
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
