@@ -545,6 +545,7 @@ const Index = () => {
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
