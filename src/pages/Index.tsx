@@ -587,7 +587,7 @@ const Index = () => {
                 return (
                   <button
                     key={day.toISOString()}
-                    onClick={() => setSelectedDate(day)}
+                    onClick={(e) => { e.stopPropagation(); setSelectedDate(day); }}
                     className={cn(
                       "relative flex min-h-[80px] flex-col items-start rounded-xl p-2 text-sm transition-all hover:bg-accent",
                       !isSameMonth(day, currentMonth) && "opacity-30",
