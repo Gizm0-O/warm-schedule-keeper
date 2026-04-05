@@ -127,7 +127,9 @@ const Index = () => {
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
   // Drag state
+  const DRAG_THRESHOLD = 5; // px before drag starts
   const wasDragging = useRef(false);
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null);
   const dragRef = useRef<{
     type: "event" | "shift";
     id: string;
@@ -135,6 +137,7 @@ const Index = () => {
     origHour: number;
     origEndHour: number;
     origDayIdx: number;
+    offsetHour: number; // offset from cursor to block start (for natural move)
   } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -154,7 +157,7 @@ const Index = () => {
   const dayIdxFromX = useCallback((clientX: number) => {
     if (!timelineRef.current) return 0;
     const rect = timelineRef.current.getBoundingClientRect();
-    const x = clientX - rect.left - 60; // subtract time label column
+    const x = clientX - rect.left - 60;
     const colW = (rect.width - 60) / 7;
     return Math.max(0, Math.min(6, Math.floor(x / colW)));
   }, []);
@@ -164,11 +167,20 @@ const Index = () => {
     e.stopPropagation();
     const startH = ev.hour ?? 0;
     const endH = ev.endHour ?? startH + 1;
+    const cursorHour = hourFromY(e.clientY);
+    const offsetHour = cursorHour - startH;
     wasDragging.current = false;
-    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx };
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx, offsetHour };
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "event") return;
+      // Check threshold
+      if (!wasDragging.current && dragStartPos.current) {
+        const dx = me.clientX - dragStartPos.current.x;
+        const dy = me.clientY - dragStartPos.current.y;
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      }
       wasDragging.current = true;
       const newHour = hourFromY(me.clientY);
       const newDayIdx = dayIdxFromX(me.clientX);
@@ -183,9 +195,8 @@ const Index = () => {
             const start = Math.min(newHour, (e.endHour ?? 1) - 1);
             return { ...e, hour: Math.max(start, 0) };
           } else {
-            // move
             const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
-            const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+            const newStart = Math.max(0, Math.min(newHour - dragRef.current!.offsetHour, 24 - duration));
             const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
             const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
             const targetDay = wd[newDayIdx];
@@ -197,6 +208,7 @@ const Index = () => {
 
     const onUp = () => {
       dragRef.current = null;
+      dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
@@ -205,18 +217,50 @@ const Index = () => {
     window.addEventListener("mouseup", onUp);
   }, [hourFromY, dayIdxFromX, currentWeekStart]);
 
-  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move") => {
+  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
     const id = `${dateKey}:${shiftIndex}`;
+    const cursorHour = hourFromY(e.clientY);
+    const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
-    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: 0 };
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: dayIdx, offsetHour };
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
+      // Check threshold
+      if (!wasDragging.current && dragStartPos.current) {
+        const dx = me.clientX - dragStartPos.current.x;
+        const dy = me.clientY - dragStartPos.current.y;
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      }
       wasDragging.current = true;
       const newHour = hourFromY(me.clientY);
+      const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
+
+      // If day changed, we need to move the override to the new day
+      if (dragRef.current.mode === "move" && newDayIdx !== dragRef.current.origDayIdx) {
+        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
+        const newDateKey = format(wd[newDayIdx], "yyyy-MM-dd");
+        const newKey = `${newDateKey}:${shiftIndex}`;
+        const duration = dragRef.current.origEndHour - dragRef.current.origHour;
+        const newStart = Math.max(0, Math.min(newHour - dragRef.current.offsetHour, 24 - duration));
+
+        setShiftTimeOverrides((prev) => {
+          const next = { ...prev };
+          // Remove old key
+          delete next[key];
+          next[newKey] = { startHour: newStart, endHour: newStart + duration };
+          return next;
+        });
+        // Update dragRef to track new key/day
+        dragRef.current.id = newKey;
+        dragRef.current.origDayIdx = newDayIdx;
+        return;
+      }
 
       setShiftTimeOverrides((prev) => {
         const existing = prev[key] ?? { startHour: dragRef.current!.origHour, endHour: dragRef.current!.origEndHour };
@@ -227,9 +271,8 @@ const Index = () => {
           const start = Math.min(newHour, existing.endHour - 1);
           return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
         } else {
-          // move
           const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
-          const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+          const newStart = Math.max(0, Math.min(newHour - dragRef.current!.offsetHour, 24 - duration));
           return { ...prev, [key]: { startHour: newStart, endHour: newStart + duration } };
         }
       });
@@ -237,13 +280,14 @@ const Index = () => {
 
     const onUp = () => {
       dragRef.current = null;
+      dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
