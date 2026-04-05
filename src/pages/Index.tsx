@@ -734,7 +734,7 @@ const Index = () => {
                         <div
                           data-handle="top"
                           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
-                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top")}
+                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top", dayIdx)}
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
