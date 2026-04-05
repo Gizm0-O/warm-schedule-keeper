@@ -115,6 +115,8 @@ const Index = () => {
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [newEventEndHour, setNewEventEndHour] = useState<number>(10);
   const [newEventColor, setNewEventColor] = useState(EVENT_COLORS[0].value);
+  const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
   const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
   const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
