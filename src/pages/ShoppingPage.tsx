@@ -343,9 +343,34 @@ const ShoppingPage = () => {
 
       {/* Wishlist – věci ke koupi "někdy" */}
       <div className="mt-10 space-y-4">
-        <div className="flex items-center gap-3">
-          <Wrench className="h-5 w-5 text-muted-foreground" />
-          <h3 className="text-lg font-semibold text-foreground">Na koupit (nespěchá)</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Wrench className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">Na koupit (nespěchá)</h3>
+          </div>
+          {wishlist.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                  <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Vymazat seznam?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Opravdu si přejete smazat celý seznam „Na koupit"? Tuto akci nelze vrátit zpět.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setWishlist([])}>
+                    Smazat vše
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
         <div className="flex gap-2">
