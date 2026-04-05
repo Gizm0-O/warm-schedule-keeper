@@ -225,10 +225,10 @@ const Index = () => {
     window.addEventListener("mouseup", onUp);
   }, [hourFromY, dayIdxFromX, currentWeekStart]);
 
-  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
+  const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
-    const id = `${dateKey}:${shiftIndex}`;
+    const id = `${sourceDayKey}:${shiftIndex}`;
     const cursorHour = hourFromY(e.clientY);
     const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
@@ -237,7 +237,6 @@ const Index = () => {
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
-      // Check threshold
       if (!wasDragging.current && dragStartPos.current) {
         const dx = me.clientX - dragStartPos.current.x;
         const dy = me.clientY - dragStartPos.current.y;
@@ -248,25 +247,27 @@ const Index = () => {
       const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
 
-      // If day changed, we need to move the override to the new day
-      if (dragRef.current.mode === "move" && newDayIdx !== dragRef.current.origDayIdx) {
-        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-        const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
-        const newDateKey = format(wd[newDayIdx], "yyyy-MM-dd");
-        const newKey = `${newDateKey}:${shiftIndex}`;
+      if (dragRef.current.mode === "move") {
         const duration = dragRef.current.origEndHour - dragRef.current.origHour;
         const newStart = Math.max(0, Math.min(newHour - dragRef.current.offsetHour, 24 - duration));
+        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
+        const targetDayKey = format(wd[newDayIdx], "yyyy-MM-dd");
 
-        setShiftTimeOverrides((prev) => {
-          const next = { ...prev };
-          // Remove old key
-          delete next[key];
-          next[newKey] = { startHour: newStart, endHour: newStart + duration };
-          return next;
+        setShiftDayOverrides((prev) => {
+          if (targetDayKey === sourceDayKey) {
+            if (!(key in prev)) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          }
+          return { ...prev, [key]: targetDayKey };
         });
-        // Update dragRef to track new key/day
-        dragRef.current.id = newKey;
-        dragRef.current.origDayIdx = newDayIdx;
+
+        setShiftTimeOverrides((prev) => ({
+          ...prev,
+          [key]: { startHour: newStart, endHour: newStart + duration },
+        }));
         return;
       }
 
@@ -275,14 +276,10 @@ const Index = () => {
         if (dragRef.current!.mode === "resize-bottom") {
           const end = Math.max(newHour + 1, existing.startHour + 1);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
-        } else if (dragRef.current!.mode === "resize-top") {
-          const start = Math.min(newHour, existing.endHour - 1);
-          return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
-        } else {
-          const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
-          const newStart = Math.max(0, Math.min(newHour - dragRef.current!.offsetHour, 24 - duration));
-          return { ...prev, [key]: { startHour: newStart, endHour: newStart + duration } };
         }
+
+        const start = Math.min(newHour, existing.endHour - 1);
+        return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
       });
     };
 
