@@ -517,7 +517,7 @@ const Index = () => {
   }, [now]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={() => setSelectedDate(null)}>
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
@@ -587,7 +587,7 @@ const Index = () => {
                 return (
                   <button
                     key={day.toISOString()}
-                    onClick={() => setSelectedDate(day)}
+                    onClick={(e) => { e.stopPropagation(); setSelectedDate(day); }}
                     className={cn(
                       "relative flex min-h-[80px] flex-col items-start rounded-xl p-2 text-sm transition-all hover:bg-accent",
                       !isSameMonth(day, currentMonth) && "opacity-30",
@@ -643,7 +643,7 @@ const Index = () => {
               {weekDays.map((day) => (
                 <button
                   key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
+                  onClick={(e) => { e.stopPropagation(); setSelectedDate(day); }}
                   className={cn(
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
@@ -694,7 +694,8 @@ const Index = () => {
                           "border-r border-border/30 px-0.5 cursor-pointer hover:bg-accent/50 transition-colors relative",
                           isToday(day) && "bg-primary/[0.02]"
                         )}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedDate(day);
                           setNewEventHour(hour);
                           setNewEventEndHour(Math.min(hour + 1, 23));
@@ -859,7 +860,7 @@ const Index = () => {
         )}
 
         {/* Event sidebar */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm" onClick={(e) => e.stopPropagation()}>
           {selectedDate ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
