@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -19,11 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format, isBefore, isToday, startOfDay } from "date-fns";
+import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
 import { cs } from "date-fns/locale";
 
 type Category = "work" | "home";
-type Person = "Já" | "Barča";
+type Person = "Tadeáš" | "Barča";
 
 interface Todo {
   id: string;
@@ -35,19 +35,15 @@ interface Todo {
 }
 
 const INITIAL_TODOS: Todo[] = [
-  // Work - Já
-  { id: "1", text: "Dokončit video", completed: false, category: "work", person: "Já", deadline: new Date(2026, 3, 4) },
-  { id: "2", text: "Postnout Stories", completed: false, category: "work", person: "Já", deadline: new Date(2026, 3, 5) },
-  { id: "3", text: "Udělat Reel", completed: false, category: "work", person: "Já", deadline: new Date(2026, 3, 6) },
-  // Home - Já
-  { id: "4", text: "Vysát", completed: false, category: "home", person: "Já", deadline: new Date(2026, 3, 5) },
-  { id: "5", text: "Vytřít", completed: false, category: "home", person: "Já", deadline: new Date(2026, 3, 7) },
-  { id: "6", text: "Nakrmit kočky", completed: false, category: "home", person: "Já", deadline: undefined },
-  // Work - Barča
+  { id: "1", text: "Dokončit video", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 4) },
+  { id: "2", text: "Postnout Stories", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 5) },
+  { id: "3", text: "Udělat Reel", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 6) },
+  { id: "4", text: "Vysát", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 5) },
+  { id: "5", text: "Vytřít", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 7) },
+  { id: "6", text: "Nakrmit kočky", completed: false, category: "home", person: "Tadeáš", deadline: undefined },
   { id: "7", text: "Napsat příběh 1", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3) },
   { id: "8", text: "Práce pro Vyhraj", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3) },
   { id: "9", text: "Napsat příběh 2", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 10) },
-  // Home - Barča
   { id: "10", text: "Uvařit oběd", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 6) },
   { id: "11", text: "Snídaně", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 7) },
   { id: "12", text: "Večeře", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 8) },
@@ -61,8 +57,15 @@ const TodoPage = () => {
   // New todo form state
   const [newText, setNewText] = useState("");
   const [newCategory, setNewCategory] = useState<Category>("work");
-  const [newPerson, setNewPerson] = useState<Person>("Já");
+  const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
+
+  // Edit todo state
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
+  const [editText, setEditText] = useState("");
+  const [editCategory, setEditCategory] = useState<Category>("work");
+  const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
+  const [editDeadline, setEditDeadline] = useState("");
 
   const addTodo = () => {
     if (!newText.trim()) return;
@@ -82,6 +85,32 @@ const TodoPage = () => {
     setShowDialog(false);
   };
 
+  const openEditDialog = (todo: Todo) => {
+    setEditingTodo(todo);
+    setEditText(todo.text);
+    setEditCategory(todo.category);
+    setEditPerson(todo.person);
+    setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
+  };
+
+  const saveEdit = () => {
+    if (!editingTodo || !editText.trim()) return;
+    setTodos((prev) =>
+      prev.map((t) =>
+        t.id === editingTodo.id
+          ? {
+              ...t,
+              text: editText.trim(),
+              category: editCategory,
+              person: editPerson,
+              deadline: editDeadline ? new Date(editDeadline) : undefined,
+            }
+          : t
+      )
+    );
+    setEditingTodo(null);
+  };
+
   const toggleTodo = (id: string) => {
     setTodos((prev) =>
       prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
@@ -97,71 +126,105 @@ const TodoPage = () => {
   const homePending = filtered.filter((t) => t.category === "home" && !t.completed);
   const completed = filtered.filter((t) => t.completed);
 
-  const deadlineLabel = (d?: Date) => {
-    if (!d) return null;
+  const getDeadlineInfo = (d?: Date) => {
+    if (!d) return { label: null, isToday: false, isOverdue: false, daysLate: 0 };
     const today = startOfDay(new Date());
     const target = startOfDay(d);
     const overdue = isBefore(target, today);
     const todayMatch = isToday(d);
+    const daysLate = overdue ? differenceInDays(today, target) : 0;
+    return { isToday: todayMatch, isOverdue: overdue, daysLate };
+  };
+
+  const deadlineLabel = (d?: Date) => {
+    if (!d) return null;
+    const { isToday: todayMatch, isOverdue, daysLate } = getDeadlineInfo(d);
     return (
       <span
         className={cn(
           "inline-flex items-center gap-1 text-xs",
-          overdue && "text-destructive font-medium",
-          todayMatch && "text-primary font-medium",
-          !overdue && !todayMatch && "text-muted-foreground"
+          isOverdue && "text-destructive font-medium",
+          todayMatch && "font-medium text-orange-700 dark:text-orange-300",
+          !isOverdue && !todayMatch && "text-muted-foreground"
         )}
       >
-        {overdue && <AlertCircle className="h-3 w-3" />}
+        {isOverdue && <AlertCircle className="h-3 w-3" />}
         <CalendarDays className="h-3 w-3" />
-        {format(d, "d.M.", { locale: cs })}
+        {todayMatch ? "Dnes" : format(d, "d.M.", { locale: cs })}
+        {isOverdue && (
+          <span className="text-destructive font-semibold ml-0.5">
+            ({daysLate} {daysLate === 1 ? "den" : daysLate < 5 ? "dny" : "dní"} zpoždění)
+          </span>
+        )}
       </span>
     );
   };
 
-  const TodoItem = ({ todo }: { todo: Todo }) => (
-    <div
+  const personBadge = (person: Person) => (
+    <Badge
+      variant="outline"
       className={cn(
-        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50",
-        todo.completed && "opacity-50"
+        "text-[10px] px-1.5 py-0 h-4",
+        person === "Tadeáš"
+          ? "border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700"
+          : "border-red-400 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 dark:border-red-700"
       )}
     >
-      <button
-        onClick={() => toggleTodo(todo.id)}
+      {person}
+    </Badge>
+  );
+
+  const TodoItem = ({ todo }: { todo: Todo }) => {
+    const info = getDeadlineInfo(todo.deadline);
+    return (
+      <div
+        onClick={() => !todo.completed && openEditDialog(todo)}
         className={cn(
-          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-          todo.completed
-            ? "bg-primary border-primary text-primary-foreground"
-            : "border-primary/40 hover:border-primary hover:bg-primary/10"
+          "flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer",
+          todo.completed && "opacity-50 cursor-default",
+          !todo.completed && info.isToday && "bg-gradient-to-r from-orange-100 via-amber-50 to-orange-100 dark:from-orange-950/60 dark:via-amber-950/30 dark:to-orange-950/60",
+          !todo.completed && info.isOverdue && "border-l-4 border-l-destructive bg-destructive/5",
+          !todo.completed && !info.isToday && !info.isOverdue && "hover:bg-accent/50"
         )}
       >
-        {todo.completed && <Check className="h-3.5 w-3.5" />}
-      </button>
-      <div className="flex-1 min-w-0">
-        <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
-          {todo.text}
-        </span>
-        <div className="flex items-center gap-2 mt-0.5">
-          <Badge
-            variant="outline"
-            className="text-[10px] px-1.5 py-0 h-4 border-border text-muted-foreground"
-          >
-            {todo.person}
-          </Badge>
-          {deadlineLabel(todo.deadline)}
-          {!todo.deadline && (
-            <span className="text-[10px] text-muted-foreground italic">denně</span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleTodo(todo.id);
+          }}
+          className={cn(
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+            todo.completed
+              ? "bg-primary border-primary text-primary-foreground"
+              : "border-primary/40 hover:border-primary hover:bg-primary/10"
           )}
+        >
+          {todo.completed && <Check className="h-3.5 w-3.5" />}
+        </button>
+        <div className="flex-1 min-w-0">
+          <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
+            {todo.text}
+          </span>
+          <div className="flex items-center gap-2 mt-0.5">
+            {personBadge(todo.person)}
+            {deadlineLabel(todo.deadline)}
+            {!todo.deadline && (
+              <span className="text-[10px] text-muted-foreground italic">denně</span>
+            )}
+          </div>
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            removeTodo(todo.id);
+          }}
+          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
       </div>
-      <button
-        onClick={() => removeTodo(todo.id)}
-        className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    </div>
-  );
+    );
+  };
 
   const Section = ({
     icon: Icon,
@@ -204,7 +267,7 @@ const TodoPage = () => {
           <TabsTrigger value="all" className="flex-1">
             <User className="h-4 w-4 mr-1" /> Všichni
           </TabsTrigger>
-          <TabsTrigger value="Já" className="flex-1">Já</TabsTrigger>
+          <TabsTrigger value="Tadeáš" className="flex-1">Tadeáš</TabsTrigger>
           <TabsTrigger value="Barča" className="flex-1">Barča</TabsTrigger>
         </TabsList>
       </Tabs>
@@ -251,9 +314,7 @@ const TodoPage = () => {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Kategorie</label>
                 <Select value={newCategory} onValueChange={(v) => setNewCategory(v as Category)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="work">
                       <span className="flex items-center gap-2"><Briefcase className="h-3.5 w-3.5" /> Práce</span>
@@ -267,11 +328,9 @@ const TodoPage = () => {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Osoba</label>
                 <Select value={newPerson} onValueChange={(v) => setNewPerson(v as Person)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Já">Já</SelectItem>
+                    <SelectItem value="Tadeáš">Tadeáš</SelectItem>
                     <SelectItem value="Barča">Barča</SelectItem>
                   </SelectContent>
                 </Select>
@@ -279,16 +338,63 @@ const TodoPage = () => {
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
-              <Input
-                type="date"
-                value={newDeadline}
-                onChange={(e) => setNewDeadline(e.target.value)}
-              />
+              <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
             <Button onClick={addTodo} disabled={!newText.trim()}>Přidat</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Todo Dialog */}
+      <Dialog open={!!editingTodo} onOpenChange={(open) => !open && setEditingTodo(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upravit úkol</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <Input
+              placeholder="Název úkolu..."
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Kategorie</label>
+                <Select value={editCategory} onValueChange={(v) => setEditCategory(v as Category)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="work">
+                      <span className="flex items-center gap-2"><Briefcase className="h-3.5 w-3.5" /> Práce</span>
+                    </SelectItem>
+                    <SelectItem value="home">
+                      <span className="flex items-center gap-2"><Home className="h-3.5 w-3.5" /> Domácnost</span>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Osoba</label>
+                <Select value={editPerson} onValueChange={(v) => setEditPerson(v as Person)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Tadeáš">Tadeáš</SelectItem>
+                    <SelectItem value="Barča">Barča</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
+              <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
+            <Button onClick={saveEdit} disabled={!editText.trim()}>Uložit</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
