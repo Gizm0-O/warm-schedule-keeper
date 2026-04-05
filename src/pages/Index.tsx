@@ -43,7 +43,7 @@ const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
 
 const Index = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("month");
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -89,6 +89,16 @@ const Index = () => {
     setCurrentMonth(new Date());
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
+
+  const todayButtonLabel = useMemo(() => {
+    const today = new Date();
+    if (viewMode === "month") {
+      return format(today, "LLLL", { locale: cs });
+    }
+    const ws = startOfWeek(today, { weekStartsOn: 1 });
+    const we = endOfWeek(today, { weekStartsOn: 1 });
+    return `${format(ws, "d.M.")}–${format(we, "d.M.")}`;
+  }, [viewMode]);
 
   const headerLabel =
     viewMode === "month"
@@ -164,8 +174,8 @@ const Index = () => {
           <Button variant="ghost" size="icon" onClick={goBack}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={goToday}>
-            Dnes
+          <Button variant="ghost" size="sm" onClick={goToday} className="text-xs">
+            {todayButtonLabel}
           </Button>
           <Button variant="ghost" size="icon" onClick={goForward}>
             <ChevronRight className="h-5 w-5" />
