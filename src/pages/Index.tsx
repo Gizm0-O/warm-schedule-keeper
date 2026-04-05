@@ -105,6 +105,7 @@ const Index = () => {
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [now, setNow] = useState(new Date());
+  const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
 
   // Update current time every minute
   useEffect(() => {
