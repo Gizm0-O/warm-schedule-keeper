@@ -126,12 +126,15 @@ const Index = () => {
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
-  // Drag resize
+  // Drag state
   const dragRef = useRef<{
-    eventId: string;
-    edge: "top" | "bottom";
+    type: "event" | "shift";
+    id: string; // eventId or "dayKey:shiftIndex"
+    mode: "resize-top" | "resize-bottom" | "move";
     origHour: number;
     origEndHour: number;
+    origDayIdx: number;
+    moved: boolean;
   } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -148,26 +151,84 @@ const Index = () => {
     return 23;
   }, []);
 
-  const onDragStart = useCallback((e: React.MouseEvent, eventId: string, edge: "top" | "bottom", hour: number, endHour: number) => {
+  const dayIdxFromX = useCallback((clientX: number) => {
+    if (!timelineRef.current) return 0;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const x = clientX - rect.left - 60; // subtract time label column
+    const colW = (rect.width - 60) / 7;
+    return Math.max(0, Math.min(6, Math.floor(x / colW)));
+  }, []);
+
+  const onEventDragStart = useCallback((e: React.MouseEvent, ev: CalendarEvent, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
-    dragRef.current = { eventId, edge, origHour: hour, origEndHour: endHour };
+    const startH = ev.hour ?? 0;
+    const endH = ev.endHour ?? startH + 1;
+    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx, moved: false };
 
     const onMove = (me: MouseEvent) => {
-      if (!dragRef.current) return;
+      if (!dragRef.current || dragRef.current.type !== "event") return;
+      dragRef.current.moved = true;
       const newHour = hourFromY(me.clientY);
+      const newDayIdx = dayIdxFromX(me.clientX);
+
       setEvents((prev) =>
-        prev.map((ev) => {
-          if (ev.id !== dragRef.current!.eventId) return ev;
-          if (dragRef.current!.edge === "bottom") {
-            const end = Math.max(newHour + 1, (ev.hour ?? 0) + 1);
-            return { ...ev, endHour: Math.min(end, 24) };
+        prev.map((e) => {
+          if (e.id !== dragRef.current!.id) return e;
+          if (dragRef.current!.mode === "resize-bottom") {
+            const end = Math.max(newHour + 1, (e.hour ?? 0) + 1);
+            return { ...e, endHour: Math.min(end, 24) };
+          } else if (dragRef.current!.mode === "resize-top") {
+            const start = Math.min(newHour, (e.endHour ?? 1) - 1);
+            return { ...e, hour: Math.max(start, 0) };
           } else {
-            const start = Math.min(newHour, (ev.endHour ?? 1) - 1);
-            return { ...ev, hour: Math.max(start, 0) };
+            // move
+            const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
+            const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+            const targetDay = weekDays[newDayIdx];
+            return { ...e, hour: newStart, endHour: newStart + duration, date: format(targetDay, "yyyy-MM-dd") };
           }
         })
       );
+    };
+
+    const onUp = () => {
+      dragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [hourFromY, dayIdxFromX, weekDays]);
+
+  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move") => {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = `${dateKey}:${shiftIndex}`;
+    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: 0, moved: false };
+
+    const onMove = (me: MouseEvent) => {
+      if (!dragRef.current || dragRef.current.type !== "shift") return;
+      dragRef.current.moved = true;
+      const newHour = hourFromY(me.clientY);
+      const key = dragRef.current.id;
+
+      setShiftTimeOverrides((prev) => {
+        const existing = prev[key] ?? { startHour: dragRef.current!.origHour, endHour: dragRef.current!.origEndHour };
+        if (dragRef.current!.mode === "resize-bottom") {
+          const end = Math.max(newHour + 1, existing.startHour + 1);
+          return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
+        } else if (dragRef.current!.mode === "resize-top") {
+          const start = Math.min(newHour, existing.endHour - 1);
+          return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
+        } else {
+          // move
+          const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
+          const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+          return { ...prev, [key]: { startHour: newStart, endHour: newStart + duration } };
+        }
+      });
     };
 
     const onUp = () => {
