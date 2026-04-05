@@ -499,7 +499,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="overflow-y-auto max-h-[600px] relative">
+            <div className="overflow-y-auto max-h-[600px] relative" ref={timelineRef}>
               <div className="relative" style={{ height: totalGridHeight }}>
                 {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
