@@ -682,7 +682,7 @@ const Index = () => {
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (dragRef.current?.moved) return;
+                          if (wasDragging.current) return;
                           openEditShift(dateKey, si, shift);
                         }}
                       >
