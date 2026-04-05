@@ -319,29 +319,31 @@ const Index = () => {
                       right: 0,
                     }}
                   >
-                    {/* Full-width line */}
+                    {/* Time badge aligned to the axis */}
                     <div
-                      className="absolute h-[2px] bg-destructive/70"
-                      style={{
-                        left: "60px",
-                        right: 0,
-                      }}
+                      className="absolute flex items-center -translate-y-1/2"
+                      style={{ left: 0, width: "60px" }}
+                    >
+                      <div className="w-full flex justify-end pr-1.5">
+                        <span className="bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-sm shadow-destructive/30">
+                          {format(now, "HH:mm")}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Line across the grid */}
+                    <div
+                      className="absolute h-[2px] bg-destructive/60 shadow-[0_0_6px_0] shadow-destructive/30"
+                      style={{ left: "60px", right: 0 }}
                     />
                     {/* Dot on current day column */}
                     {currentDayIndex >= 0 && (
                       <div
-                        className="absolute w-2.5 h-2.5 rounded-full bg-destructive -translate-y-[4px]"
+                        className="absolute w-3 h-3 rounded-full bg-destructive -translate-y-[5px] shadow-md shadow-destructive/40"
                         style={{
                           left: `calc(60px + ${currentDayIndex} * ((100% - 60px) / 7))`,
                         }}
                       />
                     )}
-                    {/* Time label */}
-                    <div
-                      className="absolute text-[10px] font-bold text-destructive -translate-y-[7px]"
-                      style={{ left: "4px" }}
-                    >
-                      {format(now, "HH:mm")}
                     </div>
                   </div>
                 )}
