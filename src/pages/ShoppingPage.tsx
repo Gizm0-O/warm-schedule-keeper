@@ -346,7 +346,7 @@ const ShoppingPage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Wrench className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold text-foreground">Na koupit (nespěchá)</h2>
+            <h2 className="text-2xl font-bold text-foreground">Domácnost</h2>
           </div>
           {wishlist.length > 0 && (
             <AlertDialog>
