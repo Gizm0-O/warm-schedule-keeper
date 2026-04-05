@@ -115,6 +115,8 @@ const Index = () => {
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [newEventEndHour, setNewEventEndHour] = useState<number>(10);
   const [newEventColor, setNewEventColor] = useState(EVENT_COLORS[0].value);
+  const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
   const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
   const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
@@ -348,17 +350,28 @@ const Index = () => {
         )}`;
 
   const addEvent = () => {
-    if (!newEventTitle.trim() || !selectedDate) return;
+    if (!newEventTitle.trim()) return;
+    const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
     const event: CalendarEvent = {
       id: crypto.randomUUID(),
-      date: format(selectedDate, "yyyy-MM-dd"),
+      date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
-      hour: viewMode === "week" ? newEventHour : undefined,
-      endHour: viewMode === "week" ? newEventEndHour : undefined,
+      hour: newEventHour,
+      endHour: newEventEndHour,
     };
     setEvents((prev) => [...prev, event]);
     setNewEventTitle("");
+    setShowNewEventDialog(false);
+  };
+
+  const openNewEventDialog = () => {
+    setNewEventTitle("");
+    setNewEventHour(9);
+    setNewEventEndHour(10);
+    setNewEventColor(EVENT_COLORS[0].value);
+    setNewEventDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
+    setShowNewEventDialog(true);
   };
 
   const removeEvent = (id: string) => {
@@ -513,6 +526,15 @@ const Index = () => {
             {headerLabel}
           </p>
         <div className="flex gap-1 items-center">
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8 px-3 gap-1.5 mr-2"
+            onClick={openNewEventDialog}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Událost</span>
+          </Button>
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
@@ -1140,6 +1162,86 @@ const Index = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
             <Button onClick={saveEditShift}>Uložit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* New Event Dialog */}
+      <Dialog open={showNewEventDialog} onOpenChange={setShowNewEventDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nová událost</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground">Název</label>
+              <Input
+                placeholder="Název události..."
+                value={newEventTitle}
+                onChange={(e) => setNewEventTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addEvent()}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Datum</label>
+              <Input
+                type="date"
+                value={newEventDate}
+                onChange={(e) => setNewEventDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Od</label>
+                <select
+                  value={newEventHour}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    setNewEventHour(v);
+                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 23));
+                  }}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {HOURS.map((h) => (
+                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium text-foreground">Do</label>
+                <select
+                  value={newEventEndHour}
+                  onChange={(e) => setNewEventEndHour(Number(e.target.value))}
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {HOURS.filter((h) => h > newEventHour).map((h) => (
+                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Barva</label>
+              <div className="flex gap-2 mt-2">
+                {EVENT_COLORS.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => setNewEventColor(c.value)}
+                    className={cn(
+                      "h-8 w-8 rounded-full border-2 transition-all",
+                      c.value.split(" ")[0],
+                      newEventColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                    )}
+                    title={c.label}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowNewEventDialog(false)}>Zrušit</Button>
+            <Button onClick={addEvent} disabled={!newEventTitle.trim()}>Vytvořit</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
