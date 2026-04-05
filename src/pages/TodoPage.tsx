@@ -403,9 +403,22 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
-              <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
+                <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Opakování</label>
+                <Select value={newRecurrence} onValueChange={(v) => setNewRecurrence(v as Recurrence)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
