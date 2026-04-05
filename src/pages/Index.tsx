@@ -39,7 +39,8 @@ const EVENT_COLORS = [
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const HOUR_HEIGHT = 60; // px per hour
+const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
+const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 16 : 40;
 
 const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
