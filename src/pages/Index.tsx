@@ -209,11 +209,12 @@ const Index = () => {
     e.preventDefault();
     e.stopPropagation();
     const id = `${dateKey}:${shiftIndex}`;
-    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: 0, moved: false };
+    wasDragging.current = false;
+    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: 0 };
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
-      dragRef.current.moved = true;
+      wasDragging.current = true;
       const newHour = hourFromY(me.clientY);
       const key = dragRef.current.id;
 
