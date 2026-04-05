@@ -121,9 +121,16 @@ const TodoPage = () => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const sortByDeadline = (a: Todo, b: Todo) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return a.deadline.getTime() - b.deadline.getTime();
+  };
+
   const filtered = activeTab === "all" ? todos : todos.filter((t) => t.person === activeTab);
-  const workPending = filtered.filter((t) => t.category === "work" && !t.completed);
-  const homePending = filtered.filter((t) => t.category === "home" && !t.completed);
+  const workPending = filtered.filter((t) => t.category === "work" && !t.completed).sort(sortByDeadline);
+  const homePending = filtered.filter((t) => t.category === "home" && !t.completed).sort(sortByDeadline);
   const completed = filtered.filter((t) => t.completed);
 
   const getDeadlineInfo = (d?: Date) => {
