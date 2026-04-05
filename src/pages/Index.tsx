@@ -509,11 +509,11 @@ const Index = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <p className="text-sm text-muted-foreground mb-1">{todayLabel}</p>
+        <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground capitalize">
+          <p className="text-sm text-muted-foreground capitalize">
             {headerLabel}
-          </h2>
+          </p>
         <div className="flex gap-1 items-center">
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
