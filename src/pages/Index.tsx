@@ -1059,7 +1059,7 @@ const Index = () => {
         <DialogContent>
           <DialogHeader>
             <div className="flex items-center gap-2 pr-6">
-              <DialogTitle className="flex-1">Upravit směnu – {editingShift?.shift.person}</DialogTitle>
+              <DialogTitle className="flex-1">Upravit směnu – {editingShift?.person}</DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -1079,19 +1079,19 @@ const Index = () => {
               >
                 <ArrowLeftRight className="h-4 w-4" />
               </Button>
-              {editingShift?.shift.person === "Tadeáš" && (
+              {editingShift?.person === "Tadeáš" && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  title={editingShift.shift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
+                  title={editingShift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
                   onClick={() => {
                     if (!editingShift) return;
-                    toggleShiftLocation(new Date(editingShift.dayKey), editingShift.index);
+                    toggleShiftLocation(editingShift.shiftKey);
                     setEditingShift(null);
                   }}
                 >
-                  {editingShift.shift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+                  {editingShift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
                 </Button>
               )}
             </div>
