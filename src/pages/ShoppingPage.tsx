@@ -37,12 +37,27 @@ interface WishlistItem {
 const ALL_CATEGORIES = Object.keys(CATEGORY_INFO) as ShoppingCategory[];
 
 const ShoppingPage = () => {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [items, setItems] = useState<ShoppingItem[]>([
+    { id: "s1", name: "Banány", quantity: 3, bought: false, category: detectCategory("Banány") },
+    { id: "s2", name: "Kuřecí prsa", quantity: 1, bought: false, category: detectCategory("Kuřecí prsa") },
+    { id: "s3", name: "Mléko", quantity: 2, bought: false, category: detectCategory("Mléko") },
+    { id: "s4", name: "Rohlíky", quantity: 10, bought: false, category: detectCategory("Rohlíky") },
+    { id: "s5", name: "Šampon", quantity: 1, bought: false, category: detectCategory("Šampon") },
+    { id: "s6", name: "Rajčata", quantity: 4, bought: false, category: detectCategory("Rajčata") },
+    { id: "s7", name: "Jogurt", quantity: 3, bought: true, category: detectCategory("Jogurt") },
+    { id: "s8", name: "Čokoláda", quantity: 1, bought: true, category: detectCategory("Čokoláda") },
+  ]);
   const [newItem, setNewItem] = useState("");
   const [activeFilter, setActiveFilter] = useState<ShoppingCategory | null>(null);
 
   // Wishlist state
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([
+    { id: "w1", name: "Šroubky M5 do police", done: false },
+    { id: "w2", name: "Baterie AAA do koupelny", done: false },
+    { id: "w3", name: "Komoda do ložnice", done: false },
+    { id: "w4", name: "LED žárovka E27", done: false },
+    { id: "w5", name: "Prodlužovací kabel 3m", done: true },
+  ]);
   const [newWish, setNewWish] = useState("");
 
   const addItem = () => {
