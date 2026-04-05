@@ -39,7 +39,8 @@ const EVENT_COLORS = [
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const HOUR_HEIGHT = 60; // px per hour
+const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
+const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 16 : 40;
 
 const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
@@ -121,8 +122,14 @@ const Index = () => {
   const getEventsForDateAndHour = (date: Date, hour: number) =>
     events.filter((e) => e.date === format(date, "yyyy-MM-dd") && e.hour === hour);
 
+  // Cumulative top position for each hour
+  const getHourTop = (hour: number) =>
+    HOURS.slice(0, hour).reduce((sum, h) => sum + getHourHeight(h), 0);
+  const totalGridHeight = HOURS.reduce((sum, h) => sum + getHourHeight(h), 0);
+
   // Current time line position
-  const currentTimeTop = (now.getHours() + now.getMinutes() / 60) * HOUR_HEIGHT;
+  const currentHour = now.getHours();
+  const currentTimeTop = getHourTop(currentHour) + (now.getMinutes() / 60) * getHourHeight(currentHour);
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
@@ -248,19 +255,26 @@ const Index = () => {
 
             {/* Scrollable time grid */}
             <div className="overflow-y-auto max-h-[600px] relative">
-              <div className="relative" style={{ height: HOURS.length * HOUR_HEIGHT }}>
+              <div className="relative" style={{ height: totalGridHeight }}>
                 {/* Hour rows */}
-                {HOURS.map((hour) => (
+                {HOURS.map((hour) => {
+                  const h = getHourHeight(hour);
+                  const top = getHourTop(hour);
+                  const isNight = NIGHT_HOURS.has(hour);
+                  return (
                   <div
                     key={hour}
                     className="absolute w-full grid border-b border-border/50"
                     style={{
-                      top: hour * HOUR_HEIGHT,
-                      height: HOUR_HEIGHT,
+                      top,
+                      height: h,
                       gridTemplateColumns: "60px repeat(7, 1fr)",
                     }}
                   >
-                    <div className="flex items-start justify-end pr-2 pt-1 border-r border-border text-[11px] text-muted-foreground font-medium">
+                    <div className={cn(
+                      "flex items-start justify-end pr-2 border-r border-border font-medium",
+                      isNight ? "text-[9px] text-muted-foreground/50 pt-0.5" : "text-[11px] text-muted-foreground pt-1"
+                    )}>
                       {hour.toString().padStart(2, "0")}:00
                     </div>
                     {weekDays.map((day) => {
@@ -292,7 +306,8 @@ const Index = () => {
                       );
                     })}
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Current time indicator */}
                 {isCurrentWeek && (
