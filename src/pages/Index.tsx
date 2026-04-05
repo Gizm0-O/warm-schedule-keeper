@@ -553,7 +553,7 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer group hover:opacity-80",
                           ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2 }}
@@ -562,12 +562,26 @@ const Index = () => {
                           openEditEvent(ev);
                         }}
                       >
-                        <div className="truncate">{ev.title}</div>
+                        {/* Top drag handle */}
+                        <div
+                          className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
+                          onMouseDown={(e) => onDragStart(e, ev.id, "top", startH, endH)}
+                        >
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                        </div>
+                        <div className="truncate mt-1">{ev.title}</div>
                         {height > 24 && (
                           <div className="text-[9px] opacity-60">
                             {startH.toString().padStart(2, "0")}:00–{endH.toString().padStart(2, "0")}:00
                           </div>
                         )}
+                        {/* Bottom drag handle */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
+                          onMouseDown={(e) => onDragStart(e, ev.id, "bottom", startH, endH)}
+                        >
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                        </div>
                       </div>
                     );
                   });
