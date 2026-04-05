@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, Check, ShoppingCart, Minus, Filter } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Plus, Trash2, Check, ShoppingCart, Minus, Filter, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -60,6 +60,17 @@ const ShoppingPage = () => {
     );
   };
 
+  const renameItem = (id: string, newName: string) => {
+    if (!newName.trim()) return;
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? { ...i, name: newName.trim(), category: detectCategory(newName.trim()) }
+          : i
+      )
+    );
+  };
+
   // categories present in current list
   const usedCategories = [...new Set(items.map((i) => i.category))];
 
@@ -85,31 +96,77 @@ const ShoppingPage = () => {
     );
   };
 
-  const ItemRow = ({ item, isBought }: { item: ShoppingItem; isBought: boolean }) => (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50",
-        isBought && "opacity-60"
-      )}
-    >
-      <button
-        onClick={() => toggleItem(item.id)}
+  const ItemRow = ({ item, isBought }: { item: ShoppingItem; isBought: boolean }) => {
+    const [editing, setEditing] = useState(false);
+    const [editValue, setEditValue] = useState(item.name);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+      if (editing) inputRef.current?.focus();
+    }, [editing]);
+
+    const commitEdit = () => {
+      if (editValue.trim() && editValue.trim() !== item.name) {
+        renameItem(item.id, editValue);
+      } else {
+        setEditValue(item.name);
+      }
+      setEditing(false);
+    };
+
+    return (
+      <div
         className={cn(
-          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-          isBought
-            ? "border-transparent bg-primary text-primary-foreground"
-            : "border-primary/40 hover:border-primary hover:bg-primary/10"
+          "flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50",
+          isBought && "opacity-60"
         )}
       >
-        {isBought && <Check className="h-3.5 w-3.5" />}
-      </button>
+        <button
+          onClick={() => toggleItem(item.id)}
+          className={cn(
+            "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+            isBought
+              ? "border-transparent bg-primary text-primary-foreground"
+              : "border-primary/40 hover:border-primary hover:bg-primary/10"
+          )}
+        >
+          {isBought && <Check className="h-3.5 w-3.5" />}
+        </button>
 
-      <div className="flex flex-1 items-center gap-2 min-w-0">
-        <span className={cn("text-sm text-foreground truncate", isBought && "line-through")}>
-          {item.name}
-        </span>
-        <CategoryBadge category={item.category} />
-      </div>
+        <div className="flex flex-1 items-center gap-2 min-w-0">
+          {editing ? (
+            <input
+              ref={inputRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={commitEdit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") commitEdit();
+                if (e.key === "Escape") { setEditValue(item.name); setEditing(false); }
+              }}
+              className="flex-1 bg-transparent text-sm text-foreground border-b border-primary/40 outline-none py-0.5"
+            />
+          ) : (
+            <span
+              className={cn("text-sm text-foreground truncate cursor-pointer", isBought && "line-through")}
+              onDoubleClick={() => { setEditValue(item.name); setEditing(true); }}
+              title="Dvojklikem upravíš název"
+            >
+              {item.name}
+            </span>
+          )}
+          <CategoryBadge category={item.category} />
+        </div>
+
+        {!editing && (
+          <button
+            onClick={() => { setEditValue(item.name); setEditing(true); }}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary transition-colors"
+            title="Upravit název"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
 
       {/* Quantity controls */}
       <div className="flex items-center gap-1">
@@ -137,7 +194,8 @@ const ShoppingPage = () => {
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
