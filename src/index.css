@@ -52,9 +52,9 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --shift-office: 180 50% 65%;
-    --shift-home: 180 40% 55%;
-    --shift-partner: 340 60% 72%;
+    --shift-office: 180 45% 42%;
+    --shift-home: 180 35% 38%;
+    --shift-partner: 340 50% 55%;
   }
 
   .dark {
