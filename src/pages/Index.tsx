@@ -497,13 +497,23 @@ const Index = () => {
     return dayEvents;
   };
 
+  const todayLabel = useMemo(() => {
+    const dayName = format(now, "EEEE", { locale: cs });
+    const dayNameCap = dayName.charAt(0).toUpperCase() + dayName.slice(1);
+    const monthName = format(now, "LLLL", { locale: cs });
+    const monthNameCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+    return `Dnes je ${dayNameCap} ${format(now, "d")}. ${monthNameCap}`;
+  }, [now]);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground capitalize">
-          {headerLabel}
-        </h2>
+      <div>
+        <p className="text-sm text-muted-foreground mb-1">{todayLabel}</p>
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-foreground capitalize">
+            {headerLabel}
+          </h2>
         <div className="flex gap-1 items-center">
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
@@ -534,6 +544,7 @@ const Index = () => {
           <Button variant="ghost" size="icon" onClick={goForward}>
             <ChevronRight className="h-5 w-5" />
           </Button>
+        </div>
         </div>
       </div>
 
