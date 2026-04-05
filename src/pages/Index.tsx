@@ -388,20 +388,18 @@ const Index = () => {
     setEditingEvent(null);
   };
 
-  const openEditShift = (dayKey: string, index: number, shift: Shift) => {
-    setEditingShift({ dayKey, index, shift });
-    const overrideKey = `${dayKey}:${index}`;
-    const override = shiftTimeOverrides[overrideKey];
+  const openEditShift = (shift: DisplayShift) => {
+    setEditingShift(shift);
+    const override = shiftTimeOverrides[shift.shiftKey];
     setEditShiftStart(override?.startHour ?? shift.startHour);
     setEditShiftEnd(override?.endHour ?? shift.endHour);
   };
 
   const saveEditShift = () => {
     if (!editingShift) return;
-    const key = `${editingShift.dayKey}:${editingShift.index}`;
     setShiftTimeOverrides((prev) => ({
       ...prev,
-      [key]: { startHour: editShiftStart, endHour: editShiftEnd },
+      [editingShift.shiftKey]: { startHour: editShiftStart, endHour: editShiftEnd },
     }));
     setEditingShift(null);
   };
@@ -421,45 +419,68 @@ const Index = () => {
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
-  const getShiftsForDay = (day: Date): Shift[] => {
-    const defaults = getDefaultShiftsForDay(day);
-    const dateKey = format(day, "yyyy-MM-dd");
-    const base = swappedDays.has(dateKey) ? swapShifts(defaults) : defaults;
-    return base.map((shift, i) => {
-      const overrideKey = `${dateKey}:${i}`;
-      let result = shift;
+  const resolveShiftFromKey = (shiftKey: string, dayKey: string): DisplayShift | null => {
+    const [sourceDayKey, sourceIndexRaw] = shiftKey.split(":");
+    const sourceIndex = Number(sourceIndexRaw);
+    const [year, month, day] = sourceDayKey.split("-").map(Number);
+    const defaults = getDefaultShiftsForDay(new Date(year, month - 1, day));
+    const base = swappedDays.has(sourceDayKey) ? swapShifts(defaults) : defaults;
+    const baseShift = base[sourceIndex];
 
-      // Apply time overrides
-      const timeOverride = shiftTimeOverrides[overrideKey];
-      if (timeOverride) {
-        result = { ...result, startHour: timeOverride.startHour, endHour: timeOverride.endHour };
-      }
+    if (!baseShift) return null;
 
-      // Apply location overrides
-      if (locationOverrides[overrideKey]) {
-        const isHome = result.location === "Z domu";
-        return {
-          ...result,
-          location: isHome ? "Kancelář" : "Z domu",
-          icon: isHome ? "office" as const : "home" as const,
-          bgClass: result.person === "Tadeáš"
-            ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
-            : result.bgClass,
-          textClass: result.person === "Tadeáš"
-            ? (isHome ? "text-shift-office" : "text-shift-home")
-            : result.textClass,
-          borderClass: result.person === "Tadeáš"
-            ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
-            : result.borderClass,
-        };
-      }
-      return result;
-    });
+    let result: Shift = baseShift;
+    const timeOverride = shiftTimeOverrides[shiftKey];
+    if (timeOverride) {
+      result = { ...result, startHour: timeOverride.startHour, endHour: timeOverride.endHour };
+    }
+
+    if (locationOverrides[shiftKey]) {
+      const isHome = result.location === "Z domu";
+      result = {
+        ...result,
+        location: isHome ? "Kancelář" : "Z domu",
+        icon: isHome ? "office" as const : "home" as const,
+        bgClass: result.person === "Tadeáš"
+          ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
+          : result.bgClass,
+        textClass: result.person === "Tadeáš"
+          ? (isHome ? "text-shift-office" : "text-shift-home")
+          : result.textClass,
+        borderClass: result.person === "Tadeáš"
+          ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
+          : result.borderClass,
+      };
+    }
+
+    return {
+      ...result,
+      shiftKey,
+      dayKey,
+      sourceDayKey,
+      sourceIndex,
+    };
   };
 
-  const toggleShiftLocation = (dayDate: Date, shiftIndex: number) => {
-    const key = `${format(dayDate, "yyyy-MM-dd")}:${shiftIndex}`;
-    setLocationOverrides((prev) => ({ ...prev, [key]: !prev[key] }));
+  const getShiftsForDay = (day: Date): DisplayShift[] => {
+    const dayKey = format(day, "yyyy-MM-dd");
+    const defaults = getDefaultShiftsForDay(day);
+    const localKeys = defaults
+      .map((_, index) => `${dayKey}:${index}`)
+      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey);
+
+    const incomingKeys = Object.entries(shiftDayOverrides)
+      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`))
+      .map(([shiftKey]) => shiftKey);
+
+    return [...localKeys, ...incomingKeys]
+      .map((shiftKey) => resolveShiftFromKey(shiftKey, dayKey))
+      .filter((shift): shift is DisplayShift => shift !== null)
+      .sort((a, b) => a.startHour - b.startHour || a.sourceDayKey.localeCompare(b.sourceDayKey) || a.sourceIndex - b.sourceIndex);
+  };
+
+  const toggleShiftLocation = (shiftKey: string) => {
+    setLocationOverrides((prev) => ({ ...prev, [shiftKey]: !prev[shiftKey] }));
   };
 
   const handleSwapShift = () => {
