@@ -126,6 +126,60 @@ const Index = () => {
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
+  // Drag resize
+  const dragRef = useRef<{
+    eventId: string;
+    edge: "top" | "bottom";
+    origHour: number;
+    origEndHour: number;
+  } | null>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  const hourFromY = useCallback((clientY: number) => {
+    if (!timelineRef.current) return 0;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const y = clientY - rect.top + timelineRef.current.scrollTop;
+    let acc = 0;
+    for (const h of HOURS) {
+      const hh = getHourHeight(h);
+      if (y < acc + hh) return h;
+      acc += hh;
+    }
+    return 23;
+  }, []);
+
+  const onDragStart = useCallback((e: React.MouseEvent, eventId: string, edge: "top" | "bottom", hour: number, endHour: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = { eventId, edge, origHour: hour, origEndHour: endHour };
+
+    const onMove = (me: MouseEvent) => {
+      if (!dragRef.current) return;
+      const newHour = hourFromY(me.clientY);
+      setEvents((prev) =>
+        prev.map((ev) => {
+          if (ev.id !== dragRef.current!.eventId) return ev;
+          if (dragRef.current!.edge === "bottom") {
+            const end = Math.max(newHour + 1, (ev.hour ?? 0) + 1);
+            return { ...ev, endHour: Math.min(end, 24) };
+          } else {
+            const start = Math.min(newHour, (ev.endHour ?? 1) - 1);
+            return { ...ev, hour: Math.max(start, 0) };
+          }
+        })
+      );
+    };
+
+    const onUp = () => {
+      dragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [hourFromY]);
+
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(interval);
