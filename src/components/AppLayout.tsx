@@ -1,6 +1,8 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
