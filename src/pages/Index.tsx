@@ -732,15 +732,14 @@ const Index = () => {
                 {/* Shift blocks */}
                 {weekDays.map((day, dayIdx) => {
                   const shifts = getShiftsForDay(day);
-                  const dateKey = format(day, "yyyy-MM-dd");
-                  return shifts.map((shift, si) => {
+                  return shifts.map((shift) => {
                     const top = getHourTop(shift.startHour);
                     const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
                       <div
-                        key={`shift-${dayIdx}-${si}`}
+                        key={`shift-${shift.shiftKey}`}
                         className={cn(
                           "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-80",
                           shift.bgClass, shift.borderClass
@@ -748,19 +747,19 @@ const Index = () => {
                         style={{ top, height, left, width: colWidth }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
-                          onShiftDragStart(e, dateKey, si, shift, "move", dayIdx);
+                          onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (wasDragging.current) return;
-                          openEditShift(dateKey, si, shift);
+                          openEditShift(shift);
                         }}
                       >
                         {/* Top drag handle */}
                         <div
                           data-handle="top"
                           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
-                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top", dayIdx)}
+                          onMouseDown={(e) => onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "resize-top", dayIdx)}
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
@@ -780,7 +779,7 @@ const Index = () => {
                         <div
                           data-handle="bottom"
                           className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
-                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-bottom", dayIdx)}
+                          onMouseDown={(e) => onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "resize-bottom", dayIdx)}
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
