@@ -294,6 +294,7 @@ const Index = () => {
             <div className="grid grid-cols-7 gap-1">
               {days.map((day) => {
                 const dayEvents = getEventsForDate(day);
+                const dayShifts = getShiftsForDay(day);
                 const selected = selectedDate && isSameDay(day, selectedDate);
                 return (
                   <button
@@ -314,7 +315,25 @@ const Index = () => {
                     >
                       {format(day, "d")}
                     </span>
-                    <div className="flex w-full flex-col gap-0.5">
+                    {/* Shift indicators */}
+                    {dayShifts.length > 0 && (
+                      <div className="flex flex-col gap-0.5 w-full">
+                        {dayShifts.map((shift, si) => (
+                          <div key={si} className={cn("flex items-center gap-1 rounded px-1 py-0.5", shift.bgClass)}>
+                            <span className={cn("text-[10px] font-bold leading-none", shift.textClass)}>
+                              {shift.person.charAt(0)}
+                            </span>
+                            {shift.icon === "office"
+                              ? <Briefcase className={cn("h-2.5 w-2.5", shift.textClass)} />
+                              : <Home className={cn("h-2.5 w-2.5", shift.textClass)} />}
+                            <span className={cn("text-[9px] opacity-60 leading-none", shift.textClass)}>
+                              {shift.startHour}–{shift.endHour}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex w-full flex-col gap-0.5 mt-0.5">
                       {dayEvents.slice(0, 2).map((ev) => (
                         <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium", ev.color)}>
                           {ev.title}
