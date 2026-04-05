@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import {
   addMonths,
   subMonths,
@@ -125,6 +125,60 @@ const Index = () => {
   const [editShiftEnd, setEditShiftEnd] = useState(14);
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
+
+  // Drag resize
+  const dragRef = useRef<{
+    eventId: string;
+    edge: "top" | "bottom";
+    origHour: number;
+    origEndHour: number;
+  } | null>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  const hourFromY = useCallback((clientY: number) => {
+    if (!timelineRef.current) return 0;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const y = clientY - rect.top + timelineRef.current.scrollTop;
+    let acc = 0;
+    for (const h of HOURS) {
+      const hh = getHourHeight(h);
+      if (y < acc + hh) return h;
+      acc += hh;
+    }
+    return 23;
+  }, []);
+
+  const onDragStart = useCallback((e: React.MouseEvent, eventId: string, edge: "top" | "bottom", hour: number, endHour: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragRef.current = { eventId, edge, origHour: hour, origEndHour: endHour };
+
+    const onMove = (me: MouseEvent) => {
+      if (!dragRef.current) return;
+      const newHour = hourFromY(me.clientY);
+      setEvents((prev) =>
+        prev.map((ev) => {
+          if (ev.id !== dragRef.current!.eventId) return ev;
+          if (dragRef.current!.edge === "bottom") {
+            const end = Math.max(newHour + 1, (ev.hour ?? 0) + 1);
+            return { ...ev, endHour: Math.min(end, 24) };
+          } else {
+            const start = Math.min(newHour, (ev.endHour ?? 1) - 1);
+            return { ...ev, hour: Math.max(start, 0) };
+          }
+        })
+      );
+    };
+
+    const onUp = () => {
+      dragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [hourFromY]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
@@ -445,7 +499,7 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="overflow-y-auto max-h-[600px] relative">
+            <div className="overflow-y-auto max-h-[600px] relative" ref={timelineRef}>
               <div className="relative" style={{ height: totalGridHeight }}>
                 {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
@@ -499,7 +553,7 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer group hover:opacity-80",
                           ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2 }}
@@ -508,12 +562,26 @@ const Index = () => {
                           openEditEvent(ev);
                         }}
                       >
-                        <div className="truncate">{ev.title}</div>
+                        {/* Top drag handle */}
+                        <div
+                          className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
+                          onMouseDown={(e) => onDragStart(e, ev.id, "top", startH, endH)}
+                        >
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                        </div>
+                        <div className="truncate mt-1">{ev.title}</div>
                         {height > 24 && (
                           <div className="text-[9px] opacity-60">
                             {startH.toString().padStart(2, "0")}:00–{endH.toString().padStart(2, "0")}:00
                           </div>
                         )}
+                        {/* Bottom drag handle */}
+                        <div
+                          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
+                          onMouseDown={(e) => onDragStart(e, ev.id, "bottom", startH, endH)}
+                        >
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                        </div>
                       </div>
                     );
                   });
