@@ -860,7 +860,7 @@ const Index = () => {
         )}
 
         {/* Event sidebar */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm" onClick={(e) => e.stopPropagation()}>
           {selectedDate ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
