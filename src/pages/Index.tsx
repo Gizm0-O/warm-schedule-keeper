@@ -195,6 +195,23 @@ const Index = () => {
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
+  const getShiftsForDay = (day: Date): Shift[] => {
+    const defaults = getDefaultShiftsForDay(day);
+    const key = format(day, "yyyy-MM-dd");
+    return swappedDays.has(key) ? swapShifts(defaults) : defaults;
+  };
+
+  const handleSwapShift = () => {
+    if (!selectedDate) return;
+    const key = format(selectedDate, "yyyy-MM-dd");
+    setSwappedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
