@@ -862,6 +862,41 @@ const Index = () => {
                 </select>
               </div>
             </div>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (!editingShift) return;
+                  const dayDate = new Date(editingShift.dayKey);
+                  const key = editingShift.dayKey;
+                  setSwappedDays((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(key)) next.delete(key);
+                    else next.add(key);
+                    return next;
+                  });
+                  setEditingShift(null);
+                }}
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                Přehodit směny (ráno ↔ odpoledne)
+              </Button>
+              {editingShift?.shift.person === "Tadeáš" && (
+                <Button
+                  variant="outline"
+                  className="w-full gap-2"
+                  onClick={() => {
+                    if (!editingShift) return;
+                    toggleShiftLocation(new Date(editingShift.dayKey), editingShift.index);
+                    setEditingShift(null);
+                  }}
+                >
+                  {editingShift.shift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+                  {editingShift.shift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
+                </Button>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
