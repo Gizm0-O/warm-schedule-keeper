@@ -126,12 +126,15 @@ const Index = () => {
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
-  // Drag resize
+  // Drag state
+  const wasDragging = useRef(false);
   const dragRef = useRef<{
-    eventId: string;
-    edge: "top" | "bottom";
+    type: "event" | "shift";
+    id: string;
+    mode: "resize-top" | "resize-bottom" | "move";
     origHour: number;
     origEndHour: number;
+    origDayIdx: number;
   } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
@@ -148,26 +151,88 @@ const Index = () => {
     return 23;
   }, []);
 
-  const onDragStart = useCallback((e: React.MouseEvent, eventId: string, edge: "top" | "bottom", hour: number, endHour: number) => {
+  const dayIdxFromX = useCallback((clientX: number) => {
+    if (!timelineRef.current) return 0;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const x = clientX - rect.left - 60; // subtract time label column
+    const colW = (rect.width - 60) / 7;
+    return Math.max(0, Math.min(6, Math.floor(x / colW)));
+  }, []);
+
+  const onEventDragStart = useCallback((e: React.MouseEvent, ev: CalendarEvent, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
-    dragRef.current = { eventId, edge, origHour: hour, origEndHour: endHour };
+    const startH = ev.hour ?? 0;
+    const endH = ev.endHour ?? startH + 1;
+    wasDragging.current = false;
+    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx };
 
     const onMove = (me: MouseEvent) => {
-      if (!dragRef.current) return;
+      if (!dragRef.current || dragRef.current.type !== "event") return;
+      wasDragging.current = true;
       const newHour = hourFromY(me.clientY);
+      const newDayIdx = dayIdxFromX(me.clientX);
+
       setEvents((prev) =>
-        prev.map((ev) => {
-          if (ev.id !== dragRef.current!.eventId) return ev;
-          if (dragRef.current!.edge === "bottom") {
-            const end = Math.max(newHour + 1, (ev.hour ?? 0) + 1);
-            return { ...ev, endHour: Math.min(end, 24) };
+        prev.map((e) => {
+          if (e.id !== dragRef.current!.id) return e;
+          if (dragRef.current!.mode === "resize-bottom") {
+            const end = Math.max(newHour + 1, (e.hour ?? 0) + 1);
+            return { ...e, endHour: Math.min(end, 24) };
+          } else if (dragRef.current!.mode === "resize-top") {
+            const start = Math.min(newHour, (e.endHour ?? 1) - 1);
+            return { ...e, hour: Math.max(start, 0) };
           } else {
-            const start = Math.min(newHour, (ev.endHour ?? 1) - 1);
-            return { ...ev, hour: Math.max(start, 0) };
+            // move
+            const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
+            const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+            const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+            const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
+            const targetDay = wd[newDayIdx];
+            return { ...e, hour: newStart, endHour: newStart + duration, date: format(targetDay, "yyyy-MM-dd") };
           }
         })
       );
+    };
+
+    const onUp = () => {
+      dragRef.current = null;
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [hourFromY, dayIdxFromX, currentWeekStart]);
+
+  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move") => {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = `${dateKey}:${shiftIndex}`;
+    wasDragging.current = false;
+    dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: 0 };
+
+    const onMove = (me: MouseEvent) => {
+      if (!dragRef.current || dragRef.current.type !== "shift") return;
+      wasDragging.current = true;
+      const newHour = hourFromY(me.clientY);
+      const key = dragRef.current.id;
+
+      setShiftTimeOverrides((prev) => {
+        const existing = prev[key] ?? { startHour: dragRef.current!.origHour, endHour: dragRef.current!.origEndHour };
+        if (dragRef.current!.mode === "resize-bottom") {
+          const end = Math.max(newHour + 1, existing.startHour + 1);
+          return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
+        } else if (dragRef.current!.mode === "resize-top") {
+          const start = Math.min(newHour, existing.endHour - 1);
+          return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
+        } else {
+          // move
+          const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
+          const newStart = Math.max(0, Math.min(newHour, 24 - duration));
+          return { ...prev, [key]: { startHour: newStart, endHour: newStart + duration } };
+        }
+      });
     };
 
     const onUp = () => {
@@ -553,21 +618,27 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer group hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-80",
                           ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2 }}
+                        onMouseDown={(e) => {
+                          if ((e.target as HTMLElement).dataset.handle) return;
+                          onEventDragStart(e, ev, "move", dayIdx);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (wasDragging.current) return;
                           openEditEvent(ev);
                         }}
                       >
                         {/* Top drag handle */}
                         <div
+                          data-handle="top"
                           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
-                          onMouseDown={(e) => onDragStart(e, ev.id, "top", startH, endH)}
+                          onMouseDown={(e) => onEventDragStart(e, ev, "resize-top", dayIdx)}
                         >
-                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
                         <div className="truncate mt-1">{ev.title}</div>
                         {height > 24 && (
@@ -577,10 +648,11 @@ const Index = () => {
                         )}
                         {/* Bottom drag handle */}
                         <div
+                          data-handle="bottom"
                           className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
-                          onMouseDown={(e) => onDragStart(e, ev.id, "bottom", startH, endH)}
+                          onMouseDown={(e) => onEventDragStart(e, ev, "resize-bottom", dayIdx)}
                         >
-                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
                       </div>
                     );
@@ -600,15 +672,28 @@ const Index = () => {
                       <div
                         key={`shift-${dayIdx}-${si}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-pointer hover:opacity-80",
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-80",
                           shift.bgClass, shift.borderClass
                         )}
                         style={{ top, height, left, width: colWidth }}
+                        onMouseDown={(e) => {
+                          if ((e.target as HTMLElement).dataset.handle) return;
+                          onShiftDragStart(e, dateKey, si, shift, "move");
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (wasDragging.current) return;
                           openEditShift(dateKey, si, shift);
                         }}
                       >
+                        {/* Top drag handle */}
+                        <div
+                          data-handle="top"
+                          className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
+                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top")}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
+                        </div>
                         <div className={cn("flex items-center gap-1.5", shift.textClass)}>
                           {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
                           <span className="text-xs font-bold truncate">{shift.person}</span>
@@ -621,6 +706,14 @@ const Index = () => {
                         <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
                           {shift.startHour}:00–{shift.endHour}:00
                         </span>
+                        {/* Bottom drag handle */}
+                        <div
+                          data-handle="bottom"
+                          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
+                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-bottom")}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
+                        </div>
                       </div>
                     );
                   });
