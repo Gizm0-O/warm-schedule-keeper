@@ -79,10 +79,19 @@ const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   ],
 };
 
-const getShiftsForDay = (day: Date): Shift[] => {
+const getDefaultShiftsForDay = (day: Date): Shift[] => {
   const dow = getDay(day); // 0=Sun, 1=Mon...
   const isoDay = dow === 0 ? 7 : dow; // convert to 1=Mon..7=Sun
   return SHIFT_SCHEDULE[isoDay] || [];
+};
+
+const swapShifts = (shifts: Shift[]): Shift[] => {
+  if (shifts.length !== 2) return shifts;
+  const [morning, afternoon] = shifts;
+  return [
+    { ...afternoon, startHour: 7, endHour: 14 },
+    { ...morning, startHour: 14, endHour: 21 },
+  ];
 };
 
 const Index = () => {
