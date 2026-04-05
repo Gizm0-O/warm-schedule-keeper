@@ -11,6 +11,18 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
@@ -18,8 +30,9 @@ const AppLayout = () => {
           <h1 className="text-xl font-bold text-foreground tracking-tight">
             <span className="text-primary">Planner</span>
           </h1>
-          <nav className="flex gap-1">
-            {navItems.map((item) => (
+          <div className="flex items-center gap-1">
+            <nav className="flex gap-1">
+              {navItems.map((item) => (
               <RouterNavLink
                 key={item.to}
                 to={item.to}
