@@ -30,6 +30,10 @@ const ShoppingPage = () => {
   const [newItem, setNewItem] = useState("");
   const [activeFilter, setActiveFilter] = useState<ShoppingCategory | null>(null);
 
+  // Wishlist state
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [newWish, setNewWish] = useState("");
+
   const addItem = () => {
     if (!newItem.trim()) return;
     const category = detectCategory(newItem.trim());
