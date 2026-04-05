@@ -127,9 +127,10 @@ const Index = () => {
   const [editColor, setEditColor] = useState(EVENT_COLORS[0].value);
 
   // Edit shift dialog
-  const [editingShift, setEditingShift] = useState<{ dayKey: string; index: number; shift: Shift } | null>(null);
+  const [editingShift, setEditingShift] = useState<DisplayShift | null>(null);
   const [editShiftStart, setEditShiftStart] = useState(7);
   const [editShiftEnd, setEditShiftEnd] = useState(14);
+  const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
