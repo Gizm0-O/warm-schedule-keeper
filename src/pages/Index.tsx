@@ -506,7 +506,18 @@ const Index = () => {
                 if (dayShifts.length === 0) return null;
                 return (
                   <div className="space-y-2">
-                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Směny</h4>
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Směny</h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2.5 text-xs gap-1.5"
+                        onClick={handleSwapShift}
+                      >
+                        <ArrowLeftRight className="h-3.5 w-3.5" />
+                        Přehodit
+                      </Button>
+                    </div>
                     {dayShifts.map((shift, idx) => (
                       <div
                         key={idx}
