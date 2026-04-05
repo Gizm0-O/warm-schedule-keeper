@@ -90,6 +90,16 @@ const Index = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
 
+  const todayButtonLabel = useMemo(() => {
+    const today = new Date();
+    if (viewMode === "month") {
+      return format(today, "LLLL", { locale: cs });
+    }
+    const ws = startOfWeek(today, { weekStartsOn: 1 });
+    const we = endOfWeek(today, { weekStartsOn: 1 });
+    return `${format(ws, "d.M.")}–${format(we, "d.M.")}`;
+  }, [viewMode]);
+
   const headerLabel =
     viewMode === "month"
       ? format(currentMonth, "LLLL yyyy", { locale: cs })
