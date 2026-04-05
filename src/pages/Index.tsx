@@ -57,6 +57,13 @@ interface Shift {
   icon: "office" | "home";
 }
 
+interface DisplayShift extends Shift {
+  shiftKey: string;
+  dayKey: string;
+  sourceDayKey: string;
+  sourceIndex: number;
+}
+
 // day of week (1=Mon..5=Fri) -> shifts
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [
@@ -120,9 +127,10 @@ const Index = () => {
   const [editColor, setEditColor] = useState(EVENT_COLORS[0].value);
 
   // Edit shift dialog
-  const [editingShift, setEditingShift] = useState<{ dayKey: string; index: number; shift: Shift } | null>(null);
+  const [editingShift, setEditingShift] = useState<DisplayShift | null>(null);
   const [editShiftStart, setEditShiftStart] = useState(7);
   const [editShiftEnd, setEditShiftEnd] = useState(14);
+  const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
   // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
@@ -217,10 +225,10 @@ const Index = () => {
     window.addEventListener("mouseup", onUp);
   }, [hourFromY, dayIdxFromX, currentWeekStart]);
 
-  const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
+  const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
     e.stopPropagation();
-    const id = `${dateKey}:${shiftIndex}`;
+    const id = `${sourceDayKey}:${shiftIndex}`;
     const cursorHour = hourFromY(e.clientY);
     const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
@@ -229,7 +237,6 @@ const Index = () => {
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
-      // Check threshold
       if (!wasDragging.current && dragStartPos.current) {
         const dx = me.clientX - dragStartPos.current.x;
         const dy = me.clientY - dragStartPos.current.y;
@@ -240,25 +247,27 @@ const Index = () => {
       const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
 
-      // If day changed, we need to move the override to the new day
-      if (dragRef.current.mode === "move" && newDayIdx !== dragRef.current.origDayIdx) {
-        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
-        const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
-        const newDateKey = format(wd[newDayIdx], "yyyy-MM-dd");
-        const newKey = `${newDateKey}:${shiftIndex}`;
+      if (dragRef.current.mode === "move") {
         const duration = dragRef.current.origEndHour - dragRef.current.origHour;
         const newStart = Math.max(0, Math.min(newHour - dragRef.current.offsetHour, 24 - duration));
+        const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
+        const targetDayKey = format(wd[newDayIdx], "yyyy-MM-dd");
 
-        setShiftTimeOverrides((prev) => {
-          const next = { ...prev };
-          // Remove old key
-          delete next[key];
-          next[newKey] = { startHour: newStart, endHour: newStart + duration };
-          return next;
+        setShiftDayOverrides((prev) => {
+          if (targetDayKey === sourceDayKey) {
+            if (!(key in prev)) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          }
+          return { ...prev, [key]: targetDayKey };
         });
-        // Update dragRef to track new key/day
-        dragRef.current.id = newKey;
-        dragRef.current.origDayIdx = newDayIdx;
+
+        setShiftTimeOverrides((prev) => ({
+          ...prev,
+          [key]: { startHour: newStart, endHour: newStart + duration },
+        }));
         return;
       }
 
@@ -267,14 +276,10 @@ const Index = () => {
         if (dragRef.current!.mode === "resize-bottom") {
           const end = Math.max(newHour + 1, existing.startHour + 1);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
-        } else if (dragRef.current!.mode === "resize-top") {
-          const start = Math.min(newHour, existing.endHour - 1);
-          return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
-        } else {
-          const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
-          const newStart = Math.max(0, Math.min(newHour - dragRef.current!.offsetHour, 24 - duration));
-          return { ...prev, [key]: { startHour: newStart, endHour: newStart + duration } };
         }
+
+        const start = Math.min(newHour, existing.endHour - 1);
+        return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
       });
     };
 
@@ -380,20 +385,18 @@ const Index = () => {
     setEditingEvent(null);
   };
 
-  const openEditShift = (dayKey: string, index: number, shift: Shift) => {
-    setEditingShift({ dayKey, index, shift });
-    const overrideKey = `${dayKey}:${index}`;
-    const override = shiftTimeOverrides[overrideKey];
+  const openEditShift = (shift: DisplayShift) => {
+    setEditingShift(shift);
+    const override = shiftTimeOverrides[shift.shiftKey];
     setEditShiftStart(override?.startHour ?? shift.startHour);
     setEditShiftEnd(override?.endHour ?? shift.endHour);
   };
 
   const saveEditShift = () => {
     if (!editingShift) return;
-    const key = `${editingShift.dayKey}:${editingShift.index}`;
     setShiftTimeOverrides((prev) => ({
       ...prev,
-      [key]: { startHour: editShiftStart, endHour: editShiftEnd },
+      [editingShift.shiftKey]: { startHour: editShiftStart, endHour: editShiftEnd },
     }));
     setEditingShift(null);
   };
@@ -413,45 +416,68 @@ const Index = () => {
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
-  const getShiftsForDay = (day: Date): Shift[] => {
-    const defaults = getDefaultShiftsForDay(day);
-    const dateKey = format(day, "yyyy-MM-dd");
-    const base = swappedDays.has(dateKey) ? swapShifts(defaults) : defaults;
-    return base.map((shift, i) => {
-      const overrideKey = `${dateKey}:${i}`;
-      let result = shift;
+  const resolveShiftFromKey = (shiftKey: string, dayKey: string): DisplayShift | null => {
+    const [sourceDayKey, sourceIndexRaw] = shiftKey.split(":");
+    const sourceIndex = Number(sourceIndexRaw);
+    const [year, month, day] = sourceDayKey.split("-").map(Number);
+    const defaults = getDefaultShiftsForDay(new Date(year, month - 1, day));
+    const base = swappedDays.has(sourceDayKey) ? swapShifts(defaults) : defaults;
+    const baseShift = base[sourceIndex];
 
-      // Apply time overrides
-      const timeOverride = shiftTimeOverrides[overrideKey];
-      if (timeOverride) {
-        result = { ...result, startHour: timeOverride.startHour, endHour: timeOverride.endHour };
-      }
+    if (!baseShift) return null;
 
-      // Apply location overrides
-      if (locationOverrides[overrideKey]) {
-        const isHome = result.location === "Z domu";
-        return {
-          ...result,
-          location: isHome ? "Kancelář" : "Z domu",
-          icon: isHome ? "office" as const : "home" as const,
-          bgClass: result.person === "Tadeáš"
-            ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
-            : result.bgClass,
-          textClass: result.person === "Tadeáš"
-            ? (isHome ? "text-shift-office" : "text-shift-home")
-            : result.textClass,
-          borderClass: result.person === "Tadeáš"
-            ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
-            : result.borderClass,
-        };
-      }
-      return result;
-    });
+    let result: Shift = baseShift;
+    const timeOverride = shiftTimeOverrides[shiftKey];
+    if (timeOverride) {
+      result = { ...result, startHour: timeOverride.startHour, endHour: timeOverride.endHour };
+    }
+
+    if (locationOverrides[shiftKey]) {
+      const isHome = result.location === "Z domu";
+      result = {
+        ...result,
+        location: isHome ? "Kancelář" : "Z domu",
+        icon: isHome ? "office" as const : "home" as const,
+        bgClass: result.person === "Tadeáš"
+          ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
+          : result.bgClass,
+        textClass: result.person === "Tadeáš"
+          ? (isHome ? "text-shift-office" : "text-shift-home")
+          : result.textClass,
+        borderClass: result.person === "Tadeáš"
+          ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
+          : result.borderClass,
+      };
+    }
+
+    return {
+      ...result,
+      shiftKey,
+      dayKey,
+      sourceDayKey,
+      sourceIndex,
+    };
   };
 
-  const toggleShiftLocation = (dayDate: Date, shiftIndex: number) => {
-    const key = `${format(dayDate, "yyyy-MM-dd")}:${shiftIndex}`;
-    setLocationOverrides((prev) => ({ ...prev, [key]: !prev[key] }));
+  const getShiftsForDay = (day: Date): DisplayShift[] => {
+    const dayKey = format(day, "yyyy-MM-dd");
+    const defaults = getDefaultShiftsForDay(day);
+    const localKeys = defaults
+      .map((_, index) => `${dayKey}:${index}`)
+      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey);
+
+    const incomingKeys = Object.entries(shiftDayOverrides)
+      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`))
+      .map(([shiftKey]) => shiftKey);
+
+    return [...localKeys, ...incomingKeys]
+      .map((shiftKey) => resolveShiftFromKey(shiftKey, dayKey))
+      .filter((shift): shift is DisplayShift => shift !== null)
+      .sort((a, b) => a.startHour - b.startHour || a.sourceDayKey.localeCompare(b.sourceDayKey) || a.sourceIndex - b.sourceIndex);
+  };
+
+  const toggleShiftLocation = (shiftKey: string) => {
+    setLocationOverrides((prev) => ({ ...prev, [shiftKey]: !prev[shiftKey] }));
   };
 
   const handleSwapShift = () => {
@@ -706,15 +732,14 @@ const Index = () => {
                 {/* Shift blocks */}
                 {weekDays.map((day, dayIdx) => {
                   const shifts = getShiftsForDay(day);
-                  const dateKey = format(day, "yyyy-MM-dd");
-                  return shifts.map((shift, si) => {
+                  return shifts.map((shift) => {
                     const top = getHourTop(shift.startHour);
                     const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
                       <div
-                        key={`shift-${dayIdx}-${si}`}
+                        key={`shift-${shift.shiftKey}`}
                         className={cn(
                           "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-80",
                           shift.bgClass, shift.borderClass
@@ -722,19 +747,19 @@ const Index = () => {
                         style={{ top, height, left, width: colWidth }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
-                          onShiftDragStart(e, dateKey, si, shift, "move", dayIdx);
+                          onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
                           if (wasDragging.current) return;
-                          openEditShift(dateKey, si, shift);
+                          openEditShift(shift);
                         }}
                       >
                         {/* Top drag handle */}
                         <div
                           data-handle="top"
                           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
-                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top", dayIdx)}
+                          onMouseDown={(e) => onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "resize-top", dayIdx)}
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
@@ -754,7 +779,7 @@ const Index = () => {
                         <div
                           data-handle="bottom"
                           className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
-                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-bottom", dayIdx)}
+                          onMouseDown={(e) => onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "resize-bottom", dayIdx)}
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
@@ -813,7 +838,6 @@ const Index = () => {
               {/* Shifts for selected day */}
               {viewMode === "week" && (() => {
                 const dayShifts = getShiftsForDay(selectedDate);
-                const dateKey = format(selectedDate, "yyyy-MM-dd");
                 if (dayShifts.length === 0) return null;
                 return (
                   <div className="space-y-2">
@@ -829,9 +853,9 @@ const Index = () => {
                         Přehodit
                       </Button>
                     </div>
-                    {dayShifts.map((shift, idx) => (
+                    {dayShifts.map((shift) => (
                       <div
-                        key={idx}
+                        key={shift.shiftKey}
                         className={cn(
                           "flex items-center justify-between rounded-lg border-l-3 px-3 py-2.5",
                           shift.bgClass, shift.borderClass
@@ -839,7 +863,7 @@ const Index = () => {
                       >
                         <div
                           className="flex items-center gap-2 cursor-pointer flex-1"
-                          onClick={() => openEditShift(dateKey, idx, shift)}
+                          onClick={() => openEditShift(shift)}
                         >
                           {shift.icon === "office" ? <Briefcase className={cn("h-4 w-4", shift.textClass)} /> : <Home className={cn("h-4 w-4", shift.textClass)} />}
                           <div className="flex flex-col">
@@ -853,7 +877,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toggleShiftLocation(selectedDate, idx)}
+                          onClick={() => toggleShiftLocation(shift.shiftKey)}
                         >
                           {shift.location === "Z domu" ? <Briefcase className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
                           {shift.location === "Z domu" ? "Kancelář" : "Z domu"}
@@ -1035,7 +1059,7 @@ const Index = () => {
         <DialogContent>
           <DialogHeader>
             <div className="flex items-center gap-2 pr-6">
-              <DialogTitle className="flex-1">Upravit směnu – {editingShift?.shift.person}</DialogTitle>
+              <DialogTitle className="flex-1">Upravit směnu – {editingShift?.person}</DialogTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -1055,19 +1079,19 @@ const Index = () => {
               >
                 <ArrowLeftRight className="h-4 w-4" />
               </Button>
-              {editingShift?.shift.person === "Tadeáš" && (
+              {editingShift?.person === "Tadeáš" && (
                 <Button
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  title={editingShift.shift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
+                  title={editingShift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
                   onClick={() => {
                     if (!editingShift) return;
-                    toggleShiftLocation(new Date(editingShift.dayKey), editingShift.index);
+                    toggleShiftLocation(editingShift.shiftKey);
                     setEditingShift(null);
                   }}
                 >
-                  {editingShift.shift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
+                  {editingShift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
                 </Button>
               )}
             </div>
