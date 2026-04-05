@@ -306,7 +306,8 @@ const Index = () => {
                       );
                     })}
                   </div>
-                ))}
+                  );
+                })}
 
                 {/* Current time indicator */}
                 {isCurrentWeek && (
