@@ -199,8 +199,34 @@ const Index = () => {
 
   const getShiftsForDay = (day: Date): Shift[] => {
     const defaults = getDefaultShiftsForDay(day);
-    const key = format(day, "yyyy-MM-dd");
-    return swappedDays.has(key) ? swapShifts(defaults) : defaults;
+    const dateKey = format(day, "yyyy-MM-dd");
+    const base = swappedDays.has(dateKey) ? swapShifts(defaults) : defaults;
+    return base.map((shift, i) => {
+      const overrideKey = `${dateKey}:${i}`;
+      if (locationOverrides[overrideKey]) {
+        const isHome = shift.location === "Z domu";
+        return {
+          ...shift,
+          location: isHome ? "Kancelář" : "Z domu",
+          icon: isHome ? "office" as const : "home" as const,
+          bgClass: shift.person === "Tadeáš"
+            ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
+            : shift.bgClass,
+          textClass: shift.person === "Tadeáš"
+            ? (isHome ? "text-shift-office" : "text-shift-home")
+            : shift.textClass,
+          borderClass: shift.person === "Tadeáš"
+            ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
+            : shift.borderClass,
+        };
+      }
+      return shift;
+    });
+  };
+
+  const toggleShiftLocation = (dayDate: Date, shiftIndex: number) => {
+    const key = `${format(dayDate, "yyyy-MM-dd")}:${shiftIndex}`;
+    setLocationOverrides((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSwapShift = () => {
