@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
