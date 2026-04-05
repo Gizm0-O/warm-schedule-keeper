@@ -16,7 +16,7 @@ import {
   getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -59,30 +59,39 @@ interface Shift {
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [ // Monday
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
   2: [ // Tuesday
-    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
     { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
   ],
   3: [ // Wednesday
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
   4: [ // Thursday
-    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
     { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
   ],
   5: [ // Friday
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
 };
 
-const getShiftsForDay = (day: Date): Shift[] => {
+const getDefaultShiftsForDay = (day: Date): Shift[] => {
   const dow = getDay(day); // 0=Sun, 1=Mon...
   const isoDay = dow === 0 ? 7 : dow; // convert to 1=Mon..7=Sun
   return SHIFT_SCHEDULE[isoDay] || [];
+};
+
+const swapShifts = (shifts: Shift[]): Shift[] => {
+  if (shifts.length !== 2) return shifts;
+  const [morning, afternoon] = shifts;
+  return [
+    { ...afternoon, startHour: 7, endHour: 14 },
+    { ...morning, startHour: 14, endHour: 21 },
+  ];
 };
 
 const Index = () => {
@@ -96,6 +105,7 @@ const Index = () => {
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [now, setNow] = useState(new Date());
+  const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
 
   // Update current time every minute
   useEffect(() => {
@@ -185,6 +195,23 @@ const Index = () => {
   const isCurrentWeek = weekDays.some((d) => isSameDay(d, now));
   const currentDayIndex = weekDays.findIndex((d) => isSameDay(d, now));
 
+  const getShiftsForDay = (day: Date): Shift[] => {
+    const defaults = getDefaultShiftsForDay(day);
+    const key = format(day, "yyyy-MM-dd");
+    return swappedDays.has(key) ? swapShifts(defaults) : defaults;
+  };
+
+  const handleSwapShift = () => {
+    if (!selectedDate) return;
+    const key = format(selectedDate, "yyyy-MM-dd");
+    setSwappedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -222,6 +249,17 @@ const Index = () => {
           <Button variant="ghost" size="icon" onClick={goForward}>
             <ChevronRight className="h-5 w-5" />
           </Button>
+          {viewMode === "week" && selectedDate && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 gap-1.5 ml-2"
+              onClick={handleSwapShift}
+            >
+              <ArrowLeftRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Přehodit směnu</span>
+            </Button>
+          )}
         </div>
       </div>
 
