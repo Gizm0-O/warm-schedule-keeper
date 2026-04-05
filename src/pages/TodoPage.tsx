@@ -24,6 +24,17 @@ import { cs } from "date-fns/locale";
 
 type Category = "work" | "home";
 type Person = "Tadeáš" | "Barča";
+type Recurrence = "none" | "daily" | "every2days" | "every3days" | "weekly" | "biweekly" | "monthly";
+
+const RECURRENCE_LABELS: Record<Recurrence, string> = {
+  none: "Bez opakování",
+  daily: "Denně",
+  every2days: "Každé 2 dny",
+  every3days: "Každé 3 dny",
+  weekly: "Týdně",
+  biweekly: "Každé 2 týdny",
+  monthly: "Měsíčně",
+};
 
 interface Todo {
   id: string;
@@ -32,6 +43,7 @@ interface Todo {
   category: Category;
   person: Person;
   deadline?: Date;
+  recurrence: Recurrence;
 }
 
 const INITIAL_TODOS: Todo[] = [
