@@ -277,17 +277,6 @@ const Index = () => {
           <Button variant="ghost" size="icon" onClick={goForward}>
             <ChevronRight className="h-5 w-5" />
           </Button>
-          {viewMode === "week" && selectedDate && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-3 gap-1.5 ml-2"
-              onClick={handleSwapShift}
-            >
-              <ArrowLeftRight className="h-4 w-4" />
-              <span className="hidden sm:inline">Přehodit směnu</span>
-            </Button>
-          )}
         </div>
       </div>
 
