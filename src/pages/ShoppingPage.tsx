@@ -4,6 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   type ShoppingCategory,
   CATEGORY_INFO,
   detectCategory,
@@ -26,12 +37,27 @@ interface WishlistItem {
 const ALL_CATEGORIES = Object.keys(CATEGORY_INFO) as ShoppingCategory[];
 
 const ShoppingPage = () => {
-  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [items, setItems] = useState<ShoppingItem[]>([
+    { id: "s1", name: "Banány", quantity: 3, bought: false, category: detectCategory("Banány") },
+    { id: "s2", name: "Kuřecí prsa", quantity: 1, bought: false, category: detectCategory("Kuřecí prsa") },
+    { id: "s3", name: "Mléko", quantity: 2, bought: false, category: detectCategory("Mléko") },
+    { id: "s4", name: "Rohlíky", quantity: 10, bought: false, category: detectCategory("Rohlíky") },
+    { id: "s5", name: "Šampon", quantity: 1, bought: false, category: detectCategory("Šampon") },
+    { id: "s6", name: "Rajčata", quantity: 4, bought: false, category: detectCategory("Rajčata") },
+    { id: "s7", name: "Jogurt", quantity: 3, bought: true, category: detectCategory("Jogurt") },
+    { id: "s8", name: "Čokoláda", quantity: 1, bought: true, category: detectCategory("Čokoláda") },
+  ]);
   const [newItem, setNewItem] = useState("");
   const [activeFilter, setActiveFilter] = useState<ShoppingCategory | null>(null);
 
   // Wishlist state
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
+  const [wishlist, setWishlist] = useState<WishlistItem[]>([
+    { id: "w1", name: "Šroubky M5 do police", done: false },
+    { id: "w2", name: "Baterie AAA do koupelny", done: false },
+    { id: "w3", name: "Komoda do ložnice", done: false },
+    { id: "w4", name: "LED žárovka E27", done: false },
+    { id: "w5", name: "Prodlužovací kabel 3m", done: true },
+  ]);
   const [newWish, setNewWish] = useState("");
 
   const addItem = () => {
@@ -209,9 +235,34 @@ const ShoppingPage = () => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <ShoppingCart className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold text-foreground">Nákupní seznam</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ShoppingCart className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Nákupní seznam</h2>
+        </div>
+        {items.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Vymazat nákupní seznam?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Opravdu si přejete smazat celý nákupní seznam? Tuto akci nelze vrátit zpět.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                <AlertDialogAction onClick={() => { setItems([]); setActiveFilter(null); }}>
+                  Smazat vše
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {/* Add item */}
@@ -292,9 +343,34 @@ const ShoppingPage = () => {
 
       {/* Wishlist – věci ke koupi "někdy" */}
       <div className="mt-10 space-y-4">
-        <div className="flex items-center gap-3">
-          <Wrench className="h-5 w-5 text-muted-foreground" />
-          <h3 className="text-lg font-semibold text-foreground">Na koupit (nespěchá)</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Wrench className="h-5 w-5 text-muted-foreground" />
+            <h3 className="text-lg font-semibold text-foreground">Na koupit (nespěchá)</h3>
+          </div>
+          {wishlist.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                  <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Vymazat seznam?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Opravdu si přejete smazat celý seznam „Na koupit"? Tuto akci nelze vrátit zpět.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setWishlist([])}>
+                    Smazat vše
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
 
         <div className="flex gap-2">
