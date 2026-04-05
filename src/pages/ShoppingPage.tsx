@@ -194,7 +194,8 @@ const ShoppingPage = () => {
         <Trash2 className="h-4 w-4" />
       </button>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
