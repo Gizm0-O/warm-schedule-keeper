@@ -50,7 +50,17 @@ const AppLayout = () => {
                 <span className="hidden sm:inline">{item.label}</span>
               </RouterNavLink>
             ))}
-          </nav>
+            </nav>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDark((d) => !d)}
+              className="ml-2"
+              aria-label="Přepnout tmavý/světlý režim"
+            >
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
