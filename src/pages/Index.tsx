@@ -643,7 +643,7 @@ const Index = () => {
               {weekDays.map((day) => (
                 <button
                   key={day.toISOString()}
-                  onClick={() => setSelectedDate(day)}
+                  onClick={(e) => { e.stopPropagation(); setSelectedDate(day); }}
                   className={cn(
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
