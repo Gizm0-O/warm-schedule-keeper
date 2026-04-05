@@ -71,6 +71,7 @@ const TodoPage = () => {
   const [newCategory, setNewCategory] = useState<Category>("work");
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
+  const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
 
   // Edit todo state
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -78,6 +79,7 @@ const TodoPage = () => {
   const [editCategory, setEditCategory] = useState<Category>("work");
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
+  const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
 
   const addTodo = () => {
     if (!newText.trim()) return;
