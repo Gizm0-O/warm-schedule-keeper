@@ -838,7 +838,6 @@ const Index = () => {
               {/* Shifts for selected day */}
               {viewMode === "week" && (() => {
                 const dayShifts = getShiftsForDay(selectedDate);
-                const dateKey = format(selectedDate, "yyyy-MM-dd");
                 if (dayShifts.length === 0) return null;
                 return (
                   <div className="space-y-2">
@@ -854,9 +853,9 @@ const Index = () => {
                         Přehodit
                       </Button>
                     </div>
-                    {dayShifts.map((shift, idx) => (
+                    {dayShifts.map((shift) => (
                       <div
-                        key={idx}
+                        key={shift.shiftKey}
                         className={cn(
                           "flex items-center justify-between rounded-lg border-l-3 px-3 py-2.5",
                           shift.bgClass, shift.borderClass
@@ -864,7 +863,7 @@ const Index = () => {
                       >
                         <div
                           className="flex items-center gap-2 cursor-pointer flex-1"
-                          onClick={() => openEditShift(dateKey, idx, shift)}
+                          onClick={() => openEditShift(shift)}
                         >
                           {shift.icon === "office" ? <Briefcase className={cn("h-4 w-4", shift.textClass)} /> : <Home className={cn("h-4 w-4", shift.textClass)} />}
                           <div className="flex flex-col">
@@ -878,7 +877,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toggleShiftLocation(selectedDate, idx)}
+                          onClick={() => toggleShiftLocation(shift.shiftKey)}
                         >
                           {shift.location === "Z domu" ? <Briefcase className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
                           {shift.location === "Z domu" ? "Kancelář" : "Z domu"}
