@@ -164,11 +164,12 @@ const Index = () => {
     e.stopPropagation();
     const startH = ev.hour ?? 0;
     const endH = ev.endHour ?? startH + 1;
-    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx, moved: false };
+    wasDragging.current = false;
+    dragRef.current = { type: "event", id: ev.id, mode, origHour: startH, origEndHour: endH, origDayIdx: dayIdx };
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "event") return;
-      dragRef.current.moved = true;
+      wasDragging.current = true;
       const newHour = hourFromY(me.clientY);
       const newDayIdx = dayIdxFromX(me.clientX);
 
