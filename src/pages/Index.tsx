@@ -517,7 +517,7 @@ const Index = () => {
   }, [now]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" onClick={() => setSelectedDate(null)}>
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
