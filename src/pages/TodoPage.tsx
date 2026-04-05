@@ -183,7 +183,7 @@ const TodoPage = () => {
           "flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer",
           todo.completed && "opacity-50 cursor-default",
           !todo.completed && info.isToday && "bg-gradient-to-r from-orange-100 via-amber-50 to-orange-100 dark:from-orange-950/60 dark:via-amber-950/30 dark:to-orange-950/60",
-          !todo.completed && info.isOverdue && "border-l-4 border-l-destructive bg-destructive/5",
+          !todo.completed && info.isOverdue && "border-l-[4px] border-l-destructive bg-destructive/5",
           !todo.completed && !info.isToday && !info.isOverdue && "hover:bg-accent/50"
         )}
       >
