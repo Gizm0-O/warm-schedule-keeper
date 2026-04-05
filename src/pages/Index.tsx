@@ -13,9 +13,10 @@ import {
   isSameMonth,
   isSameDay,
   isToday,
+  getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,48 @@ const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
+
+// Shift definitions
+interface Shift {
+  person: string;
+  location: string;
+  startHour: number;
+  endHour: number;
+  bgClass: string;
+  textClass: string;
+  borderClass: string;
+  icon: "office" | "home";
+}
+
+// day of week (1=Mon..5=Fri) -> shifts
+const SHIFT_SCHEDULE: Record<number, Shift[]> = {
+  1: [ // Monday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+  2: [ // Tuesday
+    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+  ],
+  3: [ // Wednesday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+  4: [ // Thursday
+    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+  ],
+  5: [ // Friday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+};
+
+const getShiftsForDay = (day: Date): Shift[] => {
+  const dow = getDay(day); // 0=Sun, 1=Mon...
+  const isoDay = dow === 0 ? 7 : dow; // convert to 1=Mon..7=Sun
+  return SHIFT_SCHEDULE[isoDay] || [];
+};
 
 const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("week");
@@ -316,6 +359,40 @@ const Index = () => {
                     })}
                   </div>
                   );
+                })}
+
+                {/* Shift blocks */}
+                {weekDays.map((day, dayIdx) => {
+                  const shifts = getShiftsForDay(day);
+                  return shifts.map((shift, si) => {
+                    const top = getHourTop(shift.startHour);
+                    const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
+                    const colWidth = `calc((100% - 60px) / 7)`;
+                    const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    return (
+                      <div
+                        key={`shift-${dayIdx}-${si}`}
+                        className={cn(
+                          "absolute rounded-lg border-l-3 pointer-events-none z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden",
+                          shift.bgClass, shift.borderClass
+                        )}
+                        style={{ top, height, left, width: colWidth }}
+                      >
+                        <div className={cn("flex items-center gap-1", shift.textClass)}>
+                          {shift.icon === "office" ? <Briefcase className="h-3 w-3 shrink-0" /> : <Home className="h-3 w-3 shrink-0" />}
+                          <span className="text-[10px] font-bold truncate">{shift.person}</span>
+                        </div>
+                        {shift.location && (
+                          <span className={cn("text-[9px] font-medium opacity-70 mt-0.5", shift.textClass)}>
+                            {shift.location}
+                          </span>
+                        )}
+                        <span className={cn("text-[9px] opacity-50 mt-auto", shift.textClass)}>
+                          {shift.startHour}:00–{shift.endHour}:00
+                        </span>
+                      </div>
+                    );
+                  });
                 })}
 
                 {/* Current time indicator */}

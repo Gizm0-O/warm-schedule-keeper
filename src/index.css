@@ -51,6 +51,10 @@ All colors MUST be HSL.
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+
+    --shift-office: 174 55% 42%;
+    --shift-home: 210 60% 50%;
+    --shift-partner: 0 65% 55%;
   }
 }
 
