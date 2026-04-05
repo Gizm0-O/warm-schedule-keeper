@@ -361,6 +361,40 @@ const Index = () => {
                   );
                 })}
 
+                {/* Shift blocks */}
+                {weekDays.map((day, dayIdx) => {
+                  const shifts = getShiftsForDay(day);
+                  return shifts.map((shift, si) => {
+                    const top = getHourTop(shift.startHour);
+                    const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
+                    const colWidth = `calc((100% - 60px) / 7)`;
+                    const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    return (
+                      <div
+                        key={`shift-${dayIdx}-${si}`}
+                        className={cn(
+                          "absolute rounded-lg border-l-3 pointer-events-none z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden",
+                          shift.bgClass, shift.borderClass
+                        )}
+                        style={{ top, height, left, width: colWidth }}
+                      >
+                        <div className={cn("flex items-center gap-1", shift.textClass)}>
+                          {shift.icon === "office" ? <Briefcase className="h-3 w-3 shrink-0" /> : <Home className="h-3 w-3 shrink-0" />}
+                          <span className="text-[10px] font-bold truncate">{shift.person}</span>
+                        </div>
+                        {shift.location && (
+                          <span className={cn("text-[9px] font-medium opacity-70 mt-0.5", shift.textClass)}>
+                            {shift.location}
+                          </span>
+                        )}
+                        <span className={cn("text-[9px] opacity-50 mt-auto", shift.textClass)}>
+                          {shift.startHour}:00–{shift.endHour}:00
+                        </span>
+                      </div>
+                    );
+                  });
+                })}
+
                 {/* Current time indicator */}
                 {isCurrentWeek && (
                   <div
