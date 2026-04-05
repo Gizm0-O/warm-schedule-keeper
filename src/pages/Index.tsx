@@ -200,7 +200,7 @@ const Index = () => {
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY, dayIdxFromX, weekDays]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart]);
 
   const onShiftDragStart = useCallback((e: React.MouseEvent, dateKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move") => {
     e.preventDefault();
