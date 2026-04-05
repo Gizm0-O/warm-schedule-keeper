@@ -43,6 +43,48 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
 
+// Shift definitions
+interface Shift {
+  person: string;
+  location: string;
+  startHour: number;
+  endHour: number;
+  bgClass: string;
+  textClass: string;
+  borderClass: string;
+  icon: "office" | "home";
+}
+
+// day of week (1=Mon..5=Fri) -> shifts
+const SHIFT_SCHEDULE: Record<number, Shift[]> = {
+  1: [ // Monday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+  2: [ // Tuesday
+    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+  ],
+  3: [ // Wednesday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+  4: [ // Thursday
+    { person: "Barča", location: "", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+  ],
+  5: [ // Friday
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "office" },
+  ],
+};
+
+const getShiftsForDay = (day: Date): Shift[] => {
+  const dow = getDay(day); // 0=Sun, 1=Mon...
+  const isoDay = dow === 0 ? 7 : dow; // convert to 1=Mon..7=Sun
+  return SHIFT_SCHEDULE[isoDay] || [];
+};
+
 const Index = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
