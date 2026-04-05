@@ -57,6 +57,13 @@ interface Shift {
   icon: "office" | "home";
 }
 
+interface DisplayShift extends Shift {
+  shiftKey: string;
+  dayKey: string;
+  sourceDayKey: string;
+  sourceIndex: number;
+}
+
 // day of week (1=Mon..5=Fri) -> shifts
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [
