@@ -722,7 +722,7 @@ const Index = () => {
                         style={{ top, height, left, width: colWidth }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
-                          onShiftDragStart(e, dateKey, si, shift, "move");
+                          onShiftDragStart(e, dateKey, si, shift, "move", dayIdx);
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
