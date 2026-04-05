@@ -526,6 +526,15 @@ const Index = () => {
             {headerLabel}
           </p>
         <div className="flex gap-1 items-center">
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8 px-3 gap-1.5 mr-2"
+            onClick={openNewEventDialog}
+          >
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Událost</span>
+          </Button>
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
