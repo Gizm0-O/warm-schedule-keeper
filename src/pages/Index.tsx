@@ -378,16 +378,16 @@ const Index = () => {
                         )}
                         style={{ top, height, left, width: colWidth }}
                       >
-                        <div className={cn("flex items-center gap-1", shift.textClass)}>
-                          {shift.icon === "office" ? <Briefcase className="h-3 w-3 shrink-0" /> : <Home className="h-3 w-3 shrink-0" />}
-                          <span className="text-[10px] font-bold truncate">{shift.person}</span>
+                        <div className={cn("flex items-center gap-1.5", shift.textClass)}>
+                          {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
+                          <span className="text-xs font-bold truncate">{shift.person}</span>
                         </div>
                         {shift.location && (
-                          <span className={cn("text-[9px] font-medium opacity-70 mt-0.5", shift.textClass)}>
+                          <span className={cn("text-[11px] font-medium opacity-70 mt-0.5", shift.textClass)}>
                             {shift.location}
                           </span>
                         )}
-                        <span className={cn("text-[9px] opacity-50 mt-auto", shift.textClass)}>
+                        <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
                           {shift.startHour}:00–{shift.endHour}:00
                         </span>
                       </div>
