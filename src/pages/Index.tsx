@@ -694,7 +694,8 @@ const Index = () => {
                           "border-r border-border/30 px-0.5 cursor-pointer hover:bg-accent/50 transition-colors relative",
                           isToday(day) && "bg-primary/[0.02]"
                         )}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedDate(day);
                           setNewEventHour(hour);
                           setNewEventEndHour(Math.min(hour + 1, 23));
