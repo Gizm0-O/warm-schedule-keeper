@@ -58,6 +58,9 @@ export default {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
         },
+        "shift-office": "hsl(var(--shift-office))",
+        "shift-home": "hsl(var(--shift-home))",
+        "shift-partner": "hsl(var(--shift-partner))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
