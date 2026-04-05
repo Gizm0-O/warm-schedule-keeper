@@ -235,9 +235,34 @@ const ShoppingPage = () => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <ShoppingCart className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold text-foreground">Nákupní seznam</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <ShoppingCart className="h-6 w-6 text-primary" />
+          <h2 className="text-2xl font-bold text-foreground">Nákupní seznam</h2>
+        </div>
+        {items.length > 0 && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Vymazat nákupní seznam?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Opravdu si přejete smazat celý nákupní seznam? Tuto akci nelze vrátit zpět.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Zrušit</AlertDialogCancel>
+                <AlertDialogAction onClick={() => { setItems([]); setActiveFilter(null); }}>
+                  Smazat vše
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {/* Add item */}
