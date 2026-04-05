@@ -289,6 +289,88 @@ const ShoppingPage = () => {
           </>
         )}
       </div>
+
+      {/* Wishlist – věci ke koupi "někdy" */}
+      <div className="mt-10 space-y-4">
+        <div className="flex items-center gap-3">
+          <Wrench className="h-5 w-5 text-muted-foreground" />
+          <h3 className="text-lg font-semibold text-foreground">Na koupit (nespěchá)</h3>
+        </div>
+
+        <div className="flex gap-2">
+          <Input
+            placeholder="Šroubky, komoda, baterie..."
+            value={newWish}
+            onChange={(e) => setNewWish(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newWish.trim()) {
+                setWishlist((prev) => [...prev, { id: crypto.randomUUID(), name: newWish.trim(), done: false }]);
+                setNewWish("");
+              }
+            }}
+            className="flex-1"
+          />
+          <Button
+            variant="secondary"
+            onClick={() => {
+              if (!newWish.trim()) return;
+              setWishlist((prev) => [...prev, { id: crypto.randomUUID(), name: newWish.trim(), done: false }]);
+              setNewWish("");
+            }}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Přidat
+          </Button>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card shadow-sm divide-y divide-border">
+          {wishlist.length === 0 && (
+            <p className="p-6 text-center text-sm text-muted-foreground">
+              Zatím nic – zapiš si sem věci, které potřebuješ koupit, ale nespěchají
+            </p>
+          )}
+          {wishlist.filter((w) => !w.done).map((w) => (
+            <div key={w.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
+              <button
+                onClick={() => setWishlist((prev) => prev.map((i) => i.id === w.id ? { ...i, done: true } : i))}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors"
+              />
+              <span className="flex-1 text-sm text-foreground">{w.name}</span>
+              <button
+                onClick={() => setWishlist((prev) => prev.filter((i) => i.id !== w.id))}
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+          {wishlist.some((w) => w.done) && (
+            <>
+              <div className="px-4 py-2">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Koupeno ({wishlist.filter((w) => w.done).length})
+                </span>
+              </div>
+              {wishlist.filter((w) => w.done).map((w) => (
+                <div key={w.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
+                  <button
+                    onClick={() => setWishlist((prev) => prev.map((i) => i.id === w.id ? { ...i, done: false } : i))}
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                  </button>
+                  <span className="flex-1 text-sm text-foreground line-through">{w.name}</span>
+                  <button
+                    onClick={() => setWishlist((prev) => prev.filter((i) => i.id !== w.id))}
+                    className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
