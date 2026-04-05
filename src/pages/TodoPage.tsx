@@ -271,10 +271,13 @@ const TodoPage = () => {
           </span>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
-            {deadlineLabel(todo.deadline)}
-            {!todo.deadline && (
-              <span className="text-[10px] text-muted-foreground italic">denně</span>
+            {todo.recurrence !== "none" && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Repeat className="h-3 w-3" />
+                {RECURRENCE_LABELS[todo.recurrence]}
+              </span>
             )}
+            {deadlineLabel(todo.deadline)}
           </div>
         </div>
         <button
