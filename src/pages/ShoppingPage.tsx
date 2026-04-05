@@ -17,6 +17,12 @@ interface ShoppingItem {
   category: ShoppingCategory;
 }
 
+interface WishlistItem {
+  id: string;
+  name: string;
+  done: boolean;
+}
+
 const ALL_CATEGORIES = Object.keys(CATEGORY_INFO) as ShoppingCategory[];
 
 const ShoppingPage = () => {
