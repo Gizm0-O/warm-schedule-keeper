@@ -92,10 +92,12 @@ const TodoPage = () => {
         category: newCategory,
         person: newPerson,
         deadline: newDeadline ? new Date(newDeadline) : undefined,
+        recurrence: newRecurrence,
       },
     ]);
     setNewText("");
     setNewDeadline("");
+    setNewRecurrence("none");
     setShowDialog(false);
   };
 
