@@ -13,14 +13,19 @@ import {
   isSameMonth,
   isSameDay,
   isToday,
+  isBefore,
+  startOfDay,
+  differenceInDays,
   getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { INITIAL_TODOS, RECURRENCE_LABELS, type Todo } from "@/data/todos";
 
 type ViewMode = "month" | "week";
 
@@ -1011,7 +1016,94 @@ const Index = () => {
               </div>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Klikněte na den pro zobrazení a přidání událostí</p>
+            (() => {
+              const today = startOfDay(new Date());
+              const urgentTodos = INITIAL_TODOS.filter((t) => {
+                if (t.completed || !t.deadline) return false;
+                const target = startOfDay(t.deadline);
+                return isBefore(target, today) || isSameDay(target, today);
+              });
+              const workTodos = urgentTodos.filter((t) => t.category === "work").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
+              const homeTodos = urgentTodos.filter((t) => t.category === "home").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
+
+              const TodoItem = ({ todo }: { todo: Todo }) => {
+                const target = startOfDay(todo.deadline!);
+                const isOverdue = isBefore(target, today);
+                const isTodayTask = isSameDay(target, today);
+                const daysLate = isOverdue ? differenceInDays(today, target) : 0;
+                return (
+                  <div className={cn(
+                    "px-3 py-2 rounded-lg text-sm",
+                    isOverdue && "bg-destructive/5 border border-destructive/20",
+                    isTodayTask && "bg-warning/10 border border-warning/20"
+                  )}>
+                    <span className="text-foreground">{todo.text}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <Badge variant="outline" className={cn(
+                        "text-[10px] px-1.5 py-0 h-4",
+                        todo.person === "Tadeáš"
+                          ? "border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700"
+                          : "border-red-400 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 dark:border-red-700"
+                      )}>
+                        {todo.person}
+                      </Badge>
+                      {todo.recurrence !== "none" && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                          <Repeat className="h-3 w-3" />
+                          {RECURRENCE_LABELS[todo.recurrence]}
+                        </span>
+                      )}
+                      <span className={cn(
+                        "inline-flex items-center gap-1 text-xs",
+                        isOverdue && "text-destructive font-medium",
+                        isTodayTask && "font-medium text-orange-700 dark:text-orange-300"
+                      )}>
+                        {isOverdue && <AlertCircle className="h-3 w-3" />}
+                        <CalendarDays className="h-3 w-3" />
+                        {isTodayTask ? "Dnes" : format(todo.deadline!, "d.M.", { locale: cs })}
+                        {isOverdue && (
+                          <span className="text-destructive font-semibold ml-0.5">
+                            ({daysLate} {daysLate === 1 ? "den" : daysLate < 5 ? "dny" : "dní"} zpoždění)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                );
+              };
+
+              if (workTodos.length === 0 && homeTodos.length === 0) {
+                return <p className="text-sm text-muted-foreground">Žádné úkoly na dnes 🎉</p>;
+              }
+
+              return (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
+                  {workTodos.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Práce ({workTodos.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {workTodos.map((t) => <TodoItem key={t.id} todo={t} />)}
+                      </div>
+                    </div>
+                  )}
+                  {homeTodos.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Home className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Domácnost ({homeTodos.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {homeTodos.map((t) => <TodoItem key={t.id} todo={t} />)}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
           )}
         </div>
       </div>
