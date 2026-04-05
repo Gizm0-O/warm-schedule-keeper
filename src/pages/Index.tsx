@@ -106,6 +106,8 @@ const Index = () => {
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [now, setNow] = useState(new Date());
   const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
+  // key: "yyyy-MM-dd:shiftIndex" -> toggled location
+  const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({}); 
 
   // Update current time every minute
   useEffect(() => {
