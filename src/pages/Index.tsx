@@ -616,21 +616,27 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-pointer group hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-80",
                           ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2 }}
+                        onMouseDown={(e) => {
+                          if ((e.target as HTMLElement).dataset.handle) return;
+                          onEventDragStart(e, ev, "move", dayIdx);
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (dragRef.current?.moved) return;
                           openEditEvent(ev);
                         }}
                       >
                         {/* Top drag handle */}
                         <div
+                          data-handle="top"
                           className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
-                          onMouseDown={(e) => onDragStart(e, ev.id, "top", startH, endH)}
+                          onMouseDown={(e) => onEventDragStart(e, ev, "resize-top", dayIdx)}
                         >
-                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
                         <div className="truncate mt-1">{ev.title}</div>
                         {height > 24 && (
@@ -640,10 +646,11 @@ const Index = () => {
                         )}
                         {/* Bottom drag handle */}
                         <div
+                          data-handle="bottom"
                           className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center"
-                          onMouseDown={(e) => onDragStart(e, ev.id, "bottom", startH, endH)}
+                          onMouseDown={(e) => onEventDragStart(e, ev, "resize-bottom", dayIdx)}
                         >
-                          <div className="w-6 h-0.5 rounded-full bg-foreground/40" />
+                          <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
                       </div>
                     );
@@ -663,15 +670,28 @@ const Index = () => {
                       <div
                         key={`shift-${dayIdx}-${si}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-pointer hover:opacity-80",
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-80",
                           shift.bgClass, shift.borderClass
                         )}
                         style={{ top, height, left, width: colWidth }}
+                        onMouseDown={(e) => {
+                          if ((e.target as HTMLElement).dataset.handle) return;
+                          onShiftDragStart(e, dateKey, si, shift, "move");
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
+                          if (dragRef.current?.moved) return;
                           openEditShift(dateKey, si, shift);
                         }}
                       >
+                        {/* Top drag handle */}
+                        <div
+                          data-handle="top"
+                          className="absolute top-0 left-0 right-0 h-2 cursor-n-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
+                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-top")}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
+                        </div>
                         <div className={cn("flex items-center gap-1.5", shift.textClass)}>
                           {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
                           <span className="text-xs font-bold truncate">{shift.person}</span>
@@ -684,6 +704,14 @@ const Index = () => {
                         <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
                           {shift.startHour}:00–{shift.endHour}:00
                         </span>
+                        {/* Bottom drag handle */}
+                        <div
+                          data-handle="bottom"
+                          className="absolute bottom-0 left-0 right-0 h-2 cursor-s-resize opacity-0 group-hover:opacity-100 flex justify-center items-center z-10"
+                          onMouseDown={(e) => onShiftDragStart(e, dateKey, si, shift, "resize-bottom")}
+                        >
+                          <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
+                        </div>
                       </div>
                     );
                   });
