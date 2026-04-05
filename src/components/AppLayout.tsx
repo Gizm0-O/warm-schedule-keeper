@@ -1,6 +1,8 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
@@ -9,6 +11,18 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") === "dark";
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
@@ -16,8 +30,9 @@ const AppLayout = () => {
           <h1 className="text-xl font-bold text-foreground tracking-tight">
             <span className="text-primary">Planner</span>
           </h1>
-          <nav className="flex gap-1">
-            {navItems.map((item) => (
+          <div className="flex items-center gap-1">
+            <nav className="flex gap-1">
+              {navItems.map((item) => (
               <RouterNavLink
                 key={item.to}
                 to={item.to}
@@ -35,7 +50,17 @@ const AppLayout = () => {
                 <span className="hidden sm:inline">{item.label}</span>
               </RouterNavLink>
             ))}
-          </nav>
+            </nav>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDark((d) => !d)}
+              className="ml-2"
+              aria-label="Přepnout tmavý/světlý režim"
+            >
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
