@@ -174,8 +174,8 @@ const Index = () => {
           <Button variant="ghost" size="icon" onClick={goBack}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={goToday}>
-            Dnes
+          <Button variant="ghost" size="sm" onClick={goToday} className="text-xs">
+            {todayButtonLabel}
           </Button>
           <Button variant="ghost" size="icon" onClick={goForward}>
             <ChevronRight className="h-5 w-5" />
