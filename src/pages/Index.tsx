@@ -510,6 +510,45 @@ const Index = () => {
               <h3 className="text-lg font-semibold text-foreground">
                 {format(selectedDate, "d. MMMM yyyy", { locale: cs })}
               </h3>
+
+              {/* Shifts for selected day */}
+              {viewMode === "week" && (() => {
+                const dayShifts = getShiftsForDay(selectedDate);
+                if (dayShifts.length === 0) return null;
+                return (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Směny</h4>
+                    {dayShifts.map((shift, idx) => (
+                      <div
+                        key={idx}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg border-l-3 px-3 py-2.5",
+                          shift.bgClass, shift.borderClass
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          {shift.icon === "office" ? <Briefcase className={cn("h-4 w-4", shift.textClass)} /> : <Home className={cn("h-4 w-4", shift.textClass)} />}
+                          <div className="flex flex-col">
+                            <span className={cn("text-sm font-semibold", shift.textClass)}>{shift.person}</span>
+                            <span className={cn("text-xs opacity-70", shift.textClass)}>
+                              {shift.startHour}:00–{shift.endHour}:00 · {shift.location}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs gap-1"
+                          onClick={() => toggleShiftLocation(selectedDate, idx)}
+                        >
+                          {shift.location === "Z domu" ? <Briefcase className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
+                          {shift.location === "Z domu" ? "Kancelář" : "Z domu"}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               <div className="space-y-2">
                 {viewMode === "week" && (
                   <select
