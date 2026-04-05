@@ -255,19 +255,26 @@ const Index = () => {
 
             {/* Scrollable time grid */}
             <div className="overflow-y-auto max-h-[600px] relative">
-              <div className="relative" style={{ height: HOURS.length * HOUR_HEIGHT }}>
+              <div className="relative" style={{ height: totalGridHeight }}>
                 {/* Hour rows */}
-                {HOURS.map((hour) => (
+                {HOURS.map((hour) => {
+                  const h = getHourHeight(hour);
+                  const top = getHourTop(hour);
+                  const isNight = NIGHT_HOURS.has(hour);
+                  return (
                   <div
                     key={hour}
                     className="absolute w-full grid border-b border-border/50"
                     style={{
-                      top: hour * HOUR_HEIGHT,
-                      height: HOUR_HEIGHT,
+                      top,
+                      height: h,
                       gridTemplateColumns: "60px repeat(7, 1fr)",
                     }}
                   >
-                    <div className="flex items-start justify-end pr-2 pt-1 border-r border-border text-[11px] text-muted-foreground font-medium">
+                    <div className={cn(
+                      "flex items-start justify-end pr-2 border-r border-border font-medium",
+                      isNight ? "text-[9px] text-muted-foreground/50 pt-0.5" : "text-[11px] text-muted-foreground pt-1"
+                    )}>
                       {hour.toString().padStart(2, "0")}:00
                     </div>
                     {weekDays.map((day) => {
