@@ -26,10 +26,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { INITIAL_TODOS, RECURRENCE_LABELS, type Todo } from "@/data/todos";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 
 type ViewMode = "month" | "week";
 
