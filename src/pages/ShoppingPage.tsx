@@ -60,6 +60,17 @@ const ShoppingPage = () => {
     );
   };
 
+  const renameItem = (id: string, newName: string) => {
+    if (!newName.trim()) return;
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? { ...i, name: newName.trim(), category: detectCategory(newName.trim()) }
+          : i
+      )
+    );
+  };
+
   // categories present in current list
   const usedCategories = [...new Set(items.map((i) => i.category))];
 
