@@ -127,14 +127,14 @@ const Index = () => {
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
   // Drag state
+  const wasDragging = useRef(false);
   const dragRef = useRef<{
     type: "event" | "shift";
-    id: string; // eventId or "dayKey:shiftIndex"
+    id: string;
     mode: "resize-top" | "resize-bottom" | "move";
     origHour: number;
     origEndHour: number;
     origDayIdx: number;
-    moved: boolean;
   } | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
 
