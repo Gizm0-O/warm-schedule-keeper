@@ -91,14 +91,13 @@ const Index = () => {
   };
 
   const todayButtonLabel = useMemo(() => {
-    const today = new Date();
     if (viewMode === "month") {
-      return format(today, "LLLL", { locale: cs });
+      const label = format(currentMonth, "LLLL", { locale: cs });
+      return label.charAt(0).toUpperCase() + label.slice(1);
     }
-    const ws = startOfWeek(today, { weekStartsOn: 1 });
-    const we = endOfWeek(today, { weekStartsOn: 1 });
-    return `${format(ws, "d.M.")}–${format(we, "d.M.")}`;
-  }, [viewMode]);
+    const we = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+    return `${format(currentWeekStart, "d.M.")}–${format(we, "d.M.")}`;
+  }, [viewMode, currentMonth, currentWeekStart]);
 
   const headerLabel =
     viewMode === "month"
