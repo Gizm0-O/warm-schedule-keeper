@@ -829,7 +829,7 @@ const Index = () => {
       <Dialog open={!!editingShift} onOpenChange={(open) => !open && setEditingShift(null)}>
         <DialogContent>
           <DialogHeader>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pr-6">
               <DialogTitle className="flex-1">Upravit směnu – {editingShift?.shift.person}</DialogTitle>
               <Button
                 variant="ghost"
