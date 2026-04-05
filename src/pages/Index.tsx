@@ -497,9 +497,10 @@ const Index = () => {
     return dayEvents;
   };
 
+  const MONTH_GENITIVE = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
   const todayLabel = useMemo(() => {
     const dayName = format(now, "EEEE", { locale: cs });
-    return `Dnes je ${dayName}, ${format(now, "d")}. ${format(now, "LLLL", { locale: cs })}`;
+    return `Dnes je ${dayName}, ${format(now, "d")}. ${MONTH_GENITIVE[now.getMonth()]}`;
   }, [now]);
 
   return (
