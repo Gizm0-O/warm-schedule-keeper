@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -19,11 +19,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
+import { format, isBefore, isToday, startOfDay, differenceInDays, addDays, addWeeks, addMonths } from "date-fns";
 import { cs } from "date-fns/locale";
 
 type Category = "work" | "home";
 type Person = "Tadeáš" | "Barča";
+type Recurrence = "none" | "daily" | "every2days" | "every3days" | "weekly" | "biweekly" | "monthly";
+
+const RECURRENCE_LABELS: Record<Recurrence, string> = {
+  none: "Bez opakování",
+  daily: "Denně",
+  every2days: "Každé 2 dny",
+  every3days: "Každé 3 dny",
+  weekly: "Týdně",
+  biweekly: "Každé 2 týdny",
+  monthly: "Měsíčně",
+};
 
 interface Todo {
   id: string;
@@ -32,21 +43,22 @@ interface Todo {
   category: Category;
   person: Person;
   deadline?: Date;
+  recurrence: Recurrence;
 }
 
 const INITIAL_TODOS: Todo[] = [
-  { id: "1", text: "Dokončit video", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 4) },
-  { id: "2", text: "Postnout Stories", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 5) },
-  { id: "3", text: "Udělat Reel", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 6) },
-  { id: "4", text: "Vysát", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 5) },
-  { id: "5", text: "Vytřít", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 7) },
-  { id: "6", text: "Nakrmit kočky", completed: false, category: "home", person: "Tadeáš", deadline: undefined },
-  { id: "7", text: "Napsat příběh 1", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3) },
-  { id: "8", text: "Práce pro Vyhraj", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3) },
-  { id: "9", text: "Napsat příběh 2", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 10) },
-  { id: "10", text: "Uvařit oběd", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 6) },
-  { id: "11", text: "Snídaně", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 7) },
-  { id: "12", text: "Večeře", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 8) },
+  { id: "1", text: "Dokončit video", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 4), recurrence: "none" },
+  { id: "2", text: "Postnout Stories", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 5), recurrence: "none" },
+  { id: "3", text: "Udělat Reel", completed: false, category: "work", person: "Tadeáš", deadline: new Date(2026, 3, 6), recurrence: "none" },
+  { id: "4", text: "Vysát", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 5), recurrence: "weekly" },
+  { id: "5", text: "Vytřít", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 7), recurrence: "weekly" },
+  { id: "6", text: "Nakrmit kočky", completed: false, category: "home", person: "Tadeáš", deadline: new Date(2026, 3, 5), recurrence: "daily" },
+  { id: "7", text: "Napsat příběh 1", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3), recurrence: "none" },
+  { id: "8", text: "Práce pro Vyhraj", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 3), recurrence: "none" },
+  { id: "9", text: "Napsat příběh 2", completed: false, category: "work", person: "Barča", deadline: new Date(2026, 3, 10), recurrence: "none" },
+  { id: "10", text: "Uvařit oběd", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 6), recurrence: "none" },
+  { id: "11", text: "Snídaně", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 7), recurrence: "daily" },
+  { id: "12", text: "Večeře", completed: false, category: "home", person: "Barča", deadline: new Date(2026, 3, 8), recurrence: "daily" },
 ];
 
 const TodoPage = () => {
@@ -59,6 +71,7 @@ const TodoPage = () => {
   const [newCategory, setNewCategory] = useState<Category>("work");
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
+  const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
 
   // Edit todo state
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -66,6 +79,7 @@ const TodoPage = () => {
   const [editCategory, setEditCategory] = useState<Category>("work");
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
+  const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
 
   const addTodo = () => {
     if (!newText.trim()) return;
@@ -78,10 +92,12 @@ const TodoPage = () => {
         category: newCategory,
         person: newPerson,
         deadline: newDeadline ? new Date(newDeadline) : undefined,
+        recurrence: newRecurrence,
       },
     ]);
     setNewText("");
     setNewDeadline("");
+    setNewRecurrence("none");
     setShowDialog(false);
   };
 
@@ -91,6 +107,7 @@ const TodoPage = () => {
     setEditCategory(todo.category);
     setEditPerson(todo.person);
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
+    setEditRecurrence(todo.recurrence);
   };
 
   const saveEdit = () => {
@@ -104,6 +121,7 @@ const TodoPage = () => {
               category: editCategory,
               person: editPerson,
               deadline: editDeadline ? new Date(editDeadline) : undefined,
+              recurrence: editRecurrence,
             }
           : t
       )
@@ -111,10 +129,49 @@ const TodoPage = () => {
     setEditingTodo(null);
   };
 
+  const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
+    switch (recurrence) {
+      case "daily": return addDays(current, 1);
+      case "every2days": return addDays(current, 2);
+      case "every3days": return addDays(current, 3);
+      case "weekly": return addWeeks(current, 1);
+      case "biweekly": return addWeeks(current, 2);
+      case "monthly": return addMonths(current, 1);
+      default: return current;
+    }
+  };
+
   const toggleTodo = (id: string) => {
-    setTodos((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
-    );
+    setTodos((prev) => {
+      const todo = prev.find((t) => t.id === id);
+      if (!todo) return prev;
+
+      // If completing a recurring task, create next occurrence
+      if (!todo.completed && todo.recurrence !== "none") {
+        const baseDate = todo.deadline ?? startOfDay(new Date());
+        let nextDeadline = getNextDeadline(baseDate, todo.recurrence);
+        // If next deadline is still in the past, jump forward to today or beyond
+        const today = startOfDay(new Date());
+        while (isBefore(nextDeadline, today)) {
+          nextDeadline = getNextDeadline(nextDeadline, todo.recurrence);
+        }
+        const newTodo: Todo = {
+          id: crypto.randomUUID(),
+          text: todo.text,
+          completed: false,
+          category: todo.category,
+          person: todo.person,
+          deadline: nextDeadline,
+          recurrence: todo.recurrence,
+        };
+        return [
+          ...prev.map((t) => (t.id === id ? { ...t, completed: true } : t)),
+          newTodo,
+        ];
+      }
+
+      return prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
+    });
   };
 
   const removeTodo = (id: string) => {
@@ -214,10 +271,13 @@ const TodoPage = () => {
           </span>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
-            {deadlineLabel(todo.deadline)}
-            {!todo.deadline && (
-              <span className="text-[10px] text-muted-foreground italic">denně</span>
+            {todo.recurrence !== "none" && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Repeat className="h-3 w-3" />
+                {RECURRENCE_LABELS[todo.recurrence]}
+              </span>
             )}
+            {deadlineLabel(todo.deadline)}
           </div>
         </div>
         <button
@@ -343,9 +403,22 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
-              <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
+                <Input type="date" value={newDeadline} onChange={(e) => setNewDeadline(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Opakování</label>
+                <Select value={newRecurrence} onValueChange={(v) => setNewRecurrence(v as Recurrence)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -394,9 +467,22 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
-              <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
+                <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Opakování</label>
+                <Select value={editRecurrence} onValueChange={(v) => setEditRecurrence(v as Recurrence)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
