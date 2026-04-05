@@ -192,8 +192,8 @@ const TodoPage = () => {
       className={cn(
         "text-[10px] px-1.5 py-0 h-4",
         person === "Tadeáš"
-          ? "border-blue-400 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-700"
-          : "border-red-400 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 dark:border-red-700"
+          ? "border-shift-office/40 bg-shift-office/10 text-shift-office"
+          : "border-shift-partner/40 bg-shift-partner/10 text-shift-partner"
       )}
     >
       {person}

@@ -100,9 +100,9 @@ All colors MUST be HSL.
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
 
-    --shift-office: 180 50% 70%;
-    --shift-home: 180 40% 60%;
-    --shift-partner: 340 55% 75%;
+    --shift-office: 180 50% 60%;
+    --shift-home: 180 40% 55%;
+    --shift-partner: 340 55% 70%;
   }
 }
 
