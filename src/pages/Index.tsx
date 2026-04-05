@@ -350,17 +350,28 @@ const Index = () => {
         )}`;
 
   const addEvent = () => {
-    if (!newEventTitle.trim() || !selectedDate) return;
+    if (!newEventTitle.trim()) return;
+    const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
     const event: CalendarEvent = {
       id: crypto.randomUUID(),
-      date: format(selectedDate, "yyyy-MM-dd"),
+      date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
-      hour: viewMode === "week" ? newEventHour : undefined,
-      endHour: viewMode === "week" ? newEventEndHour : undefined,
+      hour: newEventHour,
+      endHour: newEventEndHour,
     };
     setEvents((prev) => [...prev, event]);
     setNewEventTitle("");
+    setShowNewEventDialog(false);
+  };
+
+  const openNewEventDialog = () => {
+    setNewEventTitle("");
+    setNewEventHour(9);
+    setNewEventEndHour(10);
+    setNewEventColor(EVENT_COLORS[0].value);
+    setNewEventDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
+    setShowNewEventDialog(true);
   };
 
   const removeEvent = (id: string) => {
