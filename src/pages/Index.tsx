@@ -499,10 +499,7 @@ const Index = () => {
 
   const todayLabel = useMemo(() => {
     const dayName = format(now, "EEEE", { locale: cs });
-    const dayNameCap = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-    const monthName = format(now, "LLLL", { locale: cs });
-    const monthNameCap = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-    return `Dnes je ${dayNameCap} ${format(now, "d")}. ${monthNameCap}`;
+    return `Dnes je ${dayName}, ${format(now, "d")}. ${format(now, "LLLL", { locale: cs })}`;
   }, [now]);
 
   return (
