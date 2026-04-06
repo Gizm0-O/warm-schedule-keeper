@@ -368,18 +368,16 @@ const Index = () => {
           { locale: cs }
         )}`;
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (!newEventTitle.trim()) return;
     const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
-    const event: CalendarEvent = {
-      id: crypto.randomUUID(),
+    await addEventToDb({
       date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
       hour: newEventHour,
       endHour: newEventEndHour,
-    };
-    setEvents((prev) => [...prev, event]);
+    });
     setNewEventTitle("");
     setShowNewEventDialog(false);
   };
@@ -394,7 +392,7 @@ const Index = () => {
   };
 
   const removeEvent = (id: string) => {
-    setEvents((prev) => prev.filter((e) => e.id !== id));
+    removeEventFromDb(id);
   };
 
   const openEditEvent = (ev: CalendarEvent) => {
@@ -405,15 +403,9 @@ const Index = () => {
     setEditColor(ev.color);
   };
 
-  const saveEditEvent = () => {
+  const saveEditEvent = async () => {
     if (!editingEvent) return;
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === editingEvent.id
-          ? { ...ev, title: editTitle, hour: editHour, endHour: editEndHour, color: editColor }
-          : ev
-      )
-    );
+    await updateEventInDb(editingEvent.id, { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor });
     setEditingEvent(null);
   };
 
