@@ -44,6 +44,30 @@ export type Database = {
         }
         Relationships: []
       }
+      shift_overrides: {
+        Row: {
+          created_at: string
+          id: string
+          override_type: string
+          shift_key: string
+          value: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          override_type: string
+          shift_key: string
+          value?: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          override_type?: string
+          shift_key?: string
+          value?: Json
+        }
+        Relationships: []
+      }
       shopping_items: {
         Row: {
           bought: boolean
