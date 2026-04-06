@@ -25,7 +25,7 @@ import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurren
 import { useTodos } from "@/contexts/TodoContext";
 
 const TodoPage = () => {
-  const { todos, setTodos, toggleTodo, removeTodo } = useTodos();
+  const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
 
