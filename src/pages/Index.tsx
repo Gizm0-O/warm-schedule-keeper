@@ -578,7 +578,7 @@ const Index = () => {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         {/* Calendar */}
         {viewMode === "month" ? (
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="glass rounded-2xl p-4 animate-fade-in">
             <div className="mb-2 grid grid-cols-7 gap-1">
               {WEEKDAYS.map((day) => (
                 <div key={day} className="py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
