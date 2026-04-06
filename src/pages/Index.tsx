@@ -31,14 +31,7 @@ import { useTodos } from "@/contexts/TodoContext";
 
 type ViewMode = "month" | "week";
 
-interface CalendarEvent {
-  id: string;
-  date: string;
-  title: string;
-  color: string;
-  hour?: number;
-  endHour?: number;
-}
+// CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
   { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
