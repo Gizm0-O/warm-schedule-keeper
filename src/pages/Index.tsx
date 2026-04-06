@@ -21,6 +21,7 @@ import {
 import { cs } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
+import { useShiftOverrides } from "@/hooks/useShiftOverrides";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -119,8 +120,11 @@ const Index = () => {
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
-  const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
+  const {
+    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
+    toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
+    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult,
+  } = useShiftOverrides();
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -133,9 +137,6 @@ const Index = () => {
   const [editingShift, setEditingShift] = useState<DisplayShift | null>(null);
   const [editShiftStart, setEditShiftStart] = useState(7);
   const [editShiftEnd, setEditShiftEnd] = useState(14);
-  const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
-  // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
-  const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
   // Drag state
   const DRAG_THRESHOLD = 5; // px before drag starts
@@ -305,10 +306,17 @@ const Index = () => {
     };
 
     const onUp = () => {
+      const dragId = dragRef.current?.id;
+      const wasDrag = wasDragging.current;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      // Save to DB after drag
+      if (wasDrag && dragId) {
+        const [srcDay] = dragId.split(":");
+        saveDragResult(dragId, srcDay);
+      }
     };
 
     window.addEventListener("mousemove", onMove);
@@ -416,12 +424,9 @@ const Index = () => {
     setEditShiftEnd(override?.endHour ?? shift.endHour);
   };
 
-  const saveEditShift = () => {
+  const saveEditShift = async () => {
     if (!editingShift) return;
-    setShiftTimeOverrides((prev) => ({
-      ...prev,
-      [editingShift.shiftKey]: { startHour: editShiftStart, endHour: editShiftEnd },
-    }));
+    await setShiftTime(editingShift.shiftKey, editShiftStart, editShiftEnd);
     setEditingShift(null);
   };
 
@@ -501,18 +506,13 @@ const Index = () => {
   };
 
   const toggleShiftLocation = (shiftKey: string) => {
-    setLocationOverrides((prev) => ({ ...prev, [shiftKey]: !prev[shiftKey] }));
+    toggleLocation(shiftKey);
   };
 
   const handleSwapShift = () => {
     if (!selectedDate) return;
     const key = format(selectedDate, "yyyy-MM-dd");
-    setSwappedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    toggleSwapDay(key);
   };
 
   // Event spans multiple hours in weekly view
@@ -1214,13 +1214,7 @@ const Index = () => {
                 title="Přehodit směny"
                 onClick={() => {
                   if (!editingShift) return;
-                  const key = editingShift.dayKey;
-                  setSwappedDays((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(key)) next.delete(key);
-                    else next.add(key);
-                    return next;
-                  });
+                  toggleSwapDay(editingShift.dayKey);
                   setEditingShift(null);
                 }}
               >
