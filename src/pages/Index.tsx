@@ -1207,13 +1207,7 @@ const Index = () => {
                 title="Přehodit směny"
                 onClick={() => {
                   if (!editingShift) return;
-                  const key = editingShift.dayKey;
-                  setSwappedDays((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(key)) next.delete(key);
-                    else next.add(key);
-                    return next;
-                  });
+                  toggleSwapDay(editingShift.dayKey);
                   setEditingShift(null);
                 }}
               >
