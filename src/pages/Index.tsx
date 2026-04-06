@@ -218,10 +218,28 @@ const Index = () => {
     };
 
     const onUp = () => {
+      // Save drag result to DB
+      if (wasDragging.current && dragRef.current) {
+        const ev = events.find((e) => e.id === dragRef.current!.id);
+        // We'll handle this via effect - events already updated in state
+      }
+      const dragId = dragRef.current?.id;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      // Save updated event to DB after drag
+      if (wasDragging.current && dragId) {
+        setTimeout(() => {
+          setEvents((prev) => {
+            const ev = prev.find((e) => e.id === dragId);
+            if (ev) {
+              updateEventInDb(ev.id, { hour: ev.hour, endHour: ev.endHour, date: ev.date });
+            }
+            return prev;
+          });
+        }, 0);
+      }
     };
 
     window.addEventListener("mousemove", onMove);
