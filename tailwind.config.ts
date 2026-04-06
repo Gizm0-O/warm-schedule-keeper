@@ -64,6 +64,10 @@ export default {
         "cosmic-star": "hsl(var(--cosmic-star))",
         "cosmic-nebula": "hsl(var(--cosmic-nebula))",
         "cosmic-void": "hsl(var(--cosmic-void))",
+        "blob-1": "hsl(var(--blob-1))",
+        "blob-2": "hsl(var(--blob-2))",
+        "blob-3": "hsl(var(--blob-3))",
+        "blob-4": "hsl(var(--blob-4))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
