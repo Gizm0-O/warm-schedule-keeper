@@ -417,12 +417,9 @@ const Index = () => {
     setEditShiftEnd(override?.endHour ?? shift.endHour);
   };
 
-  const saveEditShift = () => {
+  const saveEditShift = async () => {
     if (!editingShift) return;
-    setShiftTimeOverrides((prev) => ({
-      ...prev,
-      [editingShift.shiftKey]: { startHour: editShiftStart, endHour: editShiftEnd },
-    }));
+    await setShiftTime(editingShift.shiftKey, editShiftStart, editShiftEnd);
     setEditingShift(null);
   };
 
