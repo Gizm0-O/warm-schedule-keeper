@@ -14,7 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      calendar_events: {
+        Row: {
+          color: string
+          created_at: string
+          date: string
+          end_hour: number | null
+          hour: number | null
+          id: string
+          title: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          date: string
+          end_hour?: number | null
+          hour?: number | null
+          id?: string
+          title: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          date?: string
+          end_hour?: number | null
+          hour?: number | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      shopping_items: {
+        Row: {
+          bought: boolean
+          category: string
+          created_at: string
+          id: string
+          name: string
+          quantity: number
+        }
+        Insert: {
+          bought?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+          quantity?: number
+        }
+        Update: {
+          bought?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          quantity?: number
+        }
+        Relationships: []
+      }
+      todos: {
+        Row: {
+          category: string
+          completed: boolean
+          created_at: string
+          deadline: string | null
+          id: string
+          person: string
+          recurrence: string
+          text: string
+        }
+        Insert: {
+          category: string
+          completed?: boolean
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          person: string
+          recurrence?: string
+          text: string
+        }
+        Update: {
+          category?: string
+          completed?: boolean
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          person?: string
+          recurrence?: string
+          text?: string
+        }
+        Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          created_at: string
+          done: boolean
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          done?: boolean
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
