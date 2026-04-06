@@ -110,6 +110,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 };
 
 const Index = () => {
+  const { todos, toggleTodo } = useTodos();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
