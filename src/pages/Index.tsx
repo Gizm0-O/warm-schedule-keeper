@@ -1053,14 +1053,16 @@ const Index = () => {
                     >
                     </button>
                     <div className="flex-1 min-w-0">
-                      <span className="text-foreground">{todo.text}</span>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-foreground inline-flex items-center gap-1.5">
+                        {todo.text}
                         {todo.recurrence !== "none" && (
-                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground font-normal">
                             <Repeat className="h-3 w-3" />
                             {RECURRENCE_LABELS[todo.recurrence]}
                           </span>
                         )}
+                      </span>
+                      <div className="flex items-center gap-2 mt-0.5">
                         <span className={cn(
                           "inline-flex items-center gap-1 text-xs",
                           isOverdue && "text-destructive font-medium",
