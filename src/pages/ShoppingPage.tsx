@@ -17,94 +17,23 @@ import {
 import {
   type ShoppingCategory,
   CATEGORY_INFO,
-  detectCategory,
 } from "@/data/shoppingCategories";
-
-interface ShoppingItem {
-  id: string;
-  name: string;
-  quantity: number;
-  bought: boolean;
-  category: ShoppingCategory;
-}
-
-interface WishlistItem {
-  id: string;
-  name: string;
-  done: boolean;
-}
+import { useShoppingItems } from "@/hooks/useShoppingItems";
+import { useWishlistItems } from "@/hooks/useWishlistItems";
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_INFO) as ShoppingCategory[];
 
 const ShoppingPage = () => {
-  const [items, setItems] = useState<ShoppingItem[]>([
-    { id: "s1", name: "Banány", quantity: 3, bought: false, category: detectCategory("Banány") },
-    { id: "s2", name: "Kuřecí prsa", quantity: 1, bought: false, category: detectCategory("Kuřecí prsa") },
-    { id: "s3", name: "Mléko", quantity: 2, bought: false, category: detectCategory("Mléko") },
-    { id: "s4", name: "Rohlíky", quantity: 10, bought: false, category: detectCategory("Rohlíky") },
-    { id: "s5", name: "Šampon", quantity: 1, bought: false, category: detectCategory("Šampon") },
-    { id: "s6", name: "Rajčata", quantity: 4, bought: false, category: detectCategory("Rajčata") },
-    { id: "s7", name: "Jogurt", quantity: 3, bought: true, category: detectCategory("Jogurt") },
-    { id: "s8", name: "Čokoláda", quantity: 1, bought: true, category: detectCategory("Čokoláda") },
-  ]);
+  const { items, addItem, toggleItem, removeItem, changeQty, renameItem, clearAll } = useShoppingItems();
+  const { wishlist, addWish, toggleWish, removeWish, clearAll: clearWishlist } = useWishlistItems();
   const [newItem, setNewItem] = useState("");
   const [activeFilter, setActiveFilter] = useState<ShoppingCategory | null>(null);
-
-  // Wishlist state
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([
-    { id: "w1", name: "Šroubky M5 do police", done: false },
-    { id: "w2", name: "Baterie AAA do koupelny", done: false },
-    { id: "w3", name: "Komoda do ložnice", done: false },
-    { id: "w4", name: "LED žárovka E27", done: false },
-    { id: "w5", name: "Prodlužovací kabel 3m", done: true },
-  ]);
   const [newWish, setNewWish] = useState("");
 
-  const addItem = () => {
+  const handleAddItem = () => {
     if (!newItem.trim()) return;
-    const category = detectCategory(newItem.trim());
-    setItems((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        name: newItem.trim(),
-        quantity: 1,
-        bought: false,
-        category,
-      },
-    ]);
+    addItem(newItem.trim());
     setNewItem("");
-  };
-
-  const toggleItem = (id: string) => {
-    setItems((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, bought: !i.bought } : i))
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  };
-
-  const changeQty = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((i) => {
-        if (i.id !== id) return i;
-        const next = i.quantity + delta;
-        return next >= 1 ? { ...i, quantity: next } : i;
-      })
-    );
-  };
-
-  const renameItem = (id: string, newName: string) => {
-    if (!newName.trim()) return;
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === id
-          ? { ...i, name: newName.trim(), category: detectCategory(newName.trim()) }
-          : i
-      )
-    );
   };
 
   // categories present in current list
@@ -132,7 +61,7 @@ const ShoppingPage = () => {
     );
   };
 
-  const ItemRow = ({ item, isBought }: { item: ShoppingItem; isBought: boolean }) => {
+  const ItemRow = ({ item, isBought }: { item: typeof items[0]; isBought: boolean }) => {
     const [editing, setEditing] = useState(false);
     const [editValue, setEditValue] = useState(item.name);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -256,7 +185,7 @@ const ShoppingPage = () => {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Zrušit</AlertDialogCancel>
-                <AlertDialogAction onClick={() => { setItems([]); setActiveFilter(null); }}>
+                <AlertDialogAction onClick={() => { clearAll(); setActiveFilter(null); }}>
                   Smazat vše
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -271,10 +200,10 @@ const ShoppingPage = () => {
           placeholder="Položka..."
           value={newItem}
           onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addItem()}
+          onKeyDown={(e) => e.key === "Enter" && handleAddItem()}
           className="flex-1"
         />
-        <Button onClick={addItem}>
+        <Button onClick={handleAddItem}>
           <Plus className="mr-1 h-4 w-4" /> Přidat
         </Button>
       </div>
@@ -364,7 +293,7 @@ const ShoppingPage = () => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Zrušit</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => setWishlist([])}>
+                  <AlertDialogAction onClick={() => clearWishlist()}>
                     Smazat vše
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -380,7 +309,7 @@ const ShoppingPage = () => {
             onChange={(e) => setNewWish(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && newWish.trim()) {
-                setWishlist((prev) => [...prev, { id: crypto.randomUUID(), name: newWish.trim(), done: false }]);
+                addWish(newWish.trim());
                 setNewWish("");
               }
             }}
@@ -390,7 +319,7 @@ const ShoppingPage = () => {
             variant="secondary"
             onClick={() => {
               if (!newWish.trim()) return;
-              setWishlist((prev) => [...prev, { id: crypto.randomUUID(), name: newWish.trim(), done: false }]);
+              addWish(newWish.trim());
               setNewWish("");
             }}
           >
@@ -407,12 +336,12 @@ const ShoppingPage = () => {
           {wishlist.filter((w) => !w.done).map((w) => (
             <div key={w.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
               <button
-                onClick={() => setWishlist((prev) => prev.map((i) => i.id === w.id ? { ...i, done: true } : i))}
+                onClick={() => toggleWish(w.id)}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors"
               />
               <span className="flex-1 text-sm text-foreground">{w.name}</span>
               <button
-                onClick={() => setWishlist((prev) => prev.filter((i) => i.id !== w.id))}
+                onClick={() => removeWish(w.id)}
                 className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
                 <Trash2 className="h-4 w-4" />
@@ -429,14 +358,14 @@ const ShoppingPage = () => {
               {wishlist.filter((w) => w.done).map((w) => (
                 <div key={w.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
                   <button
-                    onClick={() => setWishlist((prev) => prev.map((i) => i.id === w.id ? { ...i, done: false } : i))}
+                    onClick={() => toggleWish(w.id)}
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
                   >
                     <Check className="h-3.5 w-3.5" />
                   </button>
                   <span className="flex-1 text-sm text-foreground line-through">{w.name}</span>
                   <button
-                    onClick={() => setWishlist((prev) => prev.filter((i) => i.id !== w.id))}
+                    onClick={() => removeWish(w.id)}
                     className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                   >
                     <Trash2 className="h-4 w-4" />
