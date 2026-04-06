@@ -25,7 +25,7 @@ import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurren
 import { useTodos } from "@/contexts/TodoContext";
 
 const TodoPage = () => {
-  const { todos, setTodos, toggleTodo, removeTodo } = useTodos();
+  const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
 
@@ -44,20 +44,16 @@ const TodoPage = () => {
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
 
-  const addTodo = () => {
+  const addTodo = async () => {
     if (!newText.trim()) return;
-    setTodos((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        text: newText.trim(),
-        completed: false,
-        category: newCategory,
-        person: newPerson,
-        deadline: newDeadline ? new Date(newDeadline) : undefined,
-        recurrence: newRecurrence,
-      },
-    ]);
+    await addTodoToDb({
+      text: newText.trim(),
+      completed: false,
+      category: newCategory,
+      person: newPerson,
+      deadline: newDeadline ? new Date(newDeadline) : undefined,
+      recurrence: newRecurrence,
+    });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
@@ -73,22 +69,15 @@ const TodoPage = () => {
     setEditRecurrence(todo.recurrence);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingTodo || !editText.trim()) return;
-    setTodos((prev) =>
-      prev.map((t) =>
-        t.id === editingTodo.id
-          ? {
-              ...t,
-              text: editText.trim(),
-              category: editCategory,
-              person: editPerson,
-              deadline: editDeadline ? new Date(editDeadline) : undefined,
-              recurrence: editRecurrence,
-            }
-          : t
-      )
-    );
+    await updateTodo(editingTodo.id, {
+      text: editText.trim(),
+      category: editCategory,
+      person: editPerson,
+      deadline: editDeadline ? new Date(editDeadline) : undefined,
+      recurrence: editRecurrence,
+    });
     setEditingTodo(null);
   };
 

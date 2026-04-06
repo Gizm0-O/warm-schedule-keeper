@@ -20,6 +20,7 @@ import {
 } from "date-fns";
 import { cs } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check } from "lucide-react";
+import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -30,14 +31,7 @@ import { useTodos } from "@/contexts/TodoContext";
 
 type ViewMode = "month" | "week";
 
-interface CalendarEvent {
-  id: string;
-  date: string;
-  title: string;
-  color: string;
-  hour?: number;
-  endHour?: number;
-}
+// CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
   { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
@@ -110,6 +104,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 };
 
 const Index = () => {
+  const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -117,7 +112,6 @@ const Index = () => {
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [newEventTitle, setNewEventTitle] = useState("");
   const [newEventHour, setNewEventHour] = useState<number>(9);
   const [newEventEndHour, setNewEventEndHour] = useState<number>(10);
@@ -224,10 +218,28 @@ const Index = () => {
     };
 
     const onUp = () => {
+      // Save drag result to DB
+      if (wasDragging.current && dragRef.current) {
+        const ev = events.find((e) => e.id === dragRef.current!.id);
+        // We'll handle this via effect - events already updated in state
+      }
+      const dragId = dragRef.current?.id;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      // Save updated event to DB after drag
+      if (wasDragging.current && dragId) {
+        setTimeout(() => {
+          setEvents((prev) => {
+            const ev = prev.find((e) => e.id === dragId);
+            if (ev) {
+              updateEventInDb(ev.id, { hour: ev.hour, endHour: ev.endHour, date: ev.date });
+            }
+            return prev;
+          });
+        }, 0);
+      }
     };
 
     window.addEventListener("mousemove", onMove);
@@ -356,18 +368,16 @@ const Index = () => {
           { locale: cs }
         )}`;
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (!newEventTitle.trim()) return;
     const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
-    const event: CalendarEvent = {
-      id: crypto.randomUUID(),
+    await addEventToDb({
       date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
       hour: newEventHour,
       endHour: newEventEndHour,
-    };
-    setEvents((prev) => [...prev, event]);
+    });
     setNewEventTitle("");
     setShowNewEventDialog(false);
   };
@@ -382,7 +392,7 @@ const Index = () => {
   };
 
   const removeEvent = (id: string) => {
-    setEvents((prev) => prev.filter((e) => e.id !== id));
+    removeEventFromDb(id);
   };
 
   const openEditEvent = (ev: CalendarEvent) => {
@@ -393,15 +403,9 @@ const Index = () => {
     setEditColor(ev.color);
   };
 
-  const saveEditEvent = () => {
+  const saveEditEvent = async () => {
     if (!editingEvent) return;
-    setEvents((prev) =>
-      prev.map((ev) =>
-        ev.id === editingEvent.id
-          ? { ...ev, title: editTitle, hour: editHour, endHour: editEndHour, color: editColor }
-          : ev
-      )
-    );
+    await updateEventInDb(editingEvent.id, { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor });
     setEditingEvent(null);
   };
 
