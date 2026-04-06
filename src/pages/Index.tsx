@@ -120,8 +120,11 @@ const Index = () => {
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
-  const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
-  const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
+  const {
+    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
+    toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
+    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult,
+  } = useShiftOverrides();
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -134,9 +137,6 @@ const Index = () => {
   const [editingShift, setEditingShift] = useState<DisplayShift | null>(null);
   const [editShiftStart, setEditShiftStart] = useState(7);
   const [editShiftEnd, setEditShiftEnd] = useState(14);
-  const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
-  // key: "yyyy-MM-dd:shiftIndex" -> { startHour, endHour }
-  const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, { startHour: number; endHour: number }>>({});
 
   // Drag state
   const DRAG_THRESHOLD = 5; // px before drag starts
