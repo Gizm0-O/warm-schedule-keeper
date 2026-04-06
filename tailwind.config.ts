@@ -61,6 +61,9 @@ export default {
         "shift-office": "hsl(var(--shift-office))",
         "shift-home": "hsl(var(--shift-home))",
         "shift-partner": "hsl(var(--shift-partner))",
+        "cosmic-star": "hsl(var(--cosmic-star))",
+        "cosmic-nebula": "hsl(var(--cosmic-nebula))",
+        "cosmic-void": "hsl(var(--cosmic-void))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
