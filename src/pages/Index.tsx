@@ -508,12 +508,7 @@ const Index = () => {
   const handleSwapShift = () => {
     if (!selectedDate) return;
     const key = format(selectedDate, "yyyy-MM-dd");
-    setSwappedDays((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    toggleSwapDay(key);
   };
 
   // Event spans multiple hours in weekly view
