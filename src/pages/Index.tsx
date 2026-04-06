@@ -575,7 +575,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_300px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
         {/* Calendar */}
         {viewMode === "month" ? (
           <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
