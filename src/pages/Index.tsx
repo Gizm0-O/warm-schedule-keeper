@@ -1035,26 +1035,26 @@ const Index = () => {
                 const daysLate = isOverdue ? differenceInDays(today, target) : 0;
                 return (
                   <div className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm",
-                    isOverdue && "bg-destructive/5 border border-destructive/20",
-                    isTodayTask && "bg-warning/10 border border-warning/20"
+                    "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border",
+                    todo.person === "Tadeáš"
+                      ? "border-shift-office/30"
+                      : "border-shift-partner/30",
+                    isOverdue && "bg-destructive/5",
+                    isTodayTask && !isOverdue && "bg-warning/10"
                   )}>
                     <button
                       onClick={() => toggleTodo(todo.id)}
-                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-primary/40 hover:border-primary hover:bg-primary/10 transition-colors"
+                      className={cn(
+                        "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
+                        todo.person === "Tadeáš"
+                          ? "border-shift-office/40 hover:border-shift-office hover:bg-shift-office/10"
+                          : "border-shift-partner/40 hover:border-shift-partner hover:bg-shift-partner/10"
+                      )}
                     >
                     </button>
                     <div className="flex-1 min-w-0">
                       <span className="text-foreground">{todo.text}</span>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <Badge variant="outline" className={cn(
-                          "text-[10px] px-1.5 py-0 h-4",
-                          todo.person === "Tadeáš"
-                            ? "border-shift-office/40 bg-shift-office/10 text-shift-office"
-                            : "border-shift-partner/40 bg-shift-partner/10 text-shift-partner"
-                        )}>
-                          {todo.person}
-                        </Badge>
                         {todo.recurrence !== "none" && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                             <Repeat className="h-3 w-3" />
@@ -1064,7 +1064,7 @@ const Index = () => {
                         <span className={cn(
                           "inline-flex items-center gap-1 text-xs",
                           isOverdue && "text-destructive font-medium",
-                          isTodayTask && "font-medium text-orange-700 dark:text-orange-300"
+                          isTodayTask && !isOverdue && "font-medium text-orange-700 dark:text-orange-300"
                         )}>
                           {isOverdue && <AlertCircle className="h-3 w-3" />}
                           <CalendarDays className="h-3 w-3" />
@@ -1077,6 +1077,14 @@ const Index = () => {
                         </span>
                       </div>
                     </div>
+                    <Badge variant="outline" className={cn(
+                      "absolute top-1.5 right-1.5 text-[10px] px-1.5 py-0 h-4",
+                      todo.person === "Tadeáš"
+                        ? "border-shift-office/40 bg-shift-office/10 text-shift-office"
+                        : "border-shift-partner/40 bg-shift-partner/10 text-shift-partner"
+                    )}>
+                      {todo.person}
+                    </Badge>
                   </div>
                 );
               };
