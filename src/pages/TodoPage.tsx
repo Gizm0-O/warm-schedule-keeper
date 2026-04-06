@@ -21,10 +21,11 @@ import {
 import { cn } from "@/lib/utils";
 import { format, isBefore, isToday, startOfDay, differenceInDays, addDays, addWeeks, addMonths } from "date-fns";
 import { cs } from "date-fns/locale";
-import { INITIAL_TODOS, RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { useTodos } from "@/contexts/TodoContext";
 
 const TodoPage = () => {
-  const [todos, setTodos] = useState<Todo[]>(INITIAL_TODOS);
+  const { todos, setTodos, toggleTodo, removeTodo } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
 
