@@ -19,12 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { format, isBefore, isToday, startOfDay, differenceInDays, addDays, addWeeks, addMonths } from "date-fns";
+import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
 import { cs } from "date-fns/locale";
-import { INITIAL_TODOS, RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { useTodos } from "@/contexts/TodoContext";
 
 const TodoPage = () => {
-  const [todos, setTodos] = useState<Todo[]>(INITIAL_TODOS);
+  const { todos, setTodos, toggleTodo, removeTodo } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
 
@@ -91,54 +92,6 @@ const TodoPage = () => {
     setEditingTodo(null);
   };
 
-  const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
-    switch (recurrence) {
-      case "daily": return addDays(current, 1);
-      case "every2days": return addDays(current, 2);
-      case "every3days": return addDays(current, 3);
-      case "weekly": return addWeeks(current, 1);
-      case "biweekly": return addWeeks(current, 2);
-      case "monthly": return addMonths(current, 1);
-      default: return current;
-    }
-  };
-
-  const toggleTodo = (id: string) => {
-    setTodos((prev) => {
-      const todo = prev.find((t) => t.id === id);
-      if (!todo) return prev;
-
-      // If completing a recurring task, create next occurrence
-      if (!todo.completed && todo.recurrence !== "none") {
-        const baseDate = todo.deadline ?? startOfDay(new Date());
-        let nextDeadline = getNextDeadline(baseDate, todo.recurrence);
-        // If next deadline is still in the past, jump forward to today or beyond
-        const today = startOfDay(new Date());
-        while (isBefore(nextDeadline, today)) {
-          nextDeadline = getNextDeadline(nextDeadline, todo.recurrence);
-        }
-        const newTodo: Todo = {
-          id: crypto.randomUUID(),
-          text: todo.text,
-          completed: false,
-          category: todo.category,
-          person: todo.person,
-          deadline: nextDeadline,
-          recurrence: todo.recurrence,
-        };
-        return [
-          ...prev.map((t) => (t.id === id ? { ...t, completed: true } : t)),
-          newTodo,
-        ];
-      }
-
-      return prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
-    });
-  };
-
-  const removeTodo = (id: string) => {
-    setTodos((prev) => prev.filter((t) => t.id !== id));
-  };
 
   const sortByDeadline = (a: Todo, b: Todo) => {
     if (!a.deadline && !b.deadline) return 0;
