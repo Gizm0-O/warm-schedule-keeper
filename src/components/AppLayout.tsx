@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Globe } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ const AppLayout = () => {
       <header className="sticky top-0 z-50 glass-strong">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Globe className="h-5 w-5 text-primary animate-twinkle" />
+            <Sparkles className="h-5 w-5 text-primary animate-twinkle" />
             <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
               Bambuls Universe
             </span>
