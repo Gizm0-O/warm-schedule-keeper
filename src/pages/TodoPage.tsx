@@ -69,22 +69,15 @@ const TodoPage = () => {
     setEditRecurrence(todo.recurrence);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editingTodo || !editText.trim()) return;
-    setTodos((prev) =>
-      prev.map((t) =>
-        t.id === editingTodo.id
-          ? {
-              ...t,
-              text: editText.trim(),
-              category: editCategory,
-              person: editPerson,
-              deadline: editDeadline ? new Date(editDeadline) : undefined,
-              recurrence: editRecurrence,
-            }
-          : t
-      )
-    );
+    await updateTodo(editingTodo.id, {
+      text: editText.trim(),
+      category: editCategory,
+      person: editPerson,
+      deadline: editDeadline ? new Date(editDeadline) : undefined,
+      recurrence: editRecurrence,
+    });
     setEditingTodo(null);
   };
 
