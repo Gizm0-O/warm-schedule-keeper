@@ -644,7 +644,7 @@ const Index = () => {
           </div>
         ) : (
           /* Weekly timeline view */
-          <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden animate-fade-in">
             <div className="grid border-b border-border" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
               <div className="border-r border-border" />
               {weekDays.map((day) => (
