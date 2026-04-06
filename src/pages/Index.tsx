@@ -578,7 +578,7 @@ const Index = () => {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
         {/* Calendar */}
         {viewMode === "month" ? (
-          <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="glass rounded-2xl p-4 animate-fade-in">
             <div className="mb-2 grid grid-cols-7 gap-1">
               {WEEKDAYS.map((day) => (
                 <div key={day} className="py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -644,7 +644,7 @@ const Index = () => {
           </div>
         ) : (
           /* Weekly timeline view */
-          <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="glass rounded-2xl overflow-hidden animate-fade-in">
             <div className="grid border-b border-border" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
               <div className="border-r border-border" />
               {weekDays.map((day) => (
@@ -867,7 +867,7 @@ const Index = () => {
         )}
 
         {/* Event sidebar */}
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm" onClick={(e) => e.stopPropagation()}>
+        <div className="glass rounded-2xl p-5 animate-slide-up" onClick={(e) => e.stopPropagation()}>
           {selectedDate ? (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
