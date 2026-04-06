@@ -103,6 +103,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
   ];
 };
 
+const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
