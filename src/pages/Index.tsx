@@ -306,10 +306,17 @@ const Index = () => {
     };
 
     const onUp = () => {
+      const dragId = dragRef.current?.id;
+      const wasDrag = wasDragging.current;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
+      // Save to DB after drag
+      if (wasDrag && dragId) {
+        const [srcDay] = dragId.split(":");
+        saveDragResult(dragId, srcDay);
+      }
     };
 
     window.addEventListener("mousemove", onMove);
