@@ -318,7 +318,7 @@ const ShoppingPage = () => {
       )}
 
       {/* Item list */}
-      <div className="rounded-2xl border border-border bg-card shadow-sm divide-y divide-border">
+      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
         {items.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Nákupní seznam je prázdný
@@ -398,7 +398,7 @@ const ShoppingPage = () => {
           </Button>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card shadow-sm divide-y divide-border">
+        <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
           {wishlist.length === 0 && (
             <p className="p-6 text-center text-sm text-muted-foreground">
               Zatím nic – zapiš si sem věci, které potřebuješ koupit, ale nespěchají

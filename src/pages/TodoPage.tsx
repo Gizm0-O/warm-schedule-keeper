@@ -254,7 +254,7 @@ const TodoPage = () => {
         </TabsList>
       </Tabs>
 
-      <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
         {workPending.length === 0 && homePending.length === 0 && completed.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Žádné úkoly. Přidejte první!

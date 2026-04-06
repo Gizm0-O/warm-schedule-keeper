@@ -1,6 +1,8 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
@@ -9,15 +11,29 @@ const navItems = [
 ];
 
 const AppLayout = () => {
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Subtle gradient background overlay */}
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,hsl(265_80%_65%/0.08),transparent_50%),radial-gradient(ellipse_at_bottom_right,hsl(200_70%_60%/0.05),transparent_50%)]" />
+  const [dark, setDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("theme") !== "light";
+    }
+    return true;
+  });
 
-      <header className="sticky top-0 z-50 glass">
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  return (
+    <div className="min-h-screen bg-background relative">
+      {/* Cosmic background layers */}
+      <div className="fixed inset-0 -z-10 cosmic-bg" />
+      <div className="fixed inset-0 -z-10 stars animate-twinkle" />
+
+      <header className="sticky top-0 z-50 glass-strong">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <h1 className="text-xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-primary to-[hsl(200,70%,60%)] bg-clip-text text-transparent">
+          <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary animate-twinkle" />
+            <span className="bg-gradient-to-r from-primary via-[hsl(280,60%,70%)] to-[hsl(200,70%,60%)] bg-clip-text text-transparent">
               Bambuls Universe
             </span>
           </h1>
@@ -32,8 +48,8 @@ const AppLayout = () => {
                     cn(
                       "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300",
                       isActive
-                        ? "bg-primary/15 text-primary glow-primary shadow-sm"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        ? "glass bg-primary/15 text-primary glow-primary"
+                        : "text-muted-foreground hover:text-foreground hover:glass-subtle"
                     )
                   }
                 >
@@ -42,6 +58,15 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDark((d) => !d)}
+              className="ml-2 rounded-xl hover:glass-subtle"
+              aria-label="Přepnout tmavý/světlý režim"
+            >
+              {dark ? <Sun className="h-4 w-4 text-cosmic-star" /> : <Moon className="h-4 w-4" />}
+            </Button>
           </div>
         </div>
       </header>
