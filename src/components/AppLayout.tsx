@@ -24,16 +24,56 @@ const AppLayout = () => {
   }, [dark]);
 
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Cosmic background layers */}
-      <div className="fixed inset-0 -z-10 cosmic-bg" />
-      <div className="fixed inset-0 -z-10 stars animate-twinkle" />
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Animated gradient blobs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        {/* Large purple blob - top left */}
+        <div
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-70 dark:opacity-50 blur-3xl"
+          style={{
+            background: "hsl(var(--blob-1))",
+            animation: "blob-float-1 20s ease-in-out infinite",
+          }}
+        />
+        {/* Blue blob - top right */}
+        <div
+          className="absolute -top-20 right-0 w-[400px] h-[400px] rounded-full opacity-60 dark:opacity-40 blur-3xl"
+          style={{
+            background: "hsl(var(--blob-2))",
+            animation: "blob-float-2 25s ease-in-out infinite",
+          }}
+        />
+        {/* Orange/coral blob - bottom right */}
+        <div
+          className="absolute bottom-0 right-20 w-[450px] h-[450px] rounded-full opacity-60 dark:opacity-40 blur-3xl"
+          style={{
+            background: "hsl(var(--blob-3))",
+            animation: "blob-float-3 22s ease-in-out infinite",
+          }}
+        />
+        {/* Pink blob - bottom left */}
+        <div
+          className="absolute bottom-20 -left-20 w-[350px] h-[350px] rounded-full opacity-50 dark:opacity-35 blur-3xl"
+          style={{
+            background: "hsl(var(--blob-4))",
+            animation: "blob-float-4 18s ease-in-out infinite",
+          }}
+        />
+        {/* Center subtle nebula */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-20 dark:opacity-15 blur-3xl"
+          style={{
+            background: "hsl(var(--cosmic-nebula))",
+            animation: "blob-float-2 30s ease-in-out infinite",
+          }}
+        />
+      </div>
 
       <header className="sticky top-0 z-50 glass-strong">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary animate-twinkle" />
-            <span className="bg-gradient-to-r from-primary via-[hsl(280,60%,70%)] to-[hsl(200,70%,60%)] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
               Bambuls Universe
             </span>
           </h1>
@@ -48,7 +88,7 @@ const AppLayout = () => {
                     cn(
                       "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300",
                       isActive
-                        ? "glass bg-primary/15 text-primary glow-primary"
+                        ? "glass text-primary glow-primary"
                         : "text-muted-foreground hover:text-foreground hover:glass-subtle"
                     )
                   }
@@ -62,7 +102,7 @@ const AppLayout = () => {
               variant="ghost"
               size="icon"
               onClick={() => setDark((d) => !d)}
-              className="ml-2 rounded-xl hover:glass-subtle"
+              className="ml-2 rounded-xl hover:glass-subtle transition-all duration-300"
               aria-label="Přepnout tmavý/světlý režim"
             >
               {dark ? <Sun className="h-4 w-4 text-cosmic-star" /> : <Moon className="h-4 w-4" />}
@@ -70,7 +110,7 @@ const AppLayout = () => {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 animate-fade-in">
+      <main className="mx-auto max-w-7xl px-4 py-6 animate-fade-in relative z-10">
         <Outlet />
       </main>
     </div>
