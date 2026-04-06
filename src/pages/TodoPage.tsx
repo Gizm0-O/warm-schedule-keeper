@@ -44,20 +44,16 @@ const TodoPage = () => {
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
 
-  const addTodo = () => {
+  const addTodo = async () => {
     if (!newText.trim()) return;
-    setTodos((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        text: newText.trim(),
-        completed: false,
-        category: newCategory,
-        person: newPerson,
-        deadline: newDeadline ? new Date(newDeadline) : undefined,
-        recurrence: newRecurrence,
-      },
-    ]);
+    await addTodoToDb({
+      text: newText.trim(),
+      completed: false,
+      category: newCategory,
+      person: newPerson,
+      deadline: newDeadline ? new Date(newDeadline) : undefined,
+      recurrence: newRecurrence,
+    });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
