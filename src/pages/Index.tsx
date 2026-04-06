@@ -502,7 +502,7 @@ const Index = () => {
   };
 
   const toggleShiftLocation = (shiftKey: string) => {
-    setLocationOverrides((prev) => ({ ...prev, [shiftKey]: !prev[shiftKey] }));
+    toggleLocation(shiftKey);
   };
 
   const handleSwapShift = () => {
