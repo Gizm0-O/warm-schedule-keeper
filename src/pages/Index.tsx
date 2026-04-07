@@ -1284,9 +1284,24 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
-            <Button onClick={saveEditShift}>Uložit</Button>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={async () => {
+                if (editingShift) {
+                  await deleteShiftOverrides(editingShift.shiftKey);
+                  setEditingShift(null);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
+              <Button onClick={saveEditShift}>Uložit</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
