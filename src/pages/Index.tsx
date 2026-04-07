@@ -22,6 +22,7 @@ import { cs } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2 } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useShiftOverrides } from "@/hooks/useShiftOverrides";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -121,10 +122,12 @@ const Index = () => {
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
   const {
-    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
+    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
+    hideShift, unhideShift,
   } = useShiftOverrides();
+  const { pushAction } = useUndoRedo();
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
@@ -400,7 +403,14 @@ const Index = () => {
   };
 
   const removeEvent = (id: string) => {
+    const ev = events.find((e) => e.id === id);
     removeEventFromDb(id);
+    if (ev) {
+      pushAction({
+        undo: () => addEventToDb({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }),
+        redo: () => removeEventFromDb(id),
+      });
+    }
   };
 
   const openEditEvent = (ev: CalendarEvent) => {
@@ -493,10 +503,10 @@ const Index = () => {
     const defaults = getDefaultShiftsForDay(day);
     const localKeys = defaults
       .map((_, index) => `${dayKey}:${index}`)
-      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey);
+      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey && !hiddenShifts.has(shiftKey));
 
     const incomingKeys = Object.entries(shiftDayOverrides)
-      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`))
+      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`) && !hiddenShifts.has(shiftKey))
       .map(([shiftKey]) => shiftKey);
 
     return [...localKeys, ...incomingKeys]
@@ -1290,13 +1300,18 @@ const Index = () => {
               size="sm"
               onClick={async () => {
                 if (editingShift) {
-                  await deleteShiftOverrides(editingShift.shiftKey);
+                  const key = editingShift.shiftKey;
+                  await hideShift(key);
+                  pushAction({
+                    undo: () => unhideShift(key),
+                    redo: () => hideShift(key),
+                  });
                   setEditingShift(null);
                 }
               }}
             >
               <Trash2 className="h-4 w-4 mr-1" />
-              Reset
+              Smazat
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
