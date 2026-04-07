@@ -1,0 +1,2 @@
+ALTER TABLE public.shift_overrides DROP CONSTRAINT IF EXISTS shift_overrides_override_type_check;
+ALTER TABLE public.shift_overrides ADD CONSTRAINT shift_overrides_override_type_check CHECK (override_type IN ('swap', 'location', 'time', 'day', 'hidden'));
