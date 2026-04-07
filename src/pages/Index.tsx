@@ -122,10 +122,12 @@ const Index = () => {
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [now, setNow] = useState(new Date());
   const {
-    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
+    swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
+    hideShift, unhideShift,
   } = useShiftOverrides();
+  const { pushAction } = useUndoRedo();
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
