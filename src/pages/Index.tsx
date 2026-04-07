@@ -503,10 +503,10 @@ const Index = () => {
     const defaults = getDefaultShiftsForDay(day);
     const localKeys = defaults
       .map((_, index) => `${dayKey}:${index}`)
-      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey);
+      .filter((shiftKey) => (shiftDayOverrides[shiftKey] ?? dayKey) === dayKey && !hiddenShifts.has(shiftKey));
 
     const incomingKeys = Object.entries(shiftDayOverrides)
-      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`))
+      .filter(([shiftKey, targetDayKey]) => targetDayKey === dayKey && !shiftKey.startsWith(`${dayKey}:`) && !hiddenShifts.has(shiftKey))
       .map(([shiftKey]) => shiftKey);
 
     return [...localKeys, ...incomingKeys]
