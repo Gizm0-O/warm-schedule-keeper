@@ -123,7 +123,7 @@ const Index = () => {
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
-    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult,
+    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
   } = useShiftOverrides();
 
   // Edit event dialog
