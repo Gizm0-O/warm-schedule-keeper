@@ -1300,13 +1300,18 @@ const Index = () => {
               size="sm"
               onClick={async () => {
                 if (editingShift) {
-                  await deleteShiftOverrides(editingShift.shiftKey);
+                  const key = editingShift.shiftKey;
+                  await hideShift(key);
+                  pushAction({
+                    undo: () => unhideShift(key),
+                    redo: () => hideShift(key),
+                  });
                   setEditingShift(null);
                 }
               }}
             >
               <Trash2 className="h-4 w-4 mr-1" />
-              Reset
+              Smazat
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
