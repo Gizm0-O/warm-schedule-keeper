@@ -11,6 +11,7 @@ export function useShiftOverrides() {
   const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, ShiftTimeOverride>>({});
   const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
+  const [hiddenShifts, setHiddenShifts] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   // Load all overrides from DB
@@ -22,6 +23,7 @@ export function useShiftOverrides() {
         const locations: Record<string, boolean> = {};
         const times: Record<string, ShiftTimeOverride> = {};
         const days: Record<string, string> = {};
+        const hidden = new Set<string>();
 
         for (const row of data) {
           const val = row.value as any;
@@ -38,6 +40,9 @@ export function useShiftOverrides() {
             case "day":
               days[row.shift_key] = val.targetDay;
               break;
+            case "hidden":
+              hidden.add(row.shift_key);
+              break;
           }
         }
 
@@ -45,6 +50,7 @@ export function useShiftOverrides() {
         setLocationOverrides(locations);
         setShiftTimeOverrides(times);
         setShiftDayOverrides(days);
+        setHiddenShifts(hidden);
       }
       setLoading(false);
     };
@@ -107,7 +113,6 @@ export function useShiftOverrides() {
   const saveShiftTime = useCallback(async (shiftKey: string) => {
     const time = shiftTimeOverrides[shiftKey];
     if (!time) return;
-    // We read from latest state via a callback
   }, [shiftTimeOverrides]);
 
   const setShiftDay = useCallback(async (shiftKey: string, targetDay: string | null) => {
@@ -124,7 +129,6 @@ export function useShiftOverrides() {
     }
   }, []);
 
-  // Batch save for drag operations - saves both time and day overrides
   const saveDragResult = useCallback(async (shiftKey: string, sourceDayKey: string) => {
     const time = shiftTimeOverrides[shiftKey];
     const day = shiftDayOverrides[shiftKey];
@@ -138,6 +142,20 @@ export function useShiftOverrides() {
       await deleteOverride(shiftKey, "day");
     }
   }, [shiftTimeOverrides, shiftDayOverrides]);
+
+  const hideShift = useCallback(async (shiftKey: string) => {
+    setHiddenShifts((prev) => new Set(prev).add(shiftKey));
+    await upsertOverride(shiftKey, "hidden", { hidden: true });
+  }, []);
+
+  const unhideShift = useCallback(async (shiftKey: string) => {
+    setHiddenShifts((prev) => {
+      const next = new Set(prev);
+      next.delete(shiftKey);
+      return next;
+    });
+    await deleteOverride(shiftKey, "hidden");
+  }, []);
 
   const deleteShiftOverrides = useCallback(async (shiftKey: string) => {
     await supabase.from("shift_overrides").delete().eq("shift_key", shiftKey);
@@ -163,6 +181,7 @@ export function useShiftOverrides() {
     locationOverrides,
     shiftTimeOverrides,
     shiftDayOverrides,
+    hiddenShifts,
     loading,
     toggleSwapDay,
     toggleLocation,
@@ -173,5 +192,7 @@ export function useShiftOverrides() {
     saveDragResult,
     updateShiftTimeLocal,
     deleteShiftOverrides,
+    hideShift,
+    unhideShift,
   };
 }
