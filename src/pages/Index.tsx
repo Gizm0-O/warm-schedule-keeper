@@ -403,7 +403,14 @@ const Index = () => {
   };
 
   const removeEvent = (id: string) => {
+    const ev = events.find((e) => e.id === id);
     removeEventFromDb(id);
+    if (ev) {
+      pushAction({
+        undo: () => addEventToDb({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }),
+        redo: () => removeEventFromDb(id),
+      });
+    }
   };
 
   const openEditEvent = (ev: CalendarEvent) => {
