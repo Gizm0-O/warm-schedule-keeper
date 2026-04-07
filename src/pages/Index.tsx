@@ -1194,9 +1194,24 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
-            <Button onClick={saveEditEvent}>Uložit</Button>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (editingEvent) {
+                  removeEvent(editingEvent.id);
+                  setEditingEvent(null);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Smazat
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
+              <Button onClick={saveEditEvent}>Uložit</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
