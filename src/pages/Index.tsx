@@ -19,7 +19,7 @@ import {
   getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2 } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useShiftOverrides } from "@/hooks/useShiftOverrides";
 import { Button } from "@/components/ui/button";
@@ -123,7 +123,7 @@ const Index = () => {
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
-    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult,
+    setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
   } = useShiftOverrides();
 
   // Edit event dialog
@@ -1194,9 +1194,24 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
-            <Button onClick={saveEditEvent}>Uložit</Button>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (editingEvent) {
+                  removeEvent(editingEvent.id);
+                  setEditingEvent(null);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Smazat
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
+              <Button onClick={saveEditEvent}>Uložit</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1269,9 +1284,24 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
-            <Button onClick={saveEditShift}>Uložit</Button>
+          <DialogFooter className="flex justify-between sm:justify-between">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={async () => {
+                if (editingShift) {
+                  await deleteShiftOverrides(editingShift.shiftKey);
+                  setEditingShift(null);
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Reset
+            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
+              <Button onClick={saveEditShift}>Uložit</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

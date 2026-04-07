@@ -139,6 +139,25 @@ export function useShiftOverrides() {
     }
   }, [shiftTimeOverrides, shiftDayOverrides]);
 
+  const deleteShiftOverrides = useCallback(async (shiftKey: string) => {
+    await supabase.from("shift_overrides").delete().eq("shift_key", shiftKey);
+    setShiftTimeOverrides((prev) => {
+      const next = { ...prev };
+      delete next[shiftKey];
+      return next;
+    });
+    setShiftDayOverrides((prev) => {
+      const next = { ...prev };
+      delete next[shiftKey];
+      return next;
+    });
+    setLocationOverrides((prev) => {
+      const next = { ...prev };
+      delete next[shiftKey];
+      return next;
+    });
+  }, []);
+
   return {
     swappedDays,
     locationOverrides,
@@ -153,5 +172,6 @@ export function useShiftOverrides() {
     setShiftDayOverrides,
     saveDragResult,
     updateShiftTimeLocal,
+    deleteShiftOverrides,
   };
 }
