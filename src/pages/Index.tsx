@@ -717,7 +717,7 @@ const Index = () => {
         ) : (
           /* Weekly timeline view */
           <div className="glass rounded-2xl overflow-hidden animate-fade-in">
-            <div className="overflow-y-auto max-h-[600px] 2xl:max-h-[900px] relative" style={{ scrollbarGutter: "stable" }} ref={timelineRef}>
+            <div className="overflow-y-scroll max-h-[600px] 2xl:max-h-[900px] relative" ref={timelineRef}>
             <div className="grid border-b border-border sticky top-0 z-20 bg-background/80 backdrop-blur-md" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
               <div className="border-r border-border" />
               {weekDays.map((day) => (
