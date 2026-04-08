@@ -202,16 +202,16 @@ const Index = () => {
 
       setEvents((prev) =>
         prev.map((e) => {
-          if (e.id !== dragRef.current!.id) return e;
-          if (dragRef.current!.mode === "resize-bottom") {
+          if (!dragRef.current || e.id !== dragRef.current.id) return e;
+          if (dragRef.current.mode === "resize-bottom") {
             const end = Math.max(newHour + 1, (e.hour ?? 0) + 1);
             return { ...e, endHour: Math.min(end, 24) };
-          } else if (dragRef.current!.mode === "resize-top") {
+          } else if (dragRef.current.mode === "resize-top") {
             const start = Math.min(newHour, (e.endHour ?? 1) - 1);
             return { ...e, hour: Math.max(start, 0) };
           } else {
-            const duration = dragRef.current!.origEndHour - dragRef.current!.origHour;
-            const newStart = Math.max(0, Math.min(newHour - dragRef.current!.offsetHour, 24 - duration));
+            const duration = dragRef.current.origEndHour - dragRef.current.origHour;
+            const newStart = Math.max(0, Math.min(newHour - dragRef.current.offsetHour, 24 - duration));
             const wEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
             const wd = eachDayOfInterval({ start: currentWeekStart, end: wEnd });
             const targetDay = wd[newDayIdx];
@@ -297,8 +297,9 @@ const Index = () => {
       }
 
       setShiftTimeOverrides((prev) => {
-        const existing = prev[key] ?? { startHour: dragRef.current!.origHour, endHour: dragRef.current!.origEndHour };
-        if (dragRef.current!.mode === "resize-bottom") {
+        if (!dragRef.current) return prev;
+        const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
+        if (dragRef.current.mode === "resize-bottom") {
           const end = Math.max(newHour + 1, existing.startHour + 1);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
