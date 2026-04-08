@@ -221,24 +221,31 @@ const Index = () => {
       );
     };
 
+    const origEventData = { hour: ev.hour, endHour: ev.endHour, date: ev.date };
+
     const onUp = () => {
-      // Save drag result to DB
-      if (wasDragging.current && dragRef.current) {
-        const ev = events.find((e) => e.id === dragRef.current!.id);
-        // We'll handle this via effect - events already updated in state
-      }
       const dragId = dragRef.current?.id;
+      const wasDrag = wasDragging.current;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      // Save updated event to DB after drag
-      if (wasDragging.current && dragId) {
+      // Save updated event to DB after drag + push undo
+      if (wasDrag && dragId) {
         setTimeout(() => {
           setEvents((prev) => {
-            const ev = prev.find((e) => e.id === dragId);
-            if (ev) {
-              updateEventInDb(ev.id, { hour: ev.hour, endHour: ev.endHour, date: ev.date });
+            const evNow = prev.find((e) => e.id === dragId);
+            if (evNow) {
+              const newData = { hour: evNow.hour, endHour: evNow.endHour, date: evNow.date };
+              updateEventInDb(evNow.id, newData);
+              pushAction({
+                undo: () => {
+                  updateEventInDb(dragId, origEventData);
+                },
+                redo: () => {
+                  updateEventInDb(dragId, newData);
+                },
+              });
             }
             return prev;
           });
@@ -248,7 +255,7 @@ const Index = () => {
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY, dayIdxFromX, currentWeekStart]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart, updateEventInDb, pushAction]);
 
   const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
@@ -259,6 +266,10 @@ const Index = () => {
     wasDragging.current = false;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: dayIdx, offsetHour };
+
+    // Capture original overrides for undo
+    const origTimeOverride = shiftTimeOverrides[id] ? { ...shiftTimeOverrides[id] } : null;
+    const origDayOverride = shiftDayOverrides[id] ?? null;
 
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
@@ -316,16 +327,48 @@ const Index = () => {
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      // Save to DB after drag
       if (wasDrag && dragId) {
         const [srcDay] = dragId.split(":");
+        // Read current overrides via setState callback to get fresh values
+        let capturedTime: { startHour: number; endHour: number } | null = null;
+        let capturedDay: string | null = null;
+        setShiftTimeOverrides((prev) => {
+          capturedTime = prev[dragId] ? { ...prev[dragId] } : null;
+          return prev;
+        });
+        setShiftDayOverrides((prev) => {
+          capturedDay = prev[dragId] ?? null;
+          return prev;
+        });
+
         saveDragResult(dragId, srcDay);
+
+        // Use setTimeout to ensure capturedTime/capturedDay are set
+        setTimeout(() => {
+          pushAction({
+            undo: () => {
+              if (origTimeOverride) {
+                setShiftTime(dragId, origTimeOverride.startHour, origTimeOverride.endHour);
+              } else {
+                deleteShiftOverrides(dragId);
+              }
+              setShiftDay(dragId, origDayOverride);
+            },
+            redo: () => {
+              if (capturedTime) {
+                setShiftTime(dragId, capturedTime.startHour, capturedTime.endHour);
+              }
+              setShiftDay(dragId, capturedDay);
+              saveDragResult(dragId, srcDay);
+            },
+          });
+        }, 0);
       }
     };
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY, dayIdxFromX, currentWeekStart]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart, shiftTimeOverrides, shiftDayOverrides, saveDragResult, setShiftTime, setShiftDay, deleteShiftOverrides, pushAction]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
