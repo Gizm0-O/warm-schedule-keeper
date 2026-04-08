@@ -10,6 +10,10 @@ export interface CalendarEvent {
   endHour?: number;
 }
 
+export interface CalendarEventInput extends Omit<CalendarEvent, "id"> {
+  id?: string;
+}
+
 export function useCalendarEvents() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +34,17 @@ export function useCalendarEvents() {
     fetch();
   }, []);
 
-  const addEvent = useCallback(async (ev: Omit<CalendarEvent, "id">): Promise<CalendarEvent | null> => {
+  const addEvent = useCallback(async (ev: CalendarEventInput): Promise<CalendarEvent | null> => {
     const { data } = await supabase
       .from("calendar_events")
-      .insert({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? null, end_hour: ev.endHour ?? null })
+      .insert({
+        ...(ev.id ? { id: ev.id } : {}),
+        date: ev.date,
+        title: ev.title,
+        color: ev.color,
+        hour: ev.hour ?? null,
+        end_hour: ev.endHour ?? null,
+      })
       .select()
       .single();
     if (data) {
