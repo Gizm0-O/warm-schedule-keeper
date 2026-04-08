@@ -327,38 +327,42 @@ const Index = () => {
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      // Save to DB after drag + push undo
       if (wasDrag && dragId) {
         const [srcDay] = dragId.split(":");
-        // Capture new state before saving
-        const newTimeOverride = shiftTimeOverrides[dragId] ? { ...shiftTimeOverrides[dragId] } : null;
-        const newDayOverride = shiftDayOverrides[dragId] ?? null;
+        // Read current overrides via setState callback to get fresh values
+        let capturedTime: { startHour: number; endHour: number } | null = null;
+        let capturedDay: string | null = null;
+        setShiftTimeOverrides((prev) => {
+          capturedTime = prev[dragId] ? { ...prev[dragId] } : null;
+          return prev;
+        });
+        setShiftDayOverrides((prev) => {
+          capturedDay = prev[dragId] ?? null;
+          return prev;
+        });
 
         saveDragResult(dragId, srcDay);
 
-        pushAction({
-          undo: () => {
-            if (origTimeOverride) {
-              setShiftTime(dragId, origTimeOverride.startHour, origTimeOverride.endHour);
-            } else {
-              deleteShiftOverrides(dragId);
-            }
-            if (origDayOverride) {
+        // Use setTimeout to ensure capturedTime/capturedDay are set
+        setTimeout(() => {
+          pushAction({
+            undo: () => {
+              if (origTimeOverride) {
+                setShiftTime(dragId, origTimeOverride.startHour, origTimeOverride.endHour);
+              } else {
+                deleteShiftOverrides(dragId);
+              }
               setShiftDay(dragId, origDayOverride);
-            } else {
-              setShiftDay(dragId, null);
-            }
-          },
-          redo: () => {
-            if (newTimeOverride) {
-              setShiftTime(dragId, newTimeOverride.startHour, newTimeOverride.endHour);
-            }
-            if (newDayOverride) {
-              setShiftDay(dragId, newDayOverride);
-            }
-            saveDragResult(dragId, srcDay);
-          },
-        });
+            },
+            redo: () => {
+              if (capturedTime) {
+                setShiftTime(dragId, capturedTime.startHour, capturedTime.endHour);
+              }
+              setShiftDay(dragId, capturedDay);
+              saveDragResult(dragId, srcDay);
+            },
+          });
+        }, 0);
       }
     };
 
