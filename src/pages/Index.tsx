@@ -221,24 +221,31 @@ const Index = () => {
       );
     };
 
+    const origEventData = { hour: ev.hour, endHour: ev.endHour, date: ev.date };
+
     const onUp = () => {
-      // Save drag result to DB
-      if (wasDragging.current && dragRef.current) {
-        const ev = events.find((e) => e.id === dragRef.current!.id);
-        // We'll handle this via effect - events already updated in state
-      }
       const dragId = dragRef.current?.id;
+      const wasDrag = wasDragging.current;
       dragRef.current = null;
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      // Save updated event to DB after drag
-      if (wasDragging.current && dragId) {
+      // Save updated event to DB after drag + push undo
+      if (wasDrag && dragId) {
         setTimeout(() => {
           setEvents((prev) => {
-            const ev = prev.find((e) => e.id === dragId);
-            if (ev) {
-              updateEventInDb(ev.id, { hour: ev.hour, endHour: ev.endHour, date: ev.date });
+            const evNow = prev.find((e) => e.id === dragId);
+            if (evNow) {
+              const newData = { hour: evNow.hour, endHour: evNow.endHour, date: evNow.date };
+              updateEventInDb(evNow.id, newData);
+              pushAction({
+                undo: () => {
+                  updateEventInDb(dragId, origEventData);
+                },
+                redo: () => {
+                  updateEventInDb(dragId, newData);
+                },
+              });
             }
             return prev;
           });
