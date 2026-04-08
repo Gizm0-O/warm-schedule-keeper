@@ -196,6 +196,15 @@
   .animate-twinkle {
     animation: twinkle 4s ease-in-out infinite alternate;
   }
+
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Blob animations */
