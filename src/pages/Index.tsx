@@ -647,7 +647,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] 2xl:grid-cols-[1fr_476px]">
         {/* Calendar */}
         {viewMode === "month" ? (
           <div className="glass rounded-2xl p-4 animate-fade-in">
