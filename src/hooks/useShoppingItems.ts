@@ -71,5 +71,5 @@ export function useShoppingItems() {
     setItems([]);
   }, []);
 
-  return { items, loading, addItem, toggleItem, removeItem, changeQty, renameItem, clearAll };
+  return { items, loading, addItem, toggleItem, removeItem, changeQty, renameItem, changeCategory, clearAll };
 }
