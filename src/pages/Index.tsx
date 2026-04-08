@@ -297,8 +297,9 @@ const Index = () => {
       }
 
       setShiftTimeOverrides((prev) => {
-        const existing = prev[key] ?? { startHour: dragRef.current!.origHour, endHour: dragRef.current!.origEndHour };
-        if (dragRef.current!.mode === "resize-bottom") {
+        if (!dragRef.current) return prev;
+        const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
+        if (dragRef.current.mode === "resize-bottom") {
           const end = Math.max(newHour + 1, existing.startHour + 1);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
