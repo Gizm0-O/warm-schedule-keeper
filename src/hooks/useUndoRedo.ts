@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 export interface UndoAction {
   undo: () => void | Promise<void>;
@@ -6,32 +6,34 @@ export interface UndoAction {
 }
 
 export function useUndoRedo() {
-  const [past, setPast] = useState<UndoAction[]>([]);
-  const [future, setFuture] = useState<UndoAction[]>([]);
+  const pastRef = useRef<UndoAction[]>([]);
+  const futureRef = useRef<UndoAction[]>([]);
+  const [, forceRender] = useState(0);
+
+  const rerender = () => forceRender((n) => n + 1);
 
   const pushAction = useCallback((action: UndoAction) => {
-    setPast((prev) => [...prev.slice(-49), action]);
-    setFuture([]);
+    pastRef.current = [...pastRef.current.slice(-49), action];
+    futureRef.current = [];
+    rerender();
   }, []);
 
   const undo = useCallback(async () => {
-    setPast((prev) => {
-      if (prev.length === 0) return prev;
-      const action = prev[prev.length - 1];
-      action.undo();
-      setFuture((f) => [...f, action]);
-      return prev.slice(0, -1);
-    });
+    if (pastRef.current.length === 0) return;
+    const action = pastRef.current[pastRef.current.length - 1];
+    pastRef.current = pastRef.current.slice(0, -1);
+    futureRef.current = [...futureRef.current, action];
+    rerender();
+    await action.undo();
   }, []);
 
   const redo = useCallback(async () => {
-    setFuture((prev) => {
-      if (prev.length === 0) return prev;
-      const action = prev[prev.length - 1];
-      action.redo();
-      setPast((p) => [...p, action]);
-      return prev.slice(0, -1);
-    });
+    if (futureRef.current.length === 0) return;
+    const action = futureRef.current[futureRef.current.length - 1];
+    futureRef.current = futureRef.current.slice(0, -1);
+    pastRef.current = [...pastRef.current, action];
+    rerender();
+    await action.redo();
   }, []);
 
   useEffect(() => {
@@ -49,5 +51,11 @@ export function useUndoRedo() {
     return () => window.removeEventListener("keydown", handler);
   }, [undo, redo]);
 
-  return { pushAction, undo, redo, canUndo: past.length > 0, canRedo: future.length > 0 };
+  return {
+    pushAction,
+    undo,
+    redo,
+    canUndo: pastRef.current.length > 0,
+    canRedo: futureRef.current.length > 0,
+  };
 }
