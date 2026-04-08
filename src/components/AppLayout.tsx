@@ -110,7 +110,7 @@ const AppLayout = () => {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 animate-fade-in relative z-10">
+      <main className="mx-auto max-w-[1800px] 2xl:max-w-[2200px] px-4 2xl:px-8 py-6 animate-fade-in relative z-10">
         <Outlet />
       </main>
     </div>
