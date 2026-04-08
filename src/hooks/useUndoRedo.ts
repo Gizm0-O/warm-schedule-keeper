@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
 export interface UndoAction {
-  undo: () => void | Promise<void>;
-  redo: () => void | Promise<void>;
+  undo: () => any | Promise<any>;
+  redo: () => any | Promise<any>;
 }
 
 export function useUndoRedo() {

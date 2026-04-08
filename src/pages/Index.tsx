@@ -389,13 +389,11 @@ const Index = () => {
       hour: newEventHour,
       endHour: newEventEndHour,
     };
-    await addEventToDb(evData);
-    // Find the newly added event (last one with matching title/date)
-    const added = events.find((e) => e.title === evData.title && e.date === evData.date);
+    const added = await addEventToDb(evData);
     if (added) {
       pushAction({
         undo: () => removeEventFromDb(added.id),
-        redo: () => addEventToDb(evData),
+        redo: () => { addEventToDb(evData); },
       });
     }
     setNewEventTitle("");
