@@ -267,6 +267,10 @@ const Index = () => {
     dragStartPos.current = { x: e.clientX, y: e.clientY };
     dragRef.current = { type: "shift", id, mode, origHour: shift.startHour, origEndHour: shift.endHour, origDayIdx: dayIdx, offsetHour };
 
+    // Capture original overrides for undo
+    const origTimeOverride = shiftTimeOverrides[id] ? { ...shiftTimeOverrides[id] } : null;
+    const origDayOverride = shiftDayOverrides[id] ?? null;
+
     const onMove = (me: MouseEvent) => {
       if (!dragRef.current || dragRef.current.type !== "shift") return;
       if (!wasDragging.current && dragStartPos.current) {
@@ -323,10 +327,38 @@ const Index = () => {
       dragStartPos.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
-      // Save to DB after drag
+      // Save to DB after drag + push undo
       if (wasDrag && dragId) {
         const [srcDay] = dragId.split(":");
+        // Capture new state before saving
+        const newTimeOverride = shiftTimeOverrides[dragId] ? { ...shiftTimeOverrides[dragId] } : null;
+        const newDayOverride = shiftDayOverrides[dragId] ?? null;
+
         saveDragResult(dragId, srcDay);
+
+        pushAction({
+          undo: () => {
+            if (origTimeOverride) {
+              setShiftTime(dragId, origTimeOverride.startHour, origTimeOverride.endHour);
+            } else {
+              deleteShiftOverrides(dragId);
+            }
+            if (origDayOverride) {
+              setShiftDay(dragId, origDayOverride);
+            } else {
+              setShiftDay(dragId, null);
+            }
+          },
+          redo: () => {
+            if (newTimeOverride) {
+              setShiftTime(dragId, newTimeOverride.startHour, newTimeOverride.endHour);
+            }
+            if (newDayOverride) {
+              setShiftDay(dragId, newDayOverride);
+            }
+            saveDragResult(dragId, srcDay);
+          },
+        });
       }
     };
 
