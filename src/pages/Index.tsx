@@ -437,7 +437,7 @@ const Index = () => {
     if (added) {
       pushAction({
         undo: () => removeEventFromDb(added.id),
-        redo: () => { addEventToDb(evData); },
+        redo: () => addEventToDb({ ...evData, id: added.id }),
       });
     }
     setNewEventTitle("");
@@ -458,8 +458,8 @@ const Index = () => {
     await removeEventFromDb(id);
     if (ev) {
       pushAction({
-        undo: () => { addEventToDb({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }); },
-        redo: () => removeEventFromDb(id),
+        undo: () => addEventToDb({ id: ev.id, date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }),
+        redo: () => removeEventFromDb(ev.id),
       });
     }
   };
