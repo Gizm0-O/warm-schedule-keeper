@@ -70,7 +70,7 @@ const AppLayout = () => {
       </div>
 
       <header className="sticky top-0 z-50 glass-strong">
-        <div className="mx-auto flex h-16 max-w-[1800px] 2xl:max-w-[2200px] items-center justify-between px-4 2xl:px-8">
+        <div className="mx-auto flex h-16 max-w-[1800px] 2xl:max-w-[2000px] items-center justify-between px-4 2xl:px-8">
           <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <Orbit className="h-5 w-5 text-primary animate-twinkle" />
             <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
