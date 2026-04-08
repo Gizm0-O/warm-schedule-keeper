@@ -255,7 +255,7 @@ const Index = () => {
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY, dayIdxFromX, currentWeekStart]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart, updateEventInDb, pushAction]);
 
   const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
     e.preventDefault();
