@@ -61,6 +61,11 @@ export function useShoppingItems() {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, name: newName.trim(), category } : i)));
   }, []);
 
+  const changeCategory = useCallback(async (id: string, category: ShoppingCategory) => {
+    await supabase.from("shopping_items").update({ category }).eq("id", id);
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, category } : i)));
+  }, []);
+
   const clearAll = useCallback(async () => {
     await supabase.from("shopping_items").delete().neq("id", "00000000-0000-0000-0000-000000000000");
     setItems([]);
