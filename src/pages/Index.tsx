@@ -382,13 +382,20 @@ const Index = () => {
   const addEvent = async () => {
     if (!newEventTitle.trim()) return;
     const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
-    await addEventToDb({
+    const evData = {
       date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
       hour: newEventHour,
       endHour: newEventEndHour,
-    });
+    };
+    const added = await addEventToDb(evData);
+    if (added) {
+      pushAction({
+        undo: () => removeEventFromDb(added.id),
+        redo: () => { addEventToDb(evData); },
+      });
+    }
     setNewEventTitle("");
     setShowNewEventDialog(false);
   };
@@ -402,12 +409,12 @@ const Index = () => {
     setShowNewEventDialog(true);
   };
 
-  const removeEvent = (id: string) => {
+  const removeEvent = async (id: string) => {
     const ev = events.find((e) => e.id === id);
-    removeEventFromDb(id);
+    await removeEventFromDb(id);
     if (ev) {
       pushAction({
-        undo: () => addEventToDb({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }),
+        undo: () => { addEventToDb({ date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }); },
         redo: () => removeEventFromDb(id),
       });
     }
@@ -423,7 +430,14 @@ const Index = () => {
 
   const saveEditEvent = async () => {
     if (!editingEvent) return;
-    await updateEventInDb(editingEvent.id, { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor });
+    const prevData = { title: editingEvent.title, hour: editingEvent.hour, endHour: editingEvent.endHour, color: editingEvent.color };
+    const newData = { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor };
+    const evId = editingEvent.id;
+    await updateEventInDb(evId, newData);
+    pushAction({
+      undo: () => updateEventInDb(evId, prevData),
+      redo: () => updateEventInDb(evId, newData),
+    });
     setEditingEvent(null);
   };
 
