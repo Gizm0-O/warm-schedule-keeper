@@ -368,7 +368,7 @@ const Index = () => {
 
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
-  }, [hourFromY, dayIdxFromX, currentWeekStart]);
+  }, [hourFromY, dayIdxFromX, currentWeekStart, shiftTimeOverrides, shiftDayOverrides, saveDragResult, setShiftTime, setShiftDay, deleteShiftOverrides, pushAction]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
