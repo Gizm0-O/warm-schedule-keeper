@@ -382,13 +382,22 @@ const Index = () => {
   const addEvent = async () => {
     if (!newEventTitle.trim()) return;
     const dateStr = newEventDate || (selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
-    await addEventToDb({
+    const evData = {
       date: dateStr,
       title: newEventTitle.trim(),
       color: newEventColor,
       hour: newEventHour,
       endHour: newEventEndHour,
-    });
+    };
+    await addEventToDb(evData);
+    // Find the newly added event (last one with matching title/date)
+    const added = events.find((e) => e.title === evData.title && e.date === evData.date);
+    if (added) {
+      pushAction({
+        undo: () => removeEventFromDb(added.id),
+        redo: () => addEventToDb(evData),
+      });
+    }
     setNewEventTitle("");
     setShowNewEventDialog(false);
   };
