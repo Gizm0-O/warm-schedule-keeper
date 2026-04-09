@@ -49,7 +49,7 @@ export const CategoryBadge = ({ category, onChangeCategory }: CategoryBadgeProps
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[140px] rounded-xl border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95">
+        <div className="absolute left-0 top-full mt-1 z-50 min-w-[140px] max-w-[200px] rounded-xl border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95">
           {ALL_CATEGORIES.map((cat) => {
             const catInfo = CATEGORY_INFO[cat];
             const isActive = cat === category;
@@ -62,7 +62,7 @@ export const CategoryBadge = ({ category, onChangeCategory }: CategoryBadgeProps
                   setOpen(false);
                 }}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-colors",
+                  "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs whitespace-nowrap transition-colors",
                   isActive
                     ? "bg-accent text-accent-foreground"
                     : "hover:bg-accent/50 text-foreground"
