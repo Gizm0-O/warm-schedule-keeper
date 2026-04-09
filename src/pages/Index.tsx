@@ -375,6 +375,12 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (selectedDate) {
+      setNewEventDate(format(selectedDate, "yyyy-MM-dd"));
+    }
+  }, [selectedDate]);
+
   const days = useMemo(() => {
     if (viewMode === "week") {
       const end = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
