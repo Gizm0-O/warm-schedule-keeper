@@ -44,6 +44,27 @@ export type Database = {
         }
         Relationships: []
       }
+      italy_savings: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
       shift_overrides: {
         Row: {
           created_at: string
