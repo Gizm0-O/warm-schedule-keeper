@@ -604,6 +604,8 @@ const Index = () => {
 
   return (
     <div className="space-y-6" onClick={() => setSelectedDate(null)}>
+      {/* Italy Savings Banner */}
+      <ItalySavingsBanner />
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
