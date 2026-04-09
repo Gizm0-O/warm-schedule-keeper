@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
+import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 
 type ViewMode = "month" | "week";
 
