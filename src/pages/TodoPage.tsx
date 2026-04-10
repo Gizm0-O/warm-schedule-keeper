@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +23,16 @@ import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fn
 import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
+import { supabase } from "@/integrations/supabase/client";
+
+const MAX_COMPLETED = 20;
 
 const TodoPage = () => {
   const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [showAllActive, setShowAllActive] = useState(false);
 
   // New todo form state
   const [newText, setNewText] = useState("");
@@ -43,6 +48,23 @@ const TodoPage = () => {
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
+
+  // Reset "show more" when switching tabs
+  useEffect(() => {
+    setShowAllActive(false);
+    setShowCompleted(false);
+  }, [activeTab]);
+
+  // Auto-delete oldest completed todos beyond MAX_COMPLETED
+  useEffect(() => {
+    const completed = todos.filter((t) => t.completed);
+    if (completed.length <= MAX_COMPLETED) return;
+    const sorted = [...completed].sort((a, b) => a.id.localeCompare(b.id));
+    const toDelete = sorted.slice(0, completed.length - MAX_COMPLETED);
+    const ids = toDelete.map((t) => t.id);
+    setTodos((prev) => prev.filter((t) => !ids.includes(t.id)));
+    ids.forEach((id) => supabase.from("todos").delete().eq("id", id));
+  }, [todos, setTodos]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
@@ -81,7 +103,6 @@ const TodoPage = () => {
     setEditingTodo(null);
   };
 
-
   const sortByDeadline = (a: Todo, b: Todo) => {
     if (!a.deadline && !b.deadline) return 0;
     if (!a.deadline) return 1;
@@ -93,6 +114,8 @@ const TodoPage = () => {
   const workPending = filtered.filter((t) => t.category === "work" && !t.completed).sort(sortByDeadline);
   const homePending = filtered.filter((t) => t.category === "home" && !t.completed).sort(sortByDeadline);
   const completed = filtered.filter((t) => t.completed);
+
+  const activeLimit = activeTab === "all" ? 5 : 10;
 
   const getDeadlineInfo = (d?: Date) => {
     if (!d) return { label: null, isToday: false, isOverdue: false, daysLate: 0 };
@@ -207,6 +230,8 @@ const TodoPage = () => {
     items: Todo[];
   }) => {
     if (items.length === 0) return null;
+    const visible = showAllActive ? items : items.slice(0, activeLimit);
+    const hasMore = items.length > activeLimit && !showAllActive;
     return (
       <div>
         <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
@@ -216,10 +241,18 @@ const TodoPage = () => {
           </span>
         </div>
         <div className="divide-y divide-border">
-          {items.map((todo) => (
+          {visible.map((todo) => (
             <TodoItem key={todo.id} todo={todo} />
           ))}
         </div>
+        {hasMore && (
+          <button
+            onClick={() => setShowAllActive(true)}
+            className="w-full px-4 py-2 text-xs font-medium text-primary hover:bg-accent/30 transition-colors"
+          >
+            Zobrazit více ({items.length - activeLimit} dalších)
+          </button>
+        )}
       </div>
     );
   };
@@ -253,17 +286,23 @@ const TodoPage = () => {
         <Section icon={Home} label="Domácnost" items={homePending} />
         {completed.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/30">
+            <button
+              onClick={() => setShowCompleted((v) => !v)}
+              className="flex w-full items-center gap-1.5 px-4 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors"
+            >
+              {showCompleted ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
               <Check className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Hotovo ({completed.length})
+                Hotové úkoly ({completed.length})
               </span>
-            </div>
-            <div className="divide-y divide-border">
-              {completed.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} />
-              ))}
-            </div>
+            </button>
+            {showCompleted && (
+              <div className="divide-y divide-border">
+                {completed.map((todo) => (
+                  <TodoItem key={todo.id} todo={todo} />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
