@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Check, ShoppingCart, Wrench } from "lucide-react";
+import { Plus, Trash2, ShoppingCart, Wrench, ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -18,14 +18,21 @@ import { type ShoppingCategory } from "@/data/shoppingCategories";
 import { useShoppingItems } from "@/hooks/useShoppingItems";
 import { useWishlistItems } from "@/hooks/useWishlistItems";
 import { ShoppingItemRow } from "@/components/shopping/ShoppingItemRow";
+import { WishlistItemRow } from "@/components/shopping/WishlistItemRow";
 import { CategoryFilter } from "@/components/shopping/CategoryFilter";
+import { useIsMobile } from "@/hooks/use-mobile";
+
+const MAX_COMPLETED = 50;
 
 const ShoppingPage = () => {
   const { items, addItem, toggleItem, removeItem, changeQty, renameItem, changeCategory, clearAll } = useShoppingItems();
-  const { wishlist, addWish, toggleWish, removeWish, clearAll: clearWishlist } = useWishlistItems();
+  const { wishlist, addWish, toggleWish, removeWish, renameWish, changeWishQty, clearAll: clearWishlist } = useWishlistItems();
   const [newItem, setNewItem] = useState("");
   const [activeFilter, setActiveFilter] = useState<ShoppingCategory | null>(null);
   const [newWish, setNewWish] = useState("");
+  const [showBought, setShowBought] = useState(false);
+  const [showDoneWishes, setShowDoneWishes] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleAddItem = () => {
     if (!newItem.trim()) return;
@@ -40,10 +47,14 @@ const ShoppingPage = () => {
     : items;
 
   const toBuy = filtered.filter((i) => !i.bought);
-  const bought = filtered.filter((i) => i.bought);
+  const bought = filtered.filter((i) => i.bought).slice(0, MAX_COMPLETED);
+
+  const doneWishes = wishlist.filter((w) => w.done).slice(0, MAX_COMPLETED);
+  const activeWishes = wishlist.filter((w) => !w.done);
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <ShoppingCart className="h-6 w-6 text-primary" />
@@ -52,8 +63,8 @@ const ShoppingPage = () => {
         {items.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -88,12 +99,14 @@ const ShoppingPage = () => {
         </Button>
       </div>
 
-      {/* Category filter */}
-      <CategoryFilter
-        usedCategories={usedCategories}
-        activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
-      />
+      {/* Category filter — reduced gap */}
+      <div className="-mb-3">
+        <CategoryFilter
+          usedCategories={usedCategories}
+          activeFilter={activeFilter}
+          onFilterChange={setActiveFilter}
+        />
+      </div>
 
       {/* Item list */}
       <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
@@ -116,12 +129,16 @@ const ShoppingPage = () => {
         ))}
         {bought.length > 0 && (
           <>
-            <div className="px-4 py-2">
+            <button
+              onClick={() => setShowBought((v) => !v)}
+              className="flex w-full items-center gap-1.5 px-4 py-2 hover:bg-accent/30 transition-colors"
+            >
+              {showBought ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 V košíku ({bought.length})
               </span>
-            </div>
-            {bought.map((item) => (
+            </button>
+            {showBought && bought.map((item) => (
               <ShoppingItemRow
                 key={item.id}
                 item={item}
@@ -137,7 +154,7 @@ const ShoppingPage = () => {
         )}
       </div>
 
-      {/* Wishlist */}
+      {/* Wishlist / Domácnost */}
       <div className="mt-10 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -147,15 +164,15 @@ const ShoppingPage = () => {
           {wishlist.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                  <Trash2 className="mr-1 h-4 w-4" /> Vymazat seznam
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Vymazat seznam?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Opravdu si přejete smazat celý seznam „Na koupit"? Tuto akci nelze vrátit zpět.
+                    Opravdu si přejete smazat celý seznam „Domácnost"? Tuto akci nelze vrátit zpět.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -200,44 +217,36 @@ const ShoppingPage = () => {
               Zatím nic – zapiš si sem věci, které potřebuješ koupit, ale nespěchají
             </p>
           )}
-          {wishlist.filter((w) => !w.done).map((w) => (
-            <div key={w.id} className="flex items-center gap-3 px-4 py-3 hover:bg-accent/50 transition-colors">
-              <button
-                onClick={() => toggleWish(w.id)}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-muted-foreground/30 hover:border-primary hover:bg-primary/10 transition-colors"
-              />
-              <span className="flex-1 text-sm text-foreground">{w.name}</span>
-              <button
-                onClick={() => removeWish(w.id)}
-                className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
+          {activeWishes.map((w) => (
+            <WishlistItemRow
+              key={w.id}
+              item={w}
+              onToggle={toggleWish}
+              onRemove={removeWish}
+              onRename={renameWish}
+              onChangeQty={changeWishQty}
+            />
           ))}
-          {wishlist.some((w) => w.done) && (
+          {doneWishes.length > 0 && (
             <>
-              <div className="px-4 py-2">
+              <button
+                onClick={() => setShowDoneWishes((v) => !v)}
+                className="flex w-full items-center gap-1.5 px-4 py-2 hover:bg-accent/30 transition-colors"
+              >
+                {showDoneWishes ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Koupeno ({wishlist.filter((w) => w.done).length})
+                  Koupeno ({doneWishes.length})
                 </span>
-              </div>
-              {wishlist.filter((w) => w.done).map((w) => (
-                <div key={w.id} className="flex items-center gap-3 px-4 py-3 opacity-60">
-                  <button
-                    onClick={() => toggleWish(w.id)}
-                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                  >
-                    <Check className="h-3.5 w-3.5" />
-                  </button>
-                  <span className="flex-1 text-sm text-foreground line-through">{w.name}</span>
-                  <button
-                    onClick={() => removeWish(w.id)}
-                    className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
+              </button>
+              {showDoneWishes && doneWishes.map((w) => (
+                <WishlistItemRow
+                  key={w.id}
+                  item={w}
+                  onToggle={toggleWish}
+                  onRemove={removeWish}
+                  onRename={renameWish}
+                  onChangeQty={changeWishQty}
+                />
               ))}
             </>
           )}
