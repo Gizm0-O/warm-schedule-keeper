@@ -155,18 +155,21 @@ export type Database = {
           done: boolean
           id: string
           name: string
+          quantity: number
         }
         Insert: {
           created_at?: string
           done?: boolean
           id?: string
           name: string
+          quantity?: number
         }
         Update: {
           created_at?: string
           done?: boolean
           id?: string
           name?: string
+          quantity?: number
         }
         Relationships: []
       }
