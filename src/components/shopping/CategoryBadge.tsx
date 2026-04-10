@@ -49,7 +49,7 @@ export const CategoryBadge = ({ category, onChangeCategory }: CategoryBadgeProps
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-50 min-w-[140px] max-w-[200px] rounded-xl border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95">
+        <div className="absolute left-0 top-full mt-1 z-[100] min-w-[140px] max-w-[200px] rounded-xl border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95">
           {ALL_CATEGORIES.map((cat) => {
             const catInfo = CATEGORY_INFO[cat];
             const isActive = cat === category;
