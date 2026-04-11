@@ -115,7 +115,7 @@ const ShoppingPage = () => {
       </div>
 
       {/* Item list */}
-      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
+      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up overflow-visible">
         {items.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Nákupní seznam je prázdný
