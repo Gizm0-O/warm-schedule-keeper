@@ -29,7 +29,7 @@ export const CategoryBadge = ({ category, onChangeCategory }: CategoryBadgeProps
   }, [open]);
 
   return (
-    <div className="relative" ref={ref}>
+    <div className={cn("relative", open && "z-[10000]")} ref={ref}>
       <button
         onClick={(e) => {
           e.stopPropagation();
