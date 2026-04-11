@@ -63,9 +63,15 @@ const ShoppingPage = () => {
         {items.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <span>
+                <Button variant="ghost" size="icon" className="sm:hidden text-primary hover:text-primary hover:bg-primary/10">
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" className="hidden sm:inline-flex text-primary hover:text-primary hover:bg-primary/10 gap-1.5">
+                  <Trash2 className="h-5 w-5" />
+                  Vymazat seznam
+                </Button>
+              </span>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
