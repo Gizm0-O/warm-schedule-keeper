@@ -110,7 +110,7 @@ const ShoppingPage = () => {
       </div>
 
       {/* Item list */}
-      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up overflow-visible">
+      <div className="relative z-20 glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up overflow-visible">
         {items.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Nákupní seznam je prázdný
@@ -156,7 +156,7 @@ const ShoppingPage = () => {
       </div>
 
       {/* Wishlist / Domácnost */}
-      <div className="mt-10 space-y-4">
+      <div className="relative z-0 mt-10 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Wrench className="h-6 w-6 text-primary" />
