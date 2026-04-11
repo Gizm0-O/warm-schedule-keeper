@@ -63,8 +63,9 @@ const ShoppingPage = () => {
         {items.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                <Trash2 className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10 sm:w-auto sm:px-3">
+                <Trash2 className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
+                <span className="hidden sm:inline sm:ml-1 text-sm">Vymazat seznam</span>
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -109,7 +110,7 @@ const ShoppingPage = () => {
       </div>
 
       {/* Item list */}
-      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
+      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up overflow-visible">
         {items.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Nákupní seznam je prázdný
@@ -164,8 +165,9 @@ const ShoppingPage = () => {
           {wishlist.length > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
-                  <Trash2 className="h-4 w-4" />
+                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10 sm:w-auto sm:px-3">
+                  <Trash2 className="h-5 w-5 sm:h-[22px] sm:w-[22px]" />
+                  <span className="hidden sm:inline sm:ml-1 text-sm">Vymazat seznam</span>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
