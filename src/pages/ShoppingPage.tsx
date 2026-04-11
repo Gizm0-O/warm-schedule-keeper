@@ -63,15 +63,9 @@ const ShoppingPage = () => {
         {items.length > 0 && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <span>
-                <Button variant="ghost" size="icon" className="sm:hidden text-primary hover:text-primary hover:bg-primary/10">
-                  <Trash2 className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" className="hidden sm:inline-flex text-primary hover:text-primary hover:bg-primary/10 gap-1.5">
-                  <Trash2 className="h-5 w-5" />
-                  Vymazat seznam
-                </Button>
-              </span>
+              <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -115,7 +109,7 @@ const ShoppingPage = () => {
       </div>
 
       {/* Item list */}
-      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up overflow-visible">
+      <div className="glass rounded-2xl shadow-sm divide-y divide-border/50 animate-slide-up">
         {items.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
             Nákupní seznam je prázdný
