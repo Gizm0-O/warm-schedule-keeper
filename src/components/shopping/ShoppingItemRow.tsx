@@ -53,7 +53,7 @@ export const ShoppingItemRow = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-2 px-3 py-2.5 transition-colors hover:bg-accent/50 sm:gap-3 sm:px-4 sm:py-3",
+        "flex items-center gap-2 px-3 py-2.5 transition-colors hover:bg-accent/50 sm:gap-3 sm:px-4 sm:py-3 overflow-visible relative",
         isBought && "opacity-60"
       )}
     >
