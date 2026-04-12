@@ -861,25 +861,44 @@ const Index = () => {
               ))}
             </div>
               {/* Celodenní události v hlavičce týdne */}
-              <div className="grid border-b border-border/30" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
-                <div className="border-r border-border/30" />
-                {weekDays.map((day) => {
-                  const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
-                  return (
-                    <div key={day.toISOString()} className="px-0.5 py-0.5 min-h-[4px] border-r border-border/30">
-                      {allDayEvs.map(ev => (
-                        <div
-                          key={ev.id}
-                          className={cn("text-[9px] font-medium rounded px-1 truncate cursor-pointer hover:opacity-80 mb-0.5", ev.color)}
-                          onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
-                        >
-                          {ev.title}
-                        </div>
-                      ))}
+              {(() => {
+                const hasAnyAllDay = weekDays.some(day => events.some(e => e.date === format(day, "yyyy-MM-dd") && e.allDay));
+                if (!hasAnyAllDay) return null;
+                return (
+                  <div className="grid border-b border-border/30" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
+                    <div className="border-r border-border/30 flex items-center justify-end pr-2">
+                      <span className="text-[9px] text-muted-foreground/60 font-medium">celý den</span>
                     </div>
-                  );
-                })}
-              </div>
+                    {weekDays.map((day) => {
+                      const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
+                      return (
+                        <div key={day.toISOString()} className="px-0.5 py-1 border-r border-border/30 space-y-0.5">
+                          {allDayEvs.map(ev => {
+                            // Extract border color from the color class (e.g. "border-primary/30" → "border-primary")
+                            const borderColor = ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
+                            const textColor = ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
+                            return (
+                              <div
+                                key={ev.id}
+                                className={cn(
+                                  "flex items-center gap-1 rounded-md px-1.5 py-0.5 cursor-pointer hover:opacity-80 transition-opacity",
+                                  "bg-card/80 border-l-[3px]",
+                                  borderColor
+                                )}
+                                onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
+                              >
+                                <span className={cn("text-[10px] font-semibold truncate flex-1", textColor)}>
+                                  {ev.title}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
               <div className="relative" style={{ height: totalGridHeight }}>
                 {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
