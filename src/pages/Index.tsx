@@ -786,6 +786,8 @@ const Index = () => {
                           setSelectedDate(day);
                           setNewEventHour(hour);
                           setNewEventEndHour(Math.min(hour + 1, 23));
+                          setNewEventDate(format(day, "yyyy-MM-dd"));
+                          setShowNewEventDialog(true);
                         }}
                       />
                     ))}

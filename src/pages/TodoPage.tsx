@@ -233,7 +233,7 @@ const TodoPage = () => {
     const visible = showAllActive ? items : items.slice(0, activeLimit);
     const hasMore = items.length > activeLimit && !showAllActive;
     return (
-      <div>
+      <div className="relative">
         <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
           <Icon className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -245,14 +245,24 @@ const TodoPage = () => {
             <TodoItem key={todo.id} todo={todo} />
           ))}
         </div>
-        {hasMore && (
-          <button
-            onClick={() => setShowAllActive(true)}
-            className="w-full px-4 py-2 text-xs font-medium text-primary hover:bg-accent/30 transition-colors"
-          >
-            Zobrazit více ({items.length - activeLimit} dalších)
-          </button>
-        )}
+        <div className="text-center absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+          {hasMore && (
+            <button
+              onClick={() => setShowAllActive(true)}
+              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-accent/30 transition-colors bg-primary/10 shadow-lg"
+            >
+              Zobrazit více ({items.length - activeLimit} dalších)
+            </button>
+          )}
+          {showAllActive && items.length > activeLimit && (
+            <button
+              onClick={() => setShowAllActive(false)}
+              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-accent/30 transition-colors bg-primary/10 shadow-lg"
+            >
+              Skrýt
+            </button>
+          )}
+        </div>
       </div>
     );
   };
