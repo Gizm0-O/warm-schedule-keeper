@@ -8,6 +8,7 @@ export interface CalendarEvent {
   color: string;
   hour?: number;
   endHour?: number;
+  allDay?: boolean;
 }
 
 export interface CalendarEventInput extends Omit<CalendarEvent, "id"> {
@@ -28,6 +29,7 @@ export function useCalendarEvents() {
         color: r.color,
         hour: r.hour ?? undefined,
         endHour: r.end_hour ?? undefined,
+        allDay: r.all_day ?? false,
       })));
       setLoading(false);
     };
@@ -44,11 +46,12 @@ export function useCalendarEvents() {
         color: ev.color,
         hour: ev.hour ?? null,
         end_hour: ev.endHour ?? null,
+        all_day: ev.allDay ?? false,
       })
       .select()
       .single();
     if (data) {
-      const newEv = { id: data.id, date: data.date, title: data.title, color: data.color, hour: data.hour ?? undefined, endHour: data.end_hour ?? undefined };
+      const newEv = { id: data.id, date: data.date, title: data.title, color: data.color, hour: data.hour ?? undefined, endHour: data.end_hour ?? undefined, allDay: data.all_day ?? false };
       setEvents((prev) => [...prev, newEv]);
       return newEv;
     }
@@ -62,6 +65,7 @@ export function useCalendarEvents() {
     if (updates.color !== undefined) row.color = updates.color;
     if (updates.hour !== undefined) row.hour = updates.hour;
     if (updates.endHour !== undefined) row.end_hour = updates.endHour;
+    if (updates.allDay !== undefined) row.all_day = updates.allDay;
     await supabase.from("calendar_events").update(row).eq("id", id);
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
   }, []);
