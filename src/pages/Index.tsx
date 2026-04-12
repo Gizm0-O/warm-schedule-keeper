@@ -860,46 +860,40 @@ const Index = () => {
                 </button>
               ))}
             </div>
-              {/* Celodenní události v hlavičce týdne */}
-              {(() => {
-                const hasAnyAllDay = weekDays.some(day => events.some(e => e.date === format(day, "yyyy-MM-dd") && e.allDay));
-                if (!hasAnyAllDay) return null;
-                return (
-                  <div className="grid border-b border-border/30" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
-                    <div className="border-r border-border/30 flex items-center justify-end pr-2">
-                      <span className="text-[9px] text-muted-foreground/60 font-medium">celý den</span>
-                    </div>
-                    {weekDays.map((day) => {
-                      const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
-                      return (
-                        <div key={day.toISOString()} className="px-0.5 py-1 border-r border-border/30 space-y-0.5">
-                          {allDayEvs.map(ev => {
-                            // Extract border color from the color class (e.g. "border-primary/30" → "border-primary")
-                            const borderColor = ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
-                            const textColor = ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
-                            return (
-                              <div
-                                key={ev.id}
-                                className={cn(
-                                  "flex items-center gap-1 rounded-md px-1.5 py-0.5 cursor-pointer hover:opacity-80 transition-opacity",
-                                  "bg-card/80 border-l-[3px]",
-                                  borderColor
-                                )}
-                                onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
-                              >
-                                <span className={cn("text-[10px] font-semibold truncate flex-1", textColor)}>
-                                  {ev.title}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
               <div className="relative" style={{ height: totalGridHeight }}>
+                {/* Celodenní události – plovoucí nad kalendářem */}
+                {weekDays.map((day, dayIdx) => {
+                  const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
+                  if (allDayEvs.length === 0) return null;
+                  return allDayEvs.map((ev, evIdx) => {
+                    const borderColor = ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
+                    const textColor = ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
+                    return (
+                      <div
+                        key={ev.id}
+                        className="absolute z-30"
+                        style={{
+                          top: 4 + evIdx * 22,
+                          left: `calc(60px + ${dayIdx} * ((100% - 60px) / 7) + 2px)`,
+                          width: `calc((100% - 60px) / 7 - 4px)`,
+                        }}
+                      >
+                        <div
+                          className={cn(
+                            "flex items-center rounded-md px-1.5 py-0.5 cursor-pointer hover:opacity-90 transition-opacity",
+                            "bg-card/90 backdrop-blur-sm border-l-[3px] shadow-sm",
+                            borderColor
+                          )}
+                          onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
+                        >
+                          <span className={cn("text-[10px] font-semibold truncate", textColor)}>
+                            {ev.title}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  });
+                })}
                 {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
                   const top = getHourTop(hour);
