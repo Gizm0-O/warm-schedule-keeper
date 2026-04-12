@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       calendar_events: {
         Row: {
+          all_day: boolean
           color: string
           created_at: string
           date: string
@@ -25,6 +26,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          all_day?: boolean
           color: string
           created_at?: string
           date: string
@@ -34,6 +36,7 @@ export type Database = {
           title: string
         }
         Update: {
+          all_day?: boolean
           color?: string
           created_at?: string
           date?: string
