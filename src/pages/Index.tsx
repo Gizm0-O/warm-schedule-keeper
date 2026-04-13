@@ -938,7 +938,7 @@ const Index = () => {
                 position: "absolute",
                 inset: 0,
                 backgroundImage: "url('/hearts-bg.jpg')",
-                backgroundSize: "320px auto",
+                backgroundSize: "cover",
                 backgroundRepeat: "repeat",
                 backgroundPosition: "center top",
                 opacity: 0.15,
