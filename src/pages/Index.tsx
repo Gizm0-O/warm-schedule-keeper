@@ -927,15 +927,11 @@ const Index = () => {
               height: totalGridHeight,
               pointerEvents: "none",
               zIndex: 0,
-              background: "linear-gradient(180deg, rgba(251,191,36,0.18) 0%, rgba(249,168,212,0.22) 50%, rgba(167,243,208,0.15) 100%)",
-              backgroundImage: `
-                radial-gradient(circle, rgba(251,191,36,0.9) 2px, transparent 2px),
-                radial-gradient(circle, rgba(249,168,212,0.9) 2px, transparent 2px),
-                radial-gradient(circle, rgba(167,243,208,0.9) 2px, transparent 2px),
-                radial-gradient(circle, rgba(239,68,68,0.7) 1.5px, transparent 1.5px)
-              `,
-              backgroundSize: "28px 28px, 42px 42px, 35px 35px, 20px 20px",
-              backgroundPosition: "0 0, 14px 14px, 7px 21px, 21px 7px",
+              opacity: 0.25,
+              backgroundImage: "url('/birthday-pattern.jpg')",
+              backgroundSize: "320px auto",
+              backgroundRepeat: "repeat",
+              backgroundPosition: "center top",
             }}
           />
         );
