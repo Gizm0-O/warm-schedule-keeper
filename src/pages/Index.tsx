@@ -127,6 +127,14 @@ const EVENT_COLORS = [
 ];
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
+
+const BIRTHDAY_DATES = new Set(["04-16", "05-15", "11-06"]);
+const isBirthday = (date: Date) => BIRTHDAY_DATES.has(format(date, "MM-dd"));
+const BIRTHDAY_NAMES: Record<string, string> = {
+  "04-16": "🎂 Barča",
+  "05-15": "🎂 Sebastian",
+  "11-06": "🎂 Tadeáš",
+};
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
@@ -767,7 +775,8 @@ const Index = () => {
                       "relative flex min-h-[80px] flex-col items-start rounded-xl p-2 text-sm transition-all hover:bg-accent",
                       !isSameMonth(day, currentMonth) && "opacity-30",
                       selected && "ring-2 ring-primary bg-accent",
-                      isToday(day) && "bg-primary/5"
+                      isToday(day) && "bg-primary/5",
+                isBirthday(day) && !selected && "bg-gradient-to-br from-amber-50 to-pink-50 ring-2 ring-amber-300"
                     )}
                   >
                     <span
@@ -833,7 +842,8 @@ const Index = () => {
                   className={cn(
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
-                    isToday(day) && "bg-primary/5"
+                    isToday(day) && "bg-primary/5",
+              isBirthday(day) && "bg-gradient-to-b from-amber-50 to-pink-50"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
