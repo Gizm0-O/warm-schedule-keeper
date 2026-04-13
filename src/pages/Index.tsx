@@ -849,7 +849,7 @@ const Index = () => {
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
                     isToday(day) && "bg-primary/5",
-              isBirthday(day) && "bg-gradient-to-b from-amber-300 to-pink-200 ring-2 ring-amber-500 shadow-lg"
+              isBirthday(day) && "bg-gradient-to-b from-amber-100 to-pink-100 ring-1 ring-amber-200"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
