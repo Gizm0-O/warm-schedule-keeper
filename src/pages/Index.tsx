@@ -961,7 +961,7 @@ const Index = () => {
                   fontWeight: "bold",
                   color: "rgba(180, 83, 9, 1)",
                   textShadow: "0 0 8px rgba(255,255,255,1)",
-                  lineHeight: letter === " " ? 0.3 : 1.0,
+                  lineHeight: letter === " " ? 1.8 : 0.8,
                   display: "block",
                   textAlign: "center",
                 }}>{letter === " " ? " " : letter}</span>
