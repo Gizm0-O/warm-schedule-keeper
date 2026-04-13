@@ -959,7 +959,6 @@ const Index = () => {
               ))}
             </div>
           </div>
-          />
         );
       })}
       {HOURS.map((hour) => {
