@@ -1085,7 +1085,7 @@ const Index = () => {
                           "absolute rounded-md border-l-2 px-1.5 py-0.5 text-sm font-bold truncate z-10 cursor-grab group hover:opacity-80",
                           ev.color
                         )}
-                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 5 }}
+                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 20 }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onEventDragStart(e, ev, "move", dayIdx);
