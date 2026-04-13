@@ -961,6 +961,8 @@ const Index = () => {
                 color: "rgba(180, 83, 9, 1)",
                 textShadow: "0 0 8px rgba(255,255,255,1)",
                 whiteSpace: "nowrap",
+                display: "block",
+                textAlign: "center",
               }}>{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>
               <span style={{
                 fontFamily: "'Dancing Script', cursive",
@@ -969,7 +971,9 @@ const Index = () => {
                 color: "rgba(219, 39, 119, 1)",
                 textShadow: "0 0 8px rgba(255,255,255,1)",
                 whiteSpace: "nowrap",
-              }}>Narozeniny! 🎂</span>
+                display: "block",
+                textAlign: "center",
+              }}>Narozeniny!</span>
             </div>
           </div>
         );
