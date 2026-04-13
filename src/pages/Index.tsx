@@ -954,29 +954,18 @@ const Index = () => {
               gap: "3px",
               zIndex: 2,
             }}>
-              {BIRTHDAY_NAMES[format(day, "MM-dd")].split("").map((letter, i) => (
+              {(BIRTHDAY_NAMES[format(day, "MM-dd")] + " Narozeniny").split("").map((letter, i) => (
                 <span key={i} style={{
                   fontFamily: "'Dancing Script', cursive",
-                  fontSize: "28px",
+                  fontSize: letter === " " ? "6px" : "22px",
                   fontWeight: "bold",
-                  color: "rgba(180, 83, 9, 1)",
+                  color: i < BIRTHDAY_NAMES[format(day, "MM-dd")].length ? "rgba(180, 83, 9, 1)" : "rgba(219, 39, 119, 1)",
                   textShadow: "0 0 8px rgba(255,255,255,1)",
-                  lineHeight: 1.0,
+                  lineHeight: letter === " " ? 0.3 : 1.0,
                   display: "block",
                   textAlign: "center",
-                }}>{letter}</span>
+                }}>{letter === " " ? " " : letter}</span>
               ))}
-              <span style={{
-                fontFamily: "'Dancing Script', cursive",
-                fontSize: "13px",
-                fontWeight: "bold",
-                color: "rgba(219, 39, 119, 1)",
-                textShadow: "0 0 6px rgba(255,255,255,1)",
-                marginTop: "6px",
-                display: "block",
-                textAlign: "center",
-                letterSpacing: "1px",
-              }}>Narozeniny!</span>
             </div>
           </div>
         );
