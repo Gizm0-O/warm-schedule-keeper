@@ -927,8 +927,8 @@ const Index = () => {
               height: totalGridHeight,
               pointerEvents: "none",
               zIndex: 1,
-              border: '2px solid rgba(251,191,36,0.6)',
-              borderRadius: '4px',
+              border: '1px solid rgba(251,191,36,0.2)',
+              borderRadius: '0',
             }}
           >
             {/* Pozadi s pruhlednosti */}
