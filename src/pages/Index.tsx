@@ -1061,17 +1061,19 @@ const Index = () => {
                     const top = getHourTop(startH);
                     const height = HOURS.slice(startH, endH).reduce((s, h) => s + getHourHeight(h), 0);
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    const bgColor = ev.color.split(" ").find((c) => c.startsWith("bg-"))?.replace(/\/\d+$/, "") || "bg-primary";
                     const borderColor = ev.color.split(" ").find((c) => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
                     const textColor = ev.color.split(" ").find((c) => c.startsWith("text-")) || "text-foreground";
                     return (
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 bg-card px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-100",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-100",
+                          `${bgColor}/80`,
                           borderColor,
                           textColor
                         )}
-                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 5, opacity: 1 }}
+                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 5 }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onEventDragStart(e, ev, "move", dayIdx);
@@ -1121,10 +1123,10 @@ const Index = () => {
                       <div
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card hover:opacity-100",
-                          shift.borderClass
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-100",
+                          shift.bgClass.replace(/\/\d+$/, "/80"), shift.borderClass
                         )}
-                        style={{ top, height, left, width: colWidth, zIndex: 5, opacity: 1 }}
+                        style={{ top, height, left, width: colWidth, zIndex: 5 }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
