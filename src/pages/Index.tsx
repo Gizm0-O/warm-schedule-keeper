@@ -954,10 +954,10 @@ const Index = () => {
               gap: "3px",
               zIndex: 2,
             }}>
-              {(BIRTHDAY_NAMES[format(day, "MM-dd")] + " Narozeniny").split("").map((letter, i) => (
+              {(BIRTHDAY_NAMES[format(day, "MM-dd")] + "   Narozeniny").split("").map((letter, i) => (
                 <span key={i} style={{
                   fontFamily: "'Dancing Script', cursive",
-                  fontSize: letter === " " ? "8px" : "33px",
+                  fontSize: letter === " " ? "8px" : "40px",
                   fontWeight: "bold",
                   color: "rgba(180, 83, 9, 1)",
                   textShadow: "0 0 8px rgba(255,255,255,1)",
