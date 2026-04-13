@@ -788,9 +788,9 @@ const Index = () => {
                       {format(day, "d")}
                     </span>
                     {isBirthday(day) && (
-              <div className="flex flex-col items-center justify-center w-full flex-1 gap-0.5 py-1">
-                <span className="text-2xl">🎂</span>
-                <span className="text-xs font-bold text-amber-700 text-center leading-tight tracking-wide uppercase">{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center gap-1">
+                <span className="text-2xl leading-none">🎂</span>
+                <span className="text-sm font-bold text-amber-700 uppercase tracking-wide leading-tight">{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>
               </div>
             )}
 {!isBirthday(day) && NAME_DAYS[format(day, "MM-dd")] && (
