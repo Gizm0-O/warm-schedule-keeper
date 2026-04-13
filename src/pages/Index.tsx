@@ -961,7 +961,7 @@ const Index = () => {
                   fontSize: letter === " " ? "8px" : "40px",
                   fontWeight: "bold",
                   color: "rgba(180, 83, 9, 1)",
-                  textShadow: "0 0 6px rgba(255,255,255,1), 2px 3px 6px rgba(0,0,0,0.5)",
+                  textShadow: "0 0 4px rgba(255,255,255,1), 1px 1px 3px rgba(0,0,0,0.8)",
                   lineHeight: letter === " " ? 1.8 : 0.8,
                   display: "block",
                   textAlign: "center",
