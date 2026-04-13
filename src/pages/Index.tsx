@@ -133,7 +133,7 @@ const isBirthday = (date: Date) => BIRTHDAY_DATES.has(format(date, "MM-dd"));
 const BIRTHDAY_NAMES: Record<string, string> = {
   "04-16": "Barča",
   "05-15": "Tadeáš",
-  "11-06": "Sebastian",
+  "11-06": "Sebastián",
 };
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
