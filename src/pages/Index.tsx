@@ -1121,7 +1121,7 @@ const Index = () => {
                           "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-80",
                           shift.bgClass, shift.borderClass
                         )}
-                        style={{ top, height, left, width: colWidth, zIndex: 2 }}
+                        style={{ top, height, left, width: colWidth, zIndex: 5, opacity: 1 }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
