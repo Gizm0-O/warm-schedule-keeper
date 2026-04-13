@@ -1088,9 +1088,9 @@ const Index = () => {
                         >
                           <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
-                        <div className="truncate mt-1 font-semibold">{ev.title}</div>
+                        <div className="truncate mt-1 font-bold text-foreground">{ev.title}</div>
                         {height > 24 && (
-                          <div className="text-[9px] opacity-90 font-medium">
+                          <div className="text-[9px] font-semibold text-foreground/80">
                             {startH.toString().padStart(2, "0")}:00–{endH.toString().padStart(2, "0")}:00
                           </div>
                         )}
