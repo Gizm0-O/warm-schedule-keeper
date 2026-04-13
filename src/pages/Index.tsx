@@ -1141,6 +1141,10 @@ const Index = () => {
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
+                        <div className={cn("flex items-center gap-1.5", shift.textClass)}>
+                          {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
+                          <span className="text-xs font-bold truncate" style={{color:"#1a1a1a"}}>{shift.person}</span>
+                        </div>
                         {shift.location && (
                           <span className={cn("text-[11px] font-medium opacity-70 mt-0.5", shift.textClass)}>
                             {shift.location}
@@ -1149,10 +1153,6 @@ const Index = () => {
                         <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
                           {shift.startHour}:00–{shift.endHour}:00
                         </span>
-                        <div className={cn("flex items-center gap-1.5", shift.textClass)}>
-                          {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
-                          <span className="text-xs font-bold truncate" style={{color:"#1a1a1a"}}>{shift.person}</span>
-                        </div>
 
                         {/* Bottom drag handle */}
                         <div
