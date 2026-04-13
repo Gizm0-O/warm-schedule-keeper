@@ -941,12 +941,12 @@ const Index = () => {
                 backgroundSize: "320px auto",
                 backgroundRepeat: "repeat",
                 backgroundPosition: "center top",
-                opacity: 0.2,
+                opacity: 0.15,
               }} />
               <div style={{
                 position: "absolute",
                 inset: 0,
-                backgroundColor: "rgba(180, 20, 40, 0.04)",
+                backgroundColor: "rgba(180, 20, 40, 0.03)",
               }} />
             </div>
           );
