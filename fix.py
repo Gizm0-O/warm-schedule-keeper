@@ -2,12 +2,19 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# Najit birthday overlay blok a pridat za nej anniversary overlay
-stare = '''          </div>
+# Pridat anniversary overlay hned za birthday overlay blok
+stare = '''        {format(day, "dd") === "13" && ( // TODO: změnit zpět na 20'''
+
+if stare in kod:
+    print("Anniversary overlay uz existuje v kodu - hledam problem jinde")
+else:
+    print("Anniversary overlay CHYBI - pridavam")
+    # Pridat za closing birthday overlay tag
+    stare2 = '''          </div>
         )}
       {HOURS.map((hour) => {'''
-
-nove = '''          </div>
+    
+    nove2 = '''          </div>
         )}
         {format(day, "dd") === "13" && ( // TODO: změnit zpět na 20
           <div
@@ -36,16 +43,18 @@ nove = '''          </div>
             <div style={{
               position: "absolute",
               inset: 0,
-              backgroundColor: "rgba(180, 20, 40, 0.15)",
+              backgroundColor: "rgba(180, 20, 40, 0.12)",
             }} />
           </div>
         )}
       {HOURS.map((hour) => {'''
-
-if stare in kod:
-    kod = kod.replace(stare, nove, 1)
-    with open(fp, 'w', encoding='utf-8') as f:
-        f.write(kod)
-    print("OK - anniversary overlay v sloupci")
-else:
-    print("CHYBA - vzor nenalezen")
+    
+    if stare2 in kod:
+        kod = kod.replace(stare2, nove2, 1)
+        with open(fp, 'w', encoding='utf-8') as f:
+            f.write(kod)
+        print("OK - anniversary overlay pridan do sloupce")
+    else:
+        # Zkusime najit konec birthday bloku jinak
+        idx = kod.find('{HOURS.map((hour) => {')
+        print("CHYBA - zkus:", repr(kod[idx-150:idx+30]))
