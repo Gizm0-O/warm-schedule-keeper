@@ -1068,8 +1068,8 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-100",
-                          `${bgColor}/80`,
+                          "absolute rounded-md border-l-2 bg-card px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group",
+                          `${bgColor}/20`,
                           borderColor,
                           textColor
                         )}
@@ -1123,8 +1123,8 @@ const Index = () => {
                       <div
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group hover:opacity-100",
-                          shift.bgClass.replace(/\/\d+$/, "/80"), shift.borderClass
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card",
+                          shift.bgClass, shift.borderClass
                         )}
                         style={{ top, height, left, width: colWidth, zIndex: 5 }}
                         onMouseDown={(e) => {
