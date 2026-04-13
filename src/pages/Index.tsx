@@ -161,24 +161,24 @@ interface DisplayShift extends Shift {
 // day of week (1=Mon..5=Fri) -> shifts
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
   2: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
   ],
   3: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
   4: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
   ],
   5: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
 };
 
@@ -646,7 +646,7 @@ const Index = () => {
           ? (isHome ? "text-shift-office" : "text-shift-home")
           : result.textClass,
         borderClass: result.person === "Tadeáš"
-          ? (isHome ? "border-shift-office/40" : "border-shift-home/40")
+          ? (isHome ? "border-shift-office/60" : "border-shift-home/60")
           : result.borderClass,
       };
     }

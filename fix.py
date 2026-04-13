@@ -2,31 +2,29 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# Zvýšení opacity u klasických (timed) event bloků v týdenním pohledu
-# bg-*/20 → bg-*/35, border-*/30 → border-*/50
-import re
-
-# EVENT_COLORS - zvýšit opacity pozadí a borderu
-stare = [
-    '"bg-primary/20 text-primary border-primary/30"',
-    '"bg-destructive/20 text-destructive border-destructive/30"',
-    '"bg-success/20 text-success border-success/30"',
-    '"bg-warning/20 text-warning border-warning/30"',
-]
-nove = [
-    '"bg-primary/35 text-primary border-primary/50"',
-    '"bg-destructive/35 text-destructive border-destructive/50"',
-    '"bg-success/35 text-success border-success/50"',
-    '"bg-warning/35 text-warning border-warning/50"',
-]
+# --- UDÁLOSTI (EVENT_COLORS) ---
+nahrazeni = {
+    '"bg-primary/35 text-primary border-primary/50"': '"bg-primary/50 text-primary border-primary/60"',
+    '"bg-destructive/35 text-destructive border-destructive/50"': '"bg-destructive/50 text-destructive border-destructive/60"',
+    '"bg-success/35 text-success border-success/50"': '"bg-success/50 text-success border-success/60"',
+    '"bg-warning/35 text-warning border-warning/50"': '"bg-warning/50 text-warning border-warning/60"',
+    # --- SMĚNY (SHIFT_SCHEDULE) ---
+    '"bg-shift-office/15"': '"bg-shift-office/50"',
+    '"bg-shift-partner/15"': '"bg-shift-partner/50"',
+    '"bg-shift-home/15"': '"bg-shift-home/50"',
+    # border směny
+    '"border-shift-office/40"': '"border-shift-office/60"',
+    '"border-shift-partner/40"': '"border-shift-partner/60"',
+    '"border-shift-home/40"': '"border-shift-home/60"',
+}
 
 zmeneno = 0
-for s, n in zip(stare, nove):
-    if s in kod:
-        kod = kod.replace(s, n)
+for stare, nove in nahrazeni.items():
+    if stare in kod:
+        kod = kod.replace(stare, nove)
         zmeneno += 1
 
-print(f"OK - změněno {zmeneno}/4 barev")
+print(f"OK - změněno {zmeneno} hodnot")
 
 with open(fp, 'w', encoding='utf-8') as f:
     f.write(kod)
