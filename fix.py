@@ -2,13 +2,14 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-stare = "              border: '1px solid rgba(251,191,36,0.2)',\n              borderRadius: '0',"
-nove  = "              borderLeft: '1px solid rgba(251,191,36,0.4)',\n              borderRight: '1px solid rgba(251,191,36,0.4)',\n              borderRadius: '0',"
+stare = 'textShadow: "0 0 8px rgba(255,255,255,1)",'
+nove  = 'textShadow: "0 0 8px rgba(255,255,255,1), 1px 2px 4px rgba(0,0,0,0.2)",'
 
+# Nahradit vsechny vyskyty (pismena i mezery maji stejny textShadow)
 if stare in kod:
-    kod = kod.replace(stare, nove, 1)
+    kod = kod.replace(stare, nove)
     with open(fp, 'w', encoding='utf-8') as f:
         f.write(kod)
-    print("OK - ramecek symetricky na obou stranach")
+    print("OK - shadow pod pismena pridan")
 else:
     print("CHYBA - vzor nenalezen")
