@@ -915,6 +915,42 @@ const Index = () => {
                 })}
                 
       {/* Birthday column overlay */}
+        {weekDays.map((day, dayIdx) => {
+          const colWidth = `calc((100% - 60px) / 7)`;
+          const left = `calc(60px + ${dayIdx} * (100% - 60px) / 7)`;
+          if (format(day, "dd") !== "20") return null;
+          return (
+            <div
+              key={`anniversary-overlay-${dayIdx}`}
+              style={{
+                position: "absolute",
+                top: 0,
+                left,
+                width: colWidth,
+                height: totalGridHeight,
+                pointerEvents: "none",
+                zIndex: 0,
+                borderLeft: "1px solid rgba(180, 20, 40, 0.4)",
+                borderRight: "1px solid rgba(180, 20, 40, 0.4)",
+              }}
+            >
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundImage: "url('/hearts-bg.jpg')",
+                backgroundSize: "320px auto",
+                backgroundRepeat: "repeat",
+                backgroundPosition: "center top",
+                opacity: 0.45,
+              }} />
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                backgroundColor: "rgba(180, 20, 40, 0.12)",
+              }} />
+            </div>
+          );
+        })}
       {weekDays.map((day, dayIdx) => {
         if (!isBirthday(day)) return null;
         const colWidth = `calc((100% - 60px) / 7)`;
@@ -974,42 +1010,6 @@ const Index = () => {
           </div>
         );
       })}
-        {weekDays.map((day, dayIdx) => {
-          const colWidth = `calc((100% - 60px) / 7)`;
-          const left = `calc(60px + ${dayIdx} * (100% - 60px) / 7)`;
-          if (format(day, "dd") !== "20") return null;
-          return (
-            <div
-              key={`anniversary-overlay-${dayIdx}`}
-              style={{
-                position: "absolute",
-                top: 0,
-                left,
-                width: colWidth,
-                height: totalGridHeight,
-                pointerEvents: "none",
-                zIndex: 0,
-                borderLeft: "1px solid rgba(180, 20, 40, 0.4)",
-                borderRight: "1px solid rgba(180, 20, 40, 0.4)",
-              }}
-            >
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                backgroundImage: "url('/hearts-bg.jpg')",
-                backgroundSize: "320px auto",
-                backgroundRepeat: "repeat",
-                backgroundPosition: "center top",
-                opacity: 0.45,
-              }} />
-              <div style={{
-                position: "absolute",
-                inset: 0,
-                backgroundColor: "rgba(180, 20, 40, 0.12)",
-              }} />
-            </div>
-          );
-        })}
       {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
                   const top = getHourTop(hour);
