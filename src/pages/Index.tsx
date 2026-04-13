@@ -701,27 +701,6 @@ const Index = () => {
 
   return (
     <div className="space-y-6" onClick={() => setSelectedDate(null)}>
-      {/* Výroční overlay - každý 20. v měsíci */}
-      {isAnniversaryDay && !anniversaryDismissed && (
-        <div
-          onClick={() => setAnniversaryDismissed(true)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            backgroundImage: "url(/hearts-bg.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            cursor: "pointer",
-          }}
-        >
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(180, 20, 40, 0.4)",
-          }} />
-        </div>
-      )}
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
       {/* Header */}
