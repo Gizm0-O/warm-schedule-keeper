@@ -214,8 +214,8 @@ const Index = () => {
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
-  const isAnniversaryDay = now.getDate() === 20;
   const [now, setNow] = useState(new Date());
+  const isAnniversaryDay = new Date().getDate() === 20;
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,

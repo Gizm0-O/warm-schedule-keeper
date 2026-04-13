@@ -2,51 +2,33 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# 1. Přidat state pro dismissal
-stare_state = 'const [showNewEventDialog, setShowNewEventDialog] = useState(false);'
-nove_state = '''const [showNewEventDialog, setShowNewEventDialog] = useState(false);
+# Odstraň isAnniversaryDay ze špatného místa
+stare = '''const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
   const isAnniversaryDay = now.getDate() === 20;'''
 
-# 2. Přidat overlay do JSX – hned za opening <div> returnu
-stare_jsx = '{/* Italy Savings Banner */}'
-nove_jsx = '''{/* Výroční overlay - každý 20. v měsíci */}
-      {isAnniversaryDay && !anniversaryDismissed && (
-        <div
-          onClick={() => setAnniversaryDismissed(true)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            backgroundImage: "url(/hearts-bg.jpg)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            cursor: "pointer",
-          }}
-        >
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(180, 20, 40, 0.4)",
-          }} />
-        </div>
-      )}
-      {/* Italy Savings Banner */}'''
+nove = '''const [showNewEventDialog, setShowNewEventDialog] = useState(false);
+  const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);'''
 
-ok1 = stare_state in kod
-ok2 = stare_jsx in kod
+# Přidej isAnniversaryDay ZA deklaraci now
+stare2 = 'const [now, setNow] = useState(new Date());'
+nove2 = '''const [now, setNow] = useState(new Date());
+  const isAnniversaryDay = new Date().getDate() === 20;'''
+
+ok1 = stare in kod
+ok2 = stare2 in kod
 
 if ok1:
-    kod = kod.replace(stare_state, nove_state)
-    print("OK - state přidán")
+    kod = kod.replace(stare, nove)
+    print("OK - odstraněno ze špatného místa")
 else:
-    print("CHYBA - state vzor nenalezen")
+    print("CHYBA - vzor 1 nenalezen")
 
 if ok2:
-    kod = kod.replace(stare_jsx, nove_jsx)
-    print("OK - overlay JSX přidán")
+    kod = kod.replace(stare2, nove2)
+    print("OK - přidáno za 'now'")
 else:
-    print("CHYBA - JSX vzor nenalezen")
+    print("CHYBA - vzor 2 nenalezen")
 
 with open(fp, 'w', encoding='utf-8') as f:
     f.write(kod)
