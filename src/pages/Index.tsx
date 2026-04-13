@@ -1066,7 +1066,7 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-bold truncate z-10 cursor-grab group hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-bold truncate z-10 cursor-grab group hover:opacity-80",
                           ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 5 }}
@@ -1145,14 +1145,7 @@ const Index = () => {
                           {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
                           <span className="text-xs font-bold truncate" style={{color:"#1a1a1a"}}>{shift.person}</span>
                         </div>
-                        {shift.location && (
-                          <span className={cn("text-[11px] font-medium opacity-70 mt-0.5", shift.textClass)}>
-                            {shift.location}
-                          </span>
-                        )}
-                        <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
-                          {shift.startHour}:00–{shift.endHour}:00
-                        </span>
+
                         {/* Bottom drag handle */}
                         <div
                           data-handle="bottom"
