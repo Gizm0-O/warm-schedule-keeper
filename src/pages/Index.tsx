@@ -1061,12 +1061,15 @@ const Index = () => {
                     const top = getHourTop(startH);
                     const height = HOURS.slice(startH, endH).reduce((s, h) => s + getHourHeight(h), 0);
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    const borderColor = ev.color.split(" ").find((c) => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
+                    const textColor = ev.color.split(" ").find((c) => c.startsWith("text-")) || "text-foreground";
                     return (
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group bg-card hover:opacity-100",
-                          ev.color
+                          "absolute rounded-md border-l-2 bg-card px-1.5 py-0.5 text-[10px] font-medium truncate z-10 cursor-grab group hover:opacity-100",
+                          borderColor,
+                          textColor
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 5, opacity: 1 }}
                         onMouseDown={(e) => {
@@ -1119,7 +1122,7 @@ const Index = () => {
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
                           "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card hover:opacity-100",
-                          shift.bgClass, shift.borderClass
+                          shift.borderClass
                         )}
                         style={{ top, height, left, width: colWidth, zIndex: 5, opacity: 1 }}
                         onMouseDown={(e) => {
