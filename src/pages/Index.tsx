@@ -946,7 +946,7 @@ const Index = () => {
               <div style={{
                 position: "absolute",
                 inset: 0,
-                backgroundColor: "rgba(180, 20, 40, 0.12)",
+                backgroundColor: "rgba(180, 20, 40, 0.05)",
               }} />
             </div>
           );
