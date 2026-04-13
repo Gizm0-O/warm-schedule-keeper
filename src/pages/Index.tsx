@@ -988,7 +988,7 @@ const Index = () => {
                 width: colWidth,
                 height: totalGridHeight,
                 pointerEvents: "none",
-                zIndex: 1,
+                zIndex: 0,
                 borderLeft: "1px solid rgba(180, 20, 40, 0.4)",
                 borderRight: "1px solid rgba(180, 20, 40, 0.4)",
               }}
