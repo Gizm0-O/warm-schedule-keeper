@@ -776,7 +776,7 @@ const Index = () => {
                       !isSameMonth(day, currentMonth) && "opacity-30",
                       selected && "ring-2 ring-primary bg-accent",
                       isToday(day) && "bg-primary/5",
-                isBirthday(day) && !selected && "bg-gradient-to-br from-amber-50 to-pink-50 ring-2 ring-amber-300"
+                isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md"
                     )}
                   >
                     <span
