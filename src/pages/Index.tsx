@@ -130,6 +130,7 @@ const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 
 const BIRTHDAY_DATES = new Set(["04-16", "05-15", "11-06"]);
 const isBirthday = (date: Date) => BIRTHDAY_DATES.has(format(date, "MM-dd"));
+const isAnniversary = (date: Date) => format(date, "dd") === "20";
 const BIRTHDAY_NAMES: Record<string, string> = {
   "04-16": "Barča",
   "05-15": "Tadeáš",
@@ -778,7 +779,8 @@ const Index = () => {
                       !isSameMonth(day, currentMonth) && "opacity-30",
                       selected && "ring-2 ring-primary bg-accent",
                       isToday(day) && "bg-primary/5",
-                isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md"
+                isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md",
+                  isAnniversary(day) && !selected && !isBirthday(day) && "ring-2 ring-rose-400 shadow-md overflow-hidden"
                     )}
                   >
                     <span
@@ -795,7 +797,21 @@ const Index = () => {
                 <span className="text-2xl text-amber-700 leading-tight"  style={{fontFamily: "'Dancing Script', cursive"}}>{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>
               </div>
             )}
-{!isBirthday(day) && NAME_DAYS[format(day, "MM-dd")] && (
+{isAnniversary(day) && !isBirthday(day) && (
+                <div className="absolute inset-0 pointer-events-none" style={{ borderRadius: 'inherit' }}>
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundImage: "url('/hearts-bg.jpg')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: 0.25,
+                    mixBlendMode: "multiply",
+                    borderRadius: 'inherit',
+                  }} />
+                </div>
+              )}
+              {!isBirthday(day) && NAME_DAYS[format(day, "MM-dd")] && (
                       <span className={cn(
                         "text-[9px] leading-none mb-0.5 truncate w-full",
                         FAMILY_NAMES.has(NAME_DAYS[format(day, "MM-dd")])
