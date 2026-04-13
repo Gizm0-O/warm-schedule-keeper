@@ -1393,8 +1393,8 @@ const Index = () => {
                     todo.person === "Tadeáš"
                       ? "border-shift-office/30"
                       : "border-shift-partner/30",
-                    isOverdue && "bg-destructive/40",
-                    isTodayTask && !isOverdue && "bg-warning/40"
+                    isOverdue && "bg-destructive/5",
+                    isTodayTask && !isOverdue && "bg-warning/10"
                   )}>
                     <button
                       onClick={() => toggleTodo(todo.id)}
