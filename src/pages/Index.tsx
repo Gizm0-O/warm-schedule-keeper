@@ -777,7 +777,7 @@ const Index = () => {
                       "relative flex min-h-[80px] flex-col items-start rounded-xl p-2 text-sm transition-all hover:bg-accent",
                       !isSameMonth(day, currentMonth) && "opacity-30",
                       selected && "ring-2 ring-primary bg-accent",
-                      isToday(day) && "bg-primary/40",
+                      isToday(day) && "bg-primary/5",
                 isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md"
                     )}
                   >
@@ -850,7 +850,7 @@ const Index = () => {
                   className={cn(
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
-                    isToday(day) && "bg-primary/40",
+                    isToday(day) && "bg-primary/5",
               isBirthday(day) && "bg-gradient-to-b from-amber-100 to-pink-100 ring-1 ring-amber-200",
               format(day, "dd") === "20" && !isBirthday(day) && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
                   )}
