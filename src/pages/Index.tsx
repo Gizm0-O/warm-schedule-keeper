@@ -215,7 +215,7 @@ const Index = () => {
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
   const [now, setNow] = useState(new Date());
-  const isAnniversaryDay = new Date().getDate() === 13; // TODO: změnit zpět na 20
+  const isAnniversaryDay = new Date().getDate() === 20;
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
@@ -976,7 +976,7 @@ const Index = () => {
         {weekDays.map((day, dayIdx) => {
           const colWidth = `calc((100% - 60px) / 7)`;
           const left = `calc(60px + ${dayIdx} * (100% - 60px) / 7)`;
-          if (format(day, "dd") !== "13") return null; // TODO: změnit zpět na 20
+          if (format(day, "dd") !== "20") return null;
           return (
             <div
               key={`anniversary-overlay-${dayIdx}`}
