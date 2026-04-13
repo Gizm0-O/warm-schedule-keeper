@@ -941,7 +941,7 @@ const Index = () => {
                 backgroundSize: "cover",
                 backgroundRepeat: "repeat",
                 backgroundPosition: "center top",
-                opacity: 0.15,
+                opacity: 0.3,
                 mixBlendMode: "screen",
               }} />
               <div style={{
