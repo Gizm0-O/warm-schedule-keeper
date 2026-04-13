@@ -787,7 +787,8 @@ const Index = () => {
                     >
                       {format(day, "d")}
                     </span>
-                    {NAME_DAYS[format(day, "MM-dd")] && (
+                    {isBirthday(day) && (<span className="text-xs font-semibold text-amber-600 leading-tight block">{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>)}
+{NAME_DAYS[format(day, "MM-dd")] && (
                       <span className={cn(
                         "text-[9px] leading-none mb-0.5 truncate w-full",
                         FAMILY_NAMES.has(NAME_DAYS[format(day, "MM-dd")])
