@@ -849,7 +849,7 @@ const Index = () => {
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
                     isToday(day) && "bg-primary/5",
-              isBirthday(day) && "bg-gradient-to-b from-amber-50 to-pink-50"
+              isBirthday(day) && "bg-gradient-to-b from-amber-200 to-pink-100 ring-2 ring-amber-400"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
@@ -910,7 +910,36 @@ const Index = () => {
                     );
                   });
                 })}
-                {HOURS.map((hour) => {
+                
+      {/* Birthday column overlay */}
+      {weekDays.map((day, dayIdx) => {
+        if (!isBirthday(day)) return null;
+        const colWidth = `calc((100% - 60px) / 7)`;
+        const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+        return (
+          <div
+            key={`birthday-overlay-${dayIdx}`}
+            style={{
+              position: "absolute",
+              top: 0,
+              left,
+              width: colWidth,
+              height: totalGridHeight,
+              pointerEvents: "none",
+              zIndex: 0,
+              background: "linear-gradient(180deg, rgba(251,191,36,0.10) 0%, rgba(249,168,212,0.10) 100%)",
+              backgroundImage: `
+                radial-gradient(circle, rgba(251,191,36,0.5) 1px, transparent 1px),
+                radial-gradient(circle, rgba(249,168,212,0.5) 1px, transparent 1px),
+                radial-gradient(circle, rgba(167,243,208,0.5) 1px, transparent 1px)
+              `,
+              backgroundSize: "30px 30px, 50px 50px, 40px 40px",
+              backgroundPosition: "0 0, 15px 15px, 8px 25px",
+            }}
+          />
+        );
+      })}
+      {HOURS.map((hour) => {
                   const h = getHourHeight(hour);
                   const top = getHourTop(hour);
                   const isNight = NIGHT_HOURS.has(hour);
