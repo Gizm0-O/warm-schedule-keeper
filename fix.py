@@ -2,30 +2,28 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# Najit cely anniversary blok a odstranit ho z aktualni pozice
-import re
-vzor = r'(\s*\{weekDays\.map\(\(day, dayIdx\) => \{\s*const colWidth[^}]+\}[^}]+\}[^}]+\}[^}]+\}[^}]+\}[^}]+\}[^}]+\}[^)]+\)\s*\}\);\s*\}(?:\s*\)\s*\})*\s*\}\)\})'
+# Pridat zIndex: 2 do style shift bloku
+stare = 'style={{ top, height, left, width: colWidth }}'
+nove  = 'style={{ top, height, left, width: colWidth, zIndex: 2 }}'
 
-# Jednodussi pristup - najit blok podle unikatniho textu
-start_tag = '        {weekDays.map((day, dayIdx) => {\n          const colWidth = `calc((100% - 60px) / 7)`;\n          const left = `calc(60px + ${dayIdx} * (100% - 60px) / 7)`;\n          if (format(day, "dd") !== "20") return null;'
-end_tag = '        })}\n      {HOURS.map((hour) => {'
+# Pridat zIndex: 2 do style event bloku
+stare2 = 'style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2 }}'
+nove2  = 'style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 2 }}'
 
-idx_start = kod.find(start_tag)
-idx_end = kod.find(end_tag)
+ok1 = stare in kod
+ok2 = stare2 in kod
 
-if idx_start != -1 and idx_end != -1:
-    anniversary_blok = kod[idx_start:idx_end + len('        })}')]
-    # Odstranit z puvodniho mista
-    kod_bez = kod[:idx_start] + '      {HOURS.map((hour) => {' + kod[idx_end + len(end_tag):]
-    
-    # Vlozit pred birthday overlay (ktery je pred HOURS.map)
-    cilovy_tag = '      {weekDays.map((day, dayIdx) => {\n        if (!isBirthday(day)) return null;'
-    if cilovy_tag in kod_bez:
-        kod_final = kod_bez.replace(cilovy_tag, anniversary_blok + '\n      {weekDays.map((day, dayIdx) => {\n        if (!isBirthday(day)) return null;', 1)
-        with open(fp, 'w', encoding='utf-8') as f:
-            f.write(kod_final)
-        print("OK - anniversary overlay presunut pred shift/event bloky")
-    else:
-        print("CHYBA - cilovy tag nenalezen")
+if ok1:
+    kod = kod.replace(stare, nove, 1)
+    print("OK 1/2 - shift zIndex: 2")
 else:
-    print("CHYBA - start:", idx_start, "end:", idx_end)
+    print("CHYBA 1/2")
+
+if ok2:
+    kod = kod.replace(stare2, nove2, 1)
+    print("OK 2/2 - event zIndex: 2")
+else:
+    print("CHYBA 2/2")
+
+with open(fp, 'w', encoding='utf-8') as f:
+    f.write(kod)
