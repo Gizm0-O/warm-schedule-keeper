@@ -849,7 +849,7 @@ const Index = () => {
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
                     isToday(day) && "bg-primary/5",
-              isBirthday(day) && "bg-gradient-to-b from-amber-200 to-pink-100 ring-2 ring-amber-400"
+              isBirthday(day) && "bg-gradient-to-b from-amber-300 to-pink-200 ring-2 ring-amber-500 shadow-lg"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
@@ -927,14 +927,15 @@ const Index = () => {
               height: totalGridHeight,
               pointerEvents: "none",
               zIndex: 0,
-              background: "linear-gradient(180deg, rgba(251,191,36,0.10) 0%, rgba(249,168,212,0.10) 100%)",
+              background: "linear-gradient(180deg, rgba(251,191,36,0.18) 0%, rgba(249,168,212,0.22) 50%, rgba(167,243,208,0.15) 100%)",
               backgroundImage: `
-                radial-gradient(circle, rgba(251,191,36,0.5) 1px, transparent 1px),
-                radial-gradient(circle, rgba(249,168,212,0.5) 1px, transparent 1px),
-                radial-gradient(circle, rgba(167,243,208,0.5) 1px, transparent 1px)
+                radial-gradient(circle, rgba(251,191,36,0.9) 2px, transparent 2px),
+                radial-gradient(circle, rgba(249,168,212,0.9) 2px, transparent 2px),
+                radial-gradient(circle, rgba(167,243,208,0.9) 2px, transparent 2px),
+                radial-gradient(circle, rgba(239,68,68,0.7) 1.5px, transparent 1.5px)
               `,
-              backgroundSize: "30px 30px, 50px 50px, 40px 40px",
-              backgroundPosition: "0 0, 15px 15px, 8px 25px",
+              backgroundSize: "28px 28px, 42px 42px, 35px 35px, 20px 20px",
+              backgroundPosition: "0 0, 14px 14px, 7px 21px, 21px 7px",
             }}
           />
         );
