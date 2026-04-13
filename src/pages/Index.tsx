@@ -132,8 +132,8 @@ const BIRTHDAY_DATES = new Set(["04-16", "05-15", "11-06"]);
 const isBirthday = (date: Date) => BIRTHDAY_DATES.has(format(date, "MM-dd"));
 const BIRTHDAY_NAMES: Record<string, string> = {
   "04-16": "🎂 Barča",
-  "05-15": "🎂 Sebastian",
-  "11-06": "🎂 Tadeáš",
+  "05-15": "🎂 Tadeáš",
+  "11-06": "🎂 Sebastian",
 };
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
@@ -787,8 +787,13 @@ const Index = () => {
                     >
                       {format(day, "d")}
                     </span>
-                    {isBirthday(day) && (<span className="text-xs font-semibold text-amber-600 leading-tight block">{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>)}
-{NAME_DAYS[format(day, "MM-dd")] && (
+                    {isBirthday(day) && (
+              <div className="flex flex-col items-center justify-center w-full flex-1 gap-0.5 py-1">
+                <span className="text-2xl">🎂</span>
+                <span className="text-xs font-bold text-amber-700 text-center leading-tight tracking-wide uppercase">{BIRTHDAY_NAMES[format(day, "MM-dd")]}</span>
+              </div>
+            )}
+{!isBirthday(day) && NAME_DAYS[format(day, "MM-dd")] && (
                       <span className={cn(
                         "text-[9px] leading-none mb-0.5 truncate w-full",
                         FAMILY_NAMES.has(NAME_DAYS[format(day, "MM-dd")])
