@@ -120,10 +120,10 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Zelená", value: "bg-primary/85 text-white border-primary" },
-  { label: "Červená", value: "bg-destructive/85 text-white border-destructive" },
-  { label: "Zelená tmavá", value: "bg-success/85 text-white border-success" },
-  { label: "Oranžová", value: "bg-warning/85 text-white border-warning" },
+  { label: "Zelená", value: "bg-primary/40 text-white border-primary" },
+  { label: "Červená", value: "bg-destructive/40 text-white border-destructive" },
+  { label: "Zelená tmavá", value: "bg-success/40 text-white border-success" },
+  { label: "Oranžová", value: "bg-warning/40 text-white border-warning" },
 ];
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
@@ -777,7 +777,7 @@ const Index = () => {
                       "relative flex min-h-[80px] flex-col items-start rounded-xl p-2 text-sm transition-all hover:bg-accent",
                       !isSameMonth(day, currentMonth) && "opacity-30",
                       selected && "ring-2 ring-primary bg-accent",
-                      isToday(day) && "bg-primary/5",
+                      isToday(day) && "bg-primary/40",
                 isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md"
                     )}
                   >
@@ -850,7 +850,7 @@ const Index = () => {
                   className={cn(
                     "flex flex-col items-center py-3 transition-colors hover:bg-accent",
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
-                    isToday(day) && "bg-primary/5",
+                    isToday(day) && "bg-primary/40",
               isBirthday(day) && "bg-gradient-to-b from-amber-100 to-pink-100 ring-1 ring-amber-200",
               format(day, "dd") === "20" && !isBirthday(day) && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
                   )}
@@ -1393,16 +1393,16 @@ const Index = () => {
                     todo.person === "Tadeáš"
                       ? "border-shift-office/30"
                       : "border-shift-partner/30",
-                    isOverdue && "bg-destructive/5",
-                    isTodayTask && !isOverdue && "bg-warning/10"
+                    isOverdue && "bg-destructive/40",
+                    isTodayTask && !isOverdue && "bg-warning/40"
                   )}>
                     <button
                       onClick={() => toggleTodo(todo.id)}
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
                         todo.person === "Tadeáš"
-                          ? "border-shift-office/40 hover:border-shift-office hover:bg-shift-office/10"
-                          : "border-shift-partner/40 hover:border-shift-partner hover:bg-shift-partner/10"
+                          ? "border-shift-office/40 hover:border-shift-office hover:bg-shift-office/35"
+                          : "border-shift-partner/40 hover:border-shift-partner hover:bg-shift-partner/35"
                       )}
                     >
                     </button>
@@ -1436,8 +1436,8 @@ const Index = () => {
                     <Badge variant="outline" className={cn(
                       "absolute top-1.5 right-1.5 text-[10px] px-1.5 py-0 h-4",
                       todo.person === "Tadeáš"
-                        ? "border-shift-office/40 bg-shift-office/10 text-shift-office"
-                        : "border-shift-partner/40 bg-shift-partner/10 text-shift-partner"
+                        ? "border-shift-office/40 bg-shift-office/35 text-shift-office"
+                        : "border-shift-partner/40 bg-shift-partner/35 text-shift-partner"
                     )}>
                       {todo.person}
                     </Badge>
