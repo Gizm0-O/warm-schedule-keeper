@@ -120,10 +120,10 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
-  { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30" },
-  { label: "Zelená tmavá", value: "bg-success/20 text-success border-success/30" },
-  { label: "Oranžová", value: "bg-warning/20 text-warning border-warning/30" },
+  { label: "Zelená", value: "bg-primary/40 text-primary border-primary/30" },
+  { label: "Červená", value: "bg-destructive/40 text-destructive border-destructive/30" },
+  { label: "Zelená tmavá", value: "bg-success/40 text-success border-success/30" },
+  { label: "Oranžová", value: "bg-warning/40 text-warning border-warning/30" },
 ];
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
@@ -161,24 +161,24 @@ interface DisplayShift extends Shift {
 // day of week (1=Mon..5=Fri) -> shifts
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
   2: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
   ],
   3: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
   4: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/15", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/40", icon: "home" },
   ],
   5: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/15", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/15", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/40", icon: "office" },
+    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/40", icon: "home" },
   ],
 };
 
@@ -640,7 +640,7 @@ const Index = () => {
         location: isHome ? "Kancelář" : "Z domu",
         icon: isHome ? "office" as const : "home" as const,
         bgClass: result.person === "Tadeáš"
-          ? (isHome ? "bg-shift-office/15" : "bg-shift-home/15")
+          ? (isHome ? "bg-shift-office/35" : "bg-shift-home/35")
           : result.bgClass,
         textClass: result.person === "Tadeáš"
           ? (isHome ? "text-shift-office" : "text-shift-home")
