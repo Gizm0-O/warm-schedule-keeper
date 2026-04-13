@@ -2,29 +2,31 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# --- UDÁLOSTI (EVENT_COLORS) ---
 nahrazeni = {
-    '"bg-primary/35 text-primary border-primary/50"': '"bg-primary/50 text-primary border-primary/60"',
-    '"bg-destructive/35 text-destructive border-destructive/50"': '"bg-destructive/50 text-destructive border-destructive/60"',
-    '"bg-success/35 text-success border-success/50"': '"bg-success/50 text-success border-success/60"',
-    '"bg-warning/35 text-warning border-warning/50"': '"bg-warning/50 text-warning border-warning/60"',
-    # --- SMĚNY (SHIFT_SCHEDULE) ---
-    '"bg-shift-office/15"': '"bg-shift-office/50"',
-    '"bg-shift-partner/15"': '"bg-shift-partner/50"',
-    '"bg-shift-home/15"': '"bg-shift-home/50"',
-    # border směny
-    '"border-shift-office/40"': '"border-shift-office/60"',
-    '"border-shift-partner/40"': '"border-shift-partner/60"',
-    '"border-shift-home/40"': '"border-shift-home/60"',
+    # Timed event bloky v týdenním pohledu – text větší, tučnější
+    '"absolute rounded-md border-l-2 px-1.5 py-0.5 text-10px font-medium truncate z-10 cursor-grab group hover:opacity-80"':
+    '"absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80"',
+
+    # Čas pod názvem události
+    '"text-9px opacity-60"':
+    '"text-10px opacity-80 font-medium"',
+
+    # Události v měsíčním pohledu
+    '"truncate rounded-md px-1.5 py-0.5 text-10px font-medium"':
+    '"truncate rounded-md px-1.5 py-0.5 text-xs font-semibold"',
 }
 
 zmeneno = 0
 for stare, nove in nahrazeni.items():
-    if stare in kod:
+    pocet = kod.count(stare)
+    if pocet > 0:
         kod = kod.replace(stare, nove)
-        zmeneno += 1
+        zmeneno += pocet
+        print(f"OK ({pocet}x): {stare[:60]}...")
+    else:
+        print(f"CHYBA - nenalezeno: {stare[:60]}...")
 
-print(f"OK - změněno {zmeneno} hodnot")
+print(f"\nCelkem změněno: {zmeneno}")
 
 with open(fp, 'w', encoding='utf-8') as f:
     f.write(kod)
