@@ -2,31 +2,52 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-nahrazeni = {
-    # Timed event bloky v týdenním pohledu – text větší, tučnější
-    '"absolute rounded-md border-l-2 px-1.5 py-0.5 text-10px font-medium truncate z-10 cursor-grab group hover:opacity-80"':
-    '"absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80"',
+# Přidat textShadow inline style k event blokům v týdenním pohledu
+# Hledáme div s className obsahující event bloky a přidáme style s textShadow
 
-    # Čas pod názvem události
-    '"text-9px opacity-60"':
-    '"text-10px opacity-80 font-medium"',
+stare = '''className={cn(
+                  "absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80",
+                  ev.color
+                )}'''
 
-    # Události v měsíčním pohledu
-    '"truncate rounded-md px-1.5 py-0.5 text-10px font-medium"':
-    '"truncate rounded-md px-1.5 py-0.5 text-xs font-semibold"',
-}
+nove = '''className={cn(
+                  "absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80",
+                  ev.color
+                )}
+                style={{
+                  top: top + 2,
+                  height: Math.max(height - 4, 16),
+                  left,
+                  width: `calc(${colWidth} - 4px)`,
+                  marginLeft: 2,
+                  textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                }}'''
 
-zmeneno = 0
-for stare, nove in nahrazeni.items():
-    pocet = kod.count(stare)
-    if pocet > 0:
-        kod = kod.replace(stare, nove)
-        zmeneno += pocet
-        print(f"OK ({pocet}x): {stare[:60]}...")
-    else:
-        print(f"CHYBA - nenalezeno: {stare[:60]}...")
+# Zkusíme alternativní přístup - přidat textShadow do existujícího style objektu
+# Hledáme style={{ top: top + 2 v event blocích
+stare2 = '''style={{
+                  top: top + 2,
+                  height: Math.max(height - 4, 16),
+                  left,
+                  width: `calc(${colWidth} - 4px)`,
+                  marginLeft: 2,
+                }}'''
 
-print(f"\nCelkem změněno: {zmeneno}")
+nove2 = '''style={{
+                  top: top + 2,
+                  height: Math.max(height - 4, 16),
+                  left,
+                  width: `calc(${colWidth} - 4px)`,
+                  marginLeft: 2,
+                  textShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                  filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.1))",
+                }}'''
+
+if stare2 in kod:
+    kod = kod.replace(stare2, nove2)
+    print("OK - textShadow přidán do event style")
+else:
+    print("CHYBA - style vzor nenalezen")
 
 with open(fp, 'w', encoding='utf-8') as f:
     f.write(kod)
