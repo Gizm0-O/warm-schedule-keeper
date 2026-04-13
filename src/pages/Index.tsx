@@ -131,9 +131,9 @@ const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 const BIRTHDAY_DATES = new Set(["04-16", "05-15", "11-06"]);
 const isBirthday = (date: Date) => BIRTHDAY_DATES.has(format(date, "MM-dd"));
 const BIRTHDAY_NAMES: Record<string, string> = {
-  "04-16": "🎂 Barča",
-  "05-15": "🎂 Tadeáš",
-  "11-06": "🎂 Sebastian",
+  "04-16": "Barča",
+  "05-15": "Tadeáš",
+  "11-06": "Sebastian",
 };
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
