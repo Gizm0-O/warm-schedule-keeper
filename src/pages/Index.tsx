@@ -120,10 +120,10 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Zelená", value: "bg-primary/40 text-white border-primary" },
-  { label: "Červená", value: "bg-destructive/40 text-white border-destructive" },
-  { label: "Zelená tmavá", value: "bg-success/40 text-white border-success" },
-  { label: "Oranžová", value: "bg-warning/40 text-white border-warning" },
+  { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
+  { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30" },
+  { label: "Zelená tmavá", value: "bg-success/20 text-success border-success/30" },
+  { label: "Oranžová", value: "bg-warning/20 text-warning border-warning/30" },
 ];
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
