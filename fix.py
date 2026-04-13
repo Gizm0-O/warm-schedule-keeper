@@ -2,52 +2,28 @@ fp = './src/pages/Index.tsx'
 with open(fp, 'r', encoding='utf-8') as f:
     kod = f.read()
 
-# Přidat textShadow inline style k event blokům v týdenním pohledu
-# Hledáme div s className obsahující event bloky a přidáme style s textShadow
+# Změnit EVENT_COLORS - bílý text na sytém pozadí
+nahrazeni = {
+    '"bg-primary/50 text-primary border-primary/60"':
+        '"bg-primary/75 text-white border-primary/80"',
+    '"bg-destructive/50 text-destructive border-destructive/60"':
+        '"bg-destructive/75 text-white border-destructive/80"',
+    '"bg-success/50 text-success border-success/60"':
+        '"bg-success/75 text-white border-success/80"',
+    '"bg-warning/50 text-warning border-warning/60"':
+        '"bg-warning/75 text-white border-warning/80"',
+}
 
-stare = '''className={cn(
-                  "absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80",
-                  ev.color
-                )}'''
+zmeneno = 0
+for stare, nove in nahrazeni.items():
+    if stare in kod:
+        kod = kod.replace(stare, nove)
+        zmeneno += 1
+        print(f"OK: {stare[:50]}...")
+    else:
+        print(f"CHYBA: {stare[:50]}...")
 
-nove = '''className={cn(
-                  "absolute rounded-md border-l-2 px-1.5 py-0.5 text-xs font-semibold truncate z-10 cursor-grab group hover:opacity-80",
-                  ev.color
-                )}
-                style={{
-                  top: top + 2,
-                  height: Math.max(height - 4, 16),
-                  left,
-                  width: `calc(${colWidth} - 4px)`,
-                  marginLeft: 2,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.25)",
-                }}'''
-
-# Zkusíme alternativní přístup - přidat textShadow do existujícího style objektu
-# Hledáme style={{ top: top + 2 v event blocích
-stare2 = '''style={{
-                  top: top + 2,
-                  height: Math.max(height - 4, 16),
-                  left,
-                  width: `calc(${colWidth} - 4px)`,
-                  marginLeft: 2,
-                }}'''
-
-nove2 = '''style={{
-                  top: top + 2,
-                  height: Math.max(height - 4, 16),
-                  left,
-                  width: `calc(${colWidth} - 4px)`,
-                  marginLeft: 2,
-                  textShadow: "0 1px 2px rgba(0,0,0,0.3)",
-                  filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.1))",
-                }}'''
-
-if stare2 in kod:
-    kod = kod.replace(stare2, nove2)
-    print("OK - textShadow přidán do event style")
-else:
-    print("CHYBA - style vzor nenalezen")
+print(f"\nCelkem: {zmeneno}/4")
 
 with open(fp, 'w', encoding='utf-8') as f:
     f.write(kod)
