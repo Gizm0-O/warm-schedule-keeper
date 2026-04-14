@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
+import { RewardsBanner } from "@/components/RewardsBanner";
 
 
 const FAMILY_NAMES = new Set([
@@ -704,6 +705,7 @@ const Index = () => {
     <div className="space-y-6" onClick={() => setSelectedDate(null)}>
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
+        <RewardsBanner />
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>

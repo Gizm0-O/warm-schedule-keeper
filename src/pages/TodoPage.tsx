@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight , Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +24,12 @@ import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useRewards } from "@/hooks/useRewards";
 
 const MAX_COMPLETED = 20;
 
 const TodoPage = () => {
+  const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
   const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
@@ -242,8 +244,29 @@ const TodoPage = () => {
         </div>
         <div className="divide-y divide-border">
           {visible.map((todo) => (
-            <TodoItem key={todo.id} todo={todo} />
-          ))}
+                <div key={todo.id} className="relative group/todo">
+                  <TodoItem todo={todo} />
+                  {todo.category === 'work' && (
+                    <div className="flex items-center gap-1 px-3 pb-1.5" onClick={e => e.stopPropagation()}>
+                      {(['on_time', 'late', 'missed'] as const).map((status) => {
+                        const labels = { on_time: `+${rewardsConfig.bonusPerTask}% včas`, late: `+${rewardsConfig.bonusLate}% pozdě`, missed: '0% nespln.' };
+                        const colors = { on_time: 'bg-emerald-100 text-emerald-700 border-emerald-300', late: 'bg-amber-100 text-amber-700 border-amber-300', missed: 'bg-red-100 text-red-600 border-red-300' };
+                        const isActive = getTaskBonus(todo.id) === status;
+                        return (
+                          <button
+                            key={status}
+                            onClick={() => handleBonusBadgeClick(todo.id, status)}
+                            className={`text-9px font-semibold px-1.5 py-0.5 rounded border transition-all ${colors[status]} ${isActive ? 'opacity-100 ring-1 ring-offset-0 ring-current font-bold' : 'opacity-0 group-hover/todo:opacity-60 hover:!opacity-100'}`}
+                            title={labels[status]}
+                          >
+                            {status === 'on_time' ? '⭐' : status === 'late' ? '⏳' : '✕'} {labels[status]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))}
         </div>
         <div className="text-center absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
           {hasMore && (
@@ -265,6 +288,35 @@ const TodoPage = () => {
         </div>
       </div>
     );
+  };
+
+
+  // Bonus badge pro work ukoly (admin)
+  const BONUS_ADMIN_PIN = '1234';
+  const [bonusPinOpen, setBonusPinOpen] = useState<string | null>(null); // todoId
+  const [bonusPinInput, setBonusPinInput] = useState('');
+  const [bonusPinError, setBonusPinError] = useState(false);
+  const [pendingBonusTodoId, setPendingBonusTodoId] = useState<string | null>(null);
+  const [pendingBonusStatus, setPendingBonusStatus] = useState<'on_time' | 'late' | 'missed' | null>(null);
+
+  const handleBonusBadgeClick = (todoId: string, status: 'on_time' | 'late' | 'missed') => {
+    setPendingBonusTodoId(todoId);
+    setPendingBonusStatus(status);
+    setBonusPinOpen(todoId);
+    setBonusPinInput('');
+    setBonusPinError(false);
+  };
+
+  const submitBonusPin = () => {
+    if (bonusPinInput === BONUS_ADMIN_PIN) {
+      if (pendingBonusTodoId && pendingBonusStatus) {
+        setTaskBonus(pendingBonusTodoId, pendingBonusStatus);
+      }
+      setBonusPinOpen(null);
+      setBonusPinInput('');
+    } else {
+      setBonusPinError(true);
+    }
   };
 
   return (
@@ -445,6 +497,32 @@ const TodoPage = () => {
         </DialogContent>
       </Dialog>
     </div>
+
+      {/* Bonus admin PIN dialog */}
+      {bonusPinOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setBonusPinOpen(null)}>
+          <div className="bg-background rounded-2xl p-6 shadow-xl w-72 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-amber-500" />
+              <h3 className="text-base font-bold">Bonus PIN</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">Zadejte PIN pro přidělení bonusu.</p>
+            <input
+              type="password"
+              maxLength={4}
+              value={bonusPinInput}
+              onChange={e => { setBonusPinInput(e.target.value); setBonusPinError(false); }}
+              onKeyDown={e => e.key === 'Enter' && submitBonusPin()}
+              placeholder="••••"
+              autoFocus
+              className={`w-full text-center text-xl tracking-widest border rounded-xl px-3 py-2 bg-background focus:outline-none ${bonusPinError ? 'border-destructive' : 'border-input'}`}
+            />
+            {bonusPinError && <p className="text-xs text-destructive text-center">Nesprávný PIN</p>}
+            <button onClick={submitBonusPin} className="w-full bg-primary text-primary-foreground rounded-xl py-2 font-semibold">Potvrdit</button>
+          </div>
+        </div>
+      )}
+
   );
 };
 
