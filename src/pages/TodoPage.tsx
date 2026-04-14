@@ -496,7 +496,6 @@ const TodoPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
 
       {/* Bonus admin PIN dialog */}
       {bonusPinOpen && (
@@ -522,6 +521,7 @@ const TodoPage = () => {
           </div>
         </div>
       )}
+        </div>
 
   );
 };
