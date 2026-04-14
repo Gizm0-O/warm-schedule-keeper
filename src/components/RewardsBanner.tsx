@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import type { RewardsConfig } from '../hooks/useRewards';
 import { cn } from '../lib/utils';
@@ -29,6 +29,16 @@ export function RewardsBanner() {
   const rewards = useRewards();
   const [expanded, setExpanded] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
+  const [adminMode, setAdminMode] = useState(() => sessionStorage.getItem('adminMode') === '1');
+  
+  useEffect(() => {
+    const handleStorage = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(() => {
+      setAdminMode(sessionStorage.getItem('adminMode') === '1');
+    }, 500);
+    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
+  }, []);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [pinUnlocked, setPinUnlocked] = useState(false);
@@ -39,6 +49,10 @@ export function RewardsBanner() {
       setPinUnlocked(true);
       setPinError(false);
       setAdminConfig({ ...rewards.config });
+      sessionStorage.setItem('adminMode', '1');
+      setAdminMode(true);
+      sessionStorage.setItem('adminMode', '1');
+      setAdminMode(true);
     } else {
       setPinError(true);
     }
@@ -110,11 +124,7 @@ export function RewardsBanner() {
                 {noEarnings ? 'Nastav výdělek \u2193' : `${totalPercent.toFixed(1)}% z výdělku`}
               </div>
             </div>
-            <button
-              onClick={e => { e.stopPropagation(); setShowAdminDialog(true); }}
-              className="ml-1 p-1.5 rounded-lg hover:bg-foreground/10 transition-colors"
-              title="Nastavení odměn"
-            >
+            <button style={{display: adminMode ? undefined : "none"}} onClick={() => setShowAdminDialog(true)}>
               <Settings className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
