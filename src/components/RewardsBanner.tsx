@@ -100,7 +100,7 @@ export function RewardsBanner() {
             </div>
             {adminMode && <button onClick={() => setShowAdminDialog(true)}>
               <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
+            </button>}
             {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
           </div>
         </div>
