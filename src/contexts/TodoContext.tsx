@@ -11,6 +11,7 @@ export interface Todo {
   person: Person;
   deadline?: Date;
   recurrence: Recurrence;
+  amount?: number;
 }
 
 interface TodoContextType {
@@ -45,6 +46,7 @@ const rowToTodo = (row: any): Todo => ({
   person: row.person as Person,
   deadline: row.deadline ? parseISO(row.deadline) : undefined,
   recurrence: row.recurrence as Recurrence,
+  amount: row.amount ?? undefined,
 });
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
@@ -68,6 +70,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       person: todo.person,
       deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
       recurrence: todo.recurrence,
+      amount: todo.amount ?? null,
     };
     const { data } = await supabase.from("todos").insert(row).select().single();
     if (data) setTodos((prev) => [...prev, rowToTodo(data)]);

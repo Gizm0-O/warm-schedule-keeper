@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight , Star } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight, Star, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -24,21 +24,26 @@ import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useRewards } from "@/hooks/useRewards"; import { useAdminMode } from "@/hooks/useAdminMode";
+import { useRewards } from "@/hooks/useRewards";
+import { useAdminMode } from "@/hooks/useAdminMode";
+import { useTaskEarnings } from "@/hooks/useTaskEarnings";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 
 const MAX_COMPLETED = 20;
 
 const TodoPage = () => {
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
-    const isAdmin = useAdminMode();
-  const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
+  const isAdmin = useAdminMode();
+  const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
+  const { addEarning, removeEarning } = useTaskEarnings();
+  const { pushAction } = useUndoRedo();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showAllActive, setShowAllActive] = useState(false);
-  const [custPctId, setCustPctId] = useState<string|null>(null);
+  const [custPctId, setCustPctId] = useState<string | null>(null);
   const [custPctVal, setCustPctVal] = useState('');
-  const [customBonuses, setCustomBonuses] = useState<Record<string,number>>({});
+  const [customBonuses, setCustomBonuses] = useState<Record<string, number>>({});
 
   // New todo form state
   const [newText, setNewText] = useState("");
@@ -46,7 +51,7 @@ const TodoPage = () => {
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
   const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
-    const [newAmount, setNewAmount] = useState("");
+  const [newAmount, setNewAmount] = useState("");
 
   // Edit todo state
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -55,7 +60,7 @@ const TodoPage = () => {
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
-    const [editAmount, setEditAmount] = useState("");
+  const [editAmount, setEditAmount] = useState("");
 
   // Reset "show more" when switching tabs
   useEffect(() => {
@@ -74,6 +79,57 @@ const TodoPage = () => {
     ids.forEach((id) => supabase.from("todos").delete().eq("id", id));
   }, [todos, setTodos]);
 
+  // Wrapped toggleTodo: for Barča work tasks with amount+bonus, record earning
+  const toggleTodo = useCallback(async (id: string) => {
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+
+    // If completing a Barča work task with amount set and bonus configured
+    const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
+    const bonus = getTaskBonus(id);
+    const hasAmount = todo.amount && todo.amount > 0;
+    const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount && (bonus === 'on_time' || bonus === 'late');
+
+    await rawToggleTodo(id);
+
+    if (shouldRecordEarning) {
+      const bonusPercent = bonus === 'on_time' ? rewardsConfig.bonusPerTask : rewardsConfig.bonusLate;
+      const earning = await addEarning({
+        todo_id: id,
+        todo_text: todo.text,
+        amount: todo.amount!,
+        bonus_type: bonus,
+        bonus_percent: bonusPercent,
+        deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+        completed_at: new Date().toISOString(),
+      });
+
+      if (earning) {
+        pushAction({
+          undo: async () => {
+            // Undo: uncheck todo + remove earning
+            await supabase.from("todos").update({ completed: false }).eq("id", id);
+            setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
+            await removeEarning(earning.id);
+          },
+          redo: async () => {
+            await supabase.from("todos").update({ completed: true }).eq("id", id);
+            setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true } : t));
+            await addEarning({
+              todo_id: id,
+              todo_text: todo.text,
+              amount: todo.amount!,
+              bonus_type: bonus,
+              bonus_percent: bonusPercent,
+              deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+              completed_at: new Date().toISOString(),
+            });
+          },
+        });
+      }
+    }
+  }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos]);
+
   const addTodo = async () => {
     if (!newText.trim()) return;
     await addTodoToDb({
@@ -83,12 +139,12 @@ const TodoPage = () => {
       person: newPerson,
       deadline: newDeadline ? new Date(newDeadline) : undefined,
       recurrence: newRecurrence,
-            amount: newAmount ? parseInt(newAmount) : undefined,
+      amount: newAmount ? parseInt(newAmount) : undefined,
     });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
-        setNewAmount("");
+    setNewAmount("");
     setShowDialog(false);
   };
 
@@ -99,7 +155,7 @@ const TodoPage = () => {
     setEditPerson(todo.person);
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
-        setEditAmount(todo.amount ? todo.amount.toString() : "");
+    setEditAmount(todo.amount ? todo.amount.toString() : "");
   };
 
   const saveEdit = async () => {
@@ -110,7 +166,7 @@ const TodoPage = () => {
       person: editPerson,
       deadline: editDeadline ? new Date(editDeadline) : undefined,
       recurrence: editRecurrence,
-            amount: editAmount ? parseInt(editAmount) : undefined,
+      amount: editAmount ? parseInt(editAmount) : undefined,
     });
     setEditingTodo(null);
   };
@@ -180,7 +236,8 @@ const TodoPage = () => {
   const TodoItem = ({ todo }: { todo: Todo }) => {
     const info = getDeadlineInfo(todo.deadline);
     const currentBonus = getTaskBonus(todo.id);
-    const showBonusBtns = todo.category === 'work' && !todo.completed;
+    // Only show bonus buttons for Barča work tasks (not Tadeáš)
+    const showBonusBtns = todo.person === 'Barča' && todo.category === 'work' && !todo.completed;
     const btnBase = 'text-[11px] px-1.5 py-0.5 rounded border transition-all';
     return (
       <div
@@ -205,9 +262,17 @@ const TodoPage = () => {
           {todo.completed && <Check className="h-3.5 w-3.5" />}
         </button>
         <div className="flex-1 min-w-0">
-          <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
-            {todo.text}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
+              {todo.text}
+            </span>
+            {todo.person === 'Barča' && todo.amount && todo.amount > 0 && isAdmin && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 font-medium">
+                <Coins className="h-3 w-3" />
+                {todo.amount.toLocaleString('cs')} Kč
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
             {todo.recurrence !== "none" && (
@@ -239,7 +304,7 @@ const TodoPage = () => {
                 onChange={e => setCustPctVal(e.target.value)}
                 onKeyDown={e => {
                   if (e.key === 'Enter' && custPctVal !== '') {
-                    setCustomBonuses(prev => ({...prev, [todo.id]: parseFloat(custPctVal)}));
+                    setCustomBonuses(prev => ({ ...prev, [todo.id]: parseFloat(custPctVal) }));
                     setCustPctId(null); setCustPctVal('');
                   }
                   if (e.key === 'Escape') { setCustPctId(null); setCustPctVal(''); }
@@ -288,8 +353,8 @@ const TodoPage = () => {
         </div>
         <div className="divide-y divide-border">
           {visible.map((todo) => (
-                <TodoItem key={todo.id} todo={todo} />
-              ))}
+            <TodoItem key={todo.id} todo={todo} />
+          ))}
         </div>
         <div className="text-center absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
           {hasMore && (
@@ -312,9 +377,6 @@ const TodoPage = () => {
       </div>
     );
   };
-
-
-
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -422,6 +484,21 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
+            {/* Amount field - only visible in admin mode */}
+            {isAdmin && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Coins className="h-3.5 w-3.5" /> Částka (Kč) — pouze Barča
+                </label>
+                <Input
+                  type="number"
+                  placeholder="např. 6000"
+                  value={newAmount}
+                  onChange={(e) => setNewAmount(e.target.value)}
+                  min={0}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>Zrušit</Button>
@@ -486,6 +563,21 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
+            {/* Amount field - only visible in admin mode */}
+            {isAdmin && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Coins className="h-3.5 w-3.5" /> Částka (Kč) — pouze Barča
+                </label>
+                <Input
+                  type="number"
+                  placeholder="např. 6000"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  min={0}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
@@ -493,10 +585,7 @@ const TodoPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-
-        </div>
-
+    </div>
   );
 };
 
