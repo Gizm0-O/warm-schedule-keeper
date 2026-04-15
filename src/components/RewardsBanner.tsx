@@ -98,6 +98,13 @@ export function RewardsBanner() {
           </div>
 
           {/* Kapesn\u00e9 */}
+            {/* Vyděláno */}
+            {!noEarnings && (
+              <div className="flex flex-col items-center justify-center">
+                <p className="text-xs text-muted-foreground/70 leading-none">Vyděláno</p>
+                <p className="text-2xl font-bold text-foreground leading-none">{adminConfig.monthlyEarnings.toLocaleString('cs')} Kč</p>
+              </div>
+            )}
           <div className="flex items-center gap-2">
             <div className="text-right">
               <div className="flex items-center gap-1 justify-end">
@@ -116,15 +123,6 @@ export function RewardsBanner() {
             {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
           </div>
         </div>
-
-        {/* Vydeláno */}
-        {!noEarnings && (
-          <div className="text-center py-1">
-            <p className="text-xs text-muted-foreground/70 leading-none mb-0.5">Vyděláno</p>
-            <p className="text-2xl font-bold text-foreground leading-tight">{adminConfig.monthlyEarnings.toLocaleString('cs')} Kč</p>
-          </div>
-        )}
-
         {/* Rozbal detail */}
         {expanded && (
           <div className="mt-3 pt-3 border-t border-current/10 space-y-2">
