@@ -28,7 +28,19 @@ export function RewardsBanner() {
   const rewards = useRewards();
   const [expanded, setExpanded] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
-  const [adminMode, setAdminMode] = useState(false);
+  const [adminMode, setAdminMode] = useState(() => sessionStorage.getItem('adminMode') === '1');
+
+  useEffect(() => {
+    const handleStorage = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
+    window.addEventListener('storage', handleStorage);
+    const interval = setInterval(() => {
+      setAdminMode(sessionStorage.getItem('adminMode') === '1');
+    }, 500);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
   
   const [adminConfig, setAdminConfig] = useState<RewardsConfig>(rewards.config);
 
