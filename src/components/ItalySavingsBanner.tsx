@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { cn } from "@/lib/utils";
 
 function getMotivation(pct: number) {
-  if (pct >= 100) return "JEDEME DO ITALIE! 🎉🥂";
+  if (pct >= 100) return "JEDEME DO ITÁLIE! 🎉🥂";
   if (pct >= 90) return "Ještě malý krůček! 🇮🇹";
   if (pct >= 75) return "Už jsme skoro tam! Cítíš tu vůni pizzy?";
   if (pct >= 50) return "Více než polovina! Nepřestávej!";
