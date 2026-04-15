@@ -23,7 +23,7 @@ export default function ItalySavingsBanner() {
     sessionStorage.removeItem('adminMode');
   }, []);
 
-  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
+  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings(, bonusPercent);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
@@ -120,8 +120,7 @@ export default function ItalySavingsBanner() {
               {total.toLocaleString("cs-CZ")} / {goal.toLocaleString("cs-CZ")} Kč
             </span>
             <span className="text-xs bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-semibold">
-              {percentage}%
-            </span>
+                {percentage}%{bonusPercent > 0 && ` (+${bonusPercent}% bonus)`}            </span>
           </div>
         </div>
 
