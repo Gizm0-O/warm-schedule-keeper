@@ -7,7 +7,6 @@ import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
 import { Input } from './ui/input';
 
-const ADMIN_PIN = '1234';
 
 const LEVEL_ICONS = ['\ud83c\udf31', '\u2b50', '\ud83d\udcaa', '\ud83d\udc8e', '\ud83d\udc51'];
 const LEVEL_COLORS = [
@@ -39,29 +38,12 @@ export function RewardsBanner() {
     }, 500);
     return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
   }, []);
-  const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState(false);
-  const [pinUnlocked, setPinUnlocked] = useState(false);
   const [adminConfig, setAdminConfig] = useState<RewardsConfig>(rewards.config);
 
-  const submitPin = () => {
-    if (pinInput === ADMIN_PIN) {
-      setPinUnlocked(true);
-      setPinError(false);
-      setAdminConfig({ ...rewards.config });
-      sessionStorage.setItem('adminMode', '1');
-      setAdminMode(true);
-      sessionStorage.setItem('adminMode', '1');
-      setAdminMode(true);
-    } else {
-      setPinError(true);
-    }
-  };
 
   const saveAdmin = () => {
     rewards.saveConfig(adminConfig);
     setShowAdminDialog(false);
-    setPinUnlocked(false);
     setPinInput('');
   };
 
@@ -157,28 +139,12 @@ export function RewardsBanner() {
       </div>
 
       {/* Admin dialog */}
-      <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) { setShowAdminDialog(false); setPinUnlocked(false); setPinInput(''); setPinError(false); } }}>
+      <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) { setShowAdminDialog(false); setPinInput(''); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Nastavení odměn</DialogTitle>
           </DialogHeader>
-          {!pinUnlocked ? (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">Zadejte PIN pro úpravu nastavení odměn.</p>
-              <Input
-                type="password"
-                maxLength={4}
-                value={pinInput}
-                onChange={e => { setPinInput(e.target.value); setPinError(false); }}
-                onKeyDown={e => e.key === 'Enter' && submitPin()}
-                placeholder="••••"
-                autoFocus
-                className={cn('text-center text-lg tracking-widest', pinError && 'border-destructive')}
-              />
-              {pinError && <p className="text-xs text-destructive text-center">Nesprávný PIN</p>}
-              <Button onClick={submitPin} className="w-full">Potvrdit</Button>
-            </div>
-          ) : (
+          
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -253,7 +219,7 @@ export function RewardsBanner() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => { setShowAdminDialog(false); setPinUnlocked(false); }}>Zrušit</Button>
+                <Button variant="outline" onClick={() => { setShowAdminDialog(false); }}>Zrušit</Button>
                 <Button onClick={saveAdmin}>Uložit</Button>
               </DialogFooter>
             </div>
