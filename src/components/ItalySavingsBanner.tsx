@@ -51,6 +51,8 @@ export default function ItalySavingsBanner() {
 
   const submitPin = () => {
     if (pin === "2580") {
+      sessionStorage.setItem("adminMode", "1");
+      window.dispatchEvent(new Event("adminModeChanged"));
       setIsAdmin(true);
     sessionStorage.setItem('adminMode', '1');
       setShowPin(false);
