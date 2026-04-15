@@ -24,12 +24,13 @@ import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useRewards } from "@/hooks/useRewards";
+import { useRewards } from "@/hooks/useRewards"; import { useAdminMode } from "@/hooks/useAdminMode";
 
 const MAX_COMPLETED = 20;
 
 const TodoPage = () => {
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
+    const isAdmin = useAdminMode();
   const { todos, setTodos, toggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
