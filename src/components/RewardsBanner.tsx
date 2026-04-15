@@ -107,7 +107,7 @@ export function RewardsBanner() {
                 </span>
               </div>
               <div className="text-10px text-muted-foreground">
-                {noEarnings ? 'Nastav výdělek \u2193' : `${totalPercent.toFixed(1)}% z výdělku`}
+                {noEarnings ? 'Nastav výdělek \u2193' : `${totalPercent.toFixed(1)}% z ${adminConfig.monthlyEarnings.toLocaleString('cs')} Kč`}
               </div>
             </div>
             {adminMode && <button onClick={() => setShowAdminDialog(true)}>
