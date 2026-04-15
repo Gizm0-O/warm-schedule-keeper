@@ -18,6 +18,10 @@ function getMotivation(pct: number) {
 }
 
 export default function ItalySavingsBanner() {
+  // Clear admin mode on every page load - PIN must be re-entered after refresh
+  useEffect(() => {
+    sessionStorage.removeItem('adminMode');
+  }, []);
   const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPin, setShowPin] = useState(false);
