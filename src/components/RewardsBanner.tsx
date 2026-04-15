@@ -99,12 +99,11 @@ export function RewardsBanner() {
 
           {/* Kapesn\u00e9 */}
             {/* Vyděláno */}
-            {!noEarnings && (
-              <div className="flex flex-col items-center justify-center">
-                <p className="text-xs text-muted-foreground/70 leading-none">Vyděláno</p>
-                <p className="text-2xl font-bold text-foreground leading-none">{adminConfig.monthlyEarnings.toLocaleString('cs')} Kč</p>
-              </div>
-            )}
+            {/* Vyděláno */}
+            <div className="flex flex-col items-center justify-center">
+              <p className="text-xs text-muted-foreground/70 leading-none">Vyděláno</p>
+              <p className="text-2xl font-bold text-foreground leading-none">{noEarnings ? '?? Kč' : `${adminConfig.monthlyEarnings.toLocaleString('cs')} Kč`}</p>
+            </div>
           <div className="flex items-center gap-2">
             <div className="text-right">
               <div className="flex items-center gap-1 justify-end">
