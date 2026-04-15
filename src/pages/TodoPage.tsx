@@ -281,28 +281,7 @@ const TodoPage = () => {
         </div>
         <div className="divide-y divide-border">
           {visible.map((todo) => (
-                <div key={todo.id} className="relative group/todo">
-                  <TodoItem todo={todo} />
-                  {todo.category === 'work' && (
-                    <div className="flex items-center gap-1 px-3 pb-1.5" onClick={e => e.stopPropagation()}>
-                      {(['on_time', 'late', 'missed'] as const).map((status) => {
-                        const labels = { on_time: `+${rewardsConfig.bonusPerTask}% včas`, late: `+${rewardsConfig.bonusLate}% pozdě`, missed: '0% nespln.' };
-                        const colors = { on_time: 'bg-emerald-100 text-emerald-700 border-emerald-300', late: 'bg-amber-100 text-amber-700 border-amber-300', missed: 'bg-red-100 text-red-600 border-red-300' };
-                        const isActive = getTaskBonus(todo.id) === status;
-                        return (
-                          <button
-                            key={status}
-                            onClick={() => handleBonusBadgeClick(todo.id, status)}
-                            className={`text-9px font-semibold px-1.5 py-0.5 rounded border transition-all ${colors[status]} ${isActive ? 'opacity-100 ring-1 ring-offset-0 ring-current font-bold' : 'opacity-0 group-hover/todo:opacity-60 hover:!opacity-100'}`}
-                            title={labels[status]}
-                          >
-                            {status === 'on_time' ? '⭐' : status === 'late' ? '⏳' : '✕'} {labels[status]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <TodoItem key={todo.id} todo={todo} />
               ))}
         </div>
         <div className="text-center absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
