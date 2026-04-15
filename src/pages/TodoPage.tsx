@@ -213,7 +213,7 @@ const TodoPage = () => {
             {deadlineLabel(todo.deadline)}
           </div>
         </div>
-        {showBonusBtns && (
+        {showBonusBtns &&  isAdmin(
           <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
             <button onClick={() => setTaskBonus(todo.id, 'on_time')} title={`${rewardsConfig.bonusPerTask}% včas`}
               className={`${btnBase} bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 ${currentBonus === 'on_time' ? 'opacity-100 ring-1 ring-emerald-500 scale-110' : 'opacity-40 hover:opacity-90'}`}>
