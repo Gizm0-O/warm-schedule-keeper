@@ -46,6 +46,7 @@ const TodoPage = () => {
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
   const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
+    const [newAmount, setNewAmount] = useState("");
 
   // Edit todo state
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
@@ -54,6 +55,7 @@ const TodoPage = () => {
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
+    const [editAmount, setEditAmount] = useState("");
 
   // Reset "show more" when switching tabs
   useEffect(() => {
@@ -81,10 +83,12 @@ const TodoPage = () => {
       person: newPerson,
       deadline: newDeadline ? new Date(newDeadline) : undefined,
       recurrence: newRecurrence,
+            amount: newAmount ? parseInt(newAmount) : undefined,
     });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
+        setNewAmount("");
     setShowDialog(false);
   };
 
@@ -95,6 +99,7 @@ const TodoPage = () => {
     setEditPerson(todo.person);
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
+        setEditAmount(todo.amount ? todo.amount.toString() : "");
   };
 
   const saveEdit = async () => {
@@ -105,6 +110,7 @@ const TodoPage = () => {
       person: editPerson,
       deadline: editDeadline ? new Date(editDeadline) : undefined,
       recurrence: editRecurrence,
+            amount: editAmount ? parseInt(editAmount) : undefined,
     });
     setEditingTodo(null);
   };
