@@ -48,7 +48,6 @@ export function RewardsBanner() {
   const saveAdmin = () => {
     rewards.saveConfig(adminConfig);
     setShowAdminDialog(false);
-    setPinInput('');
   };
 
   const { level, levelLabel, activeTasks, nextLevelAt, progressToNext,
