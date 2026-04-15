@@ -117,6 +117,14 @@ export function RewardsBanner() {
           </div>
         </div>
 
+        {/* Vydeláno */}
+        {!noEarnings && (
+          <div className="text-center py-1">
+            <p className="text-xs text-muted-foreground/70 leading-none mb-0.5">Vyděláno</p>
+            <p className="text-2xl font-bold text-foreground leading-tight">{adminConfig.monthlyEarnings.toLocaleString('cs')} Kč</p>
+          </div>
+        )}
+
         {/* Rozbal detail */}
         {expanded && (
           <div className="mt-3 pt-3 border-t border-current/10 space-y-2">
