@@ -11,19 +11,15 @@ import { cn } from "@/lib/utils";
 function getMotivation(pct: number) {
   if (pct >= 100) return "JEDEME DO ITÁLIE! 🎉🥂";
   if (pct >= 90) return "Ještě malý krůček! 🇮🇹";
-  if (pct >= 75) return "Už jsme skoro tam! C­tíš tu vůni pizzy?";
+  if (pct >= 75) return "Už jsme skoro tam! Cítíš tu vůni pizzy?";
   if (pct >= 50) return "Více než polovina! Nepřestávej!";
   if (pct >= 20) return "Skvělý pokrok! Už máme na benzín!";
   return "Začínáme! Makej, vydělávej, šetři, Itálie čeká!";
 }
 
 export default function ItalySavingsBanner() {
-  // Clear admin mode on every page load - PIN must be re-entered after refresh
-  useEffect(() => {
-    sessionStorage.removeItem('adminMode');
-  }, []);
-
-const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercent } = useItalySavings();
+  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);
@@ -32,6 +28,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
   // Admin unlock - click counter for desktop
   const clickCount = useRef(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout>>();
+
   const handleTitleClick = useCallback(() => {
     clickCount.current++;
     if (clickTimer.current) clearTimeout(clickTimer.current);
@@ -39,9 +36,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
       clickCount.current = 0;
       setShowPin(true);
     } else {
-      clickTimer.current = setTimeout(() => {
-        clickCount.current = 0;
-      }, 1500);
+      clickTimer.current = setTimeout(() => { clickCount.current = 0; }, 1500);
     }
   }, []);
 
@@ -57,8 +52,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
   const submitPin = () => {
     if (pin === "2580") {
       setIsAdmin(true);
-      sessionStorage.setItem('adminMode', '1');
-      window.dispatchEvent(new Event('adminModeChanged'));
+    sessionStorage.setItem('adminMode', '1');
       setShowPin(false);
       setPin("");
       setPinError(false);
@@ -72,6 +66,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
   const [depAmount, setDepAmount] = useState("");
   const [depNote, setDepNote] = useState("");
   const [depDate, setDepDate] = useState(format(new Date(), "yyyy-MM-dd"));
+
   const handleAddDeposit = async () => {
     const amt = parseInt(depAmount);
     if (!amt || amt <= 0) return;
@@ -92,55 +87,75 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
 
   return (
     <>
-      <div className="rounded-2xl bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950/30 dark:via-amber-950/20 dark:to-yellow-950/20 border border-orange-200/60 dark:border-orange-800/40 p-4 mb-4 shadow-sm">
+      <div
+        className="relative overflow-hidden rounded-2xl p-4 sm:p-6"
+        style={{
+          background: "linear-gradient(135deg, hsl(25 60% 92%), hsl(38 70% 88%), hsl(25 50% 90%))",
+        }}
+      >
         {/* Title row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 mb-2">
+          <span
+            className="text-2xl cursor-default select-none hidden md:inline"
+            onClick={handleTitleClick}
+          >
+            🇮🇹
+          </span>
+          <h3
+            className="text-lg sm:text-xl font-bold select-none"
+            style={{ color: "hsl(25 40% 30%)" }}
+            onClick={handleTitleClick}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+            onTouchCancel={onTouchEnd}
+          >
+            Itálie
+          </h3>
+          {isAdmin && (
             <span
-              className="text-2xl cursor-pointer select-none"
-              onClick={handleTitleClick}
-              onTouchStart={onTouchStart}
-              onTouchEnd={onTouchEnd}
+              className="text-xs px-1.5 py-0.5 rounded-md cursor-pointer"
+              style={{ background: "hsl(38 50% 80%)", color: "hsl(25 40% 30%)" }}
+              onClick={() => setShowAdmin(!showAdmin)}
             >
-              🇮🇹
+              ✏️ Admin
             </span>
-            <h3 className="font-semibold text-orange-800 dark:text-orange-200">Itálie</h3>
-            {isAdmin && (
-              <button
-                className="text-xs px-2 py-0.5 rounded-full bg-orange-200 dark:bg-orange-800 text-orange-700 dark:text-orange-200 hover:opacity-80 transition-opacity"
-                onClick={() => setShowAdmin(!showAdmin)}
-              >
-                ✏️ Admin
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="font-medium text-orange-700 dark:text-orange-300">
+          )}
+          <div className="ml-auto text-right">
+            <span className="text-sm font-semibold" style={{ color: "hsl(25 40% 30%)" }}>
               {total.toLocaleString("cs-CZ")} / {goal.toLocaleString("cs-CZ")} Kč
             </span>
-            <span className="text-xs bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-semibold">
-                {percentage}%{bonusPercent > 0 && ` (+${bonusPercent}% bonus)`}            </span>
+            <span className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(38 60% 75%)", color: "hsl(25 50% 25%)" }}>
+              {percentage}%
+            </span>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full bg-orange-100 dark:bg-orange-900/40 rounded-full h-3 mb-2 overflow-hidden">
+        <div className="w-full h-3 rounded-full overflow-hidden mb-2" style={{ background: "hsl(25 30% 82%)" }}>
           <div
-            className="h-full bg-gradient-to-r from-orange-400 to-amber-400 rounded-full transition-all duration-1000 ease-out"
-            style={{ width: `${Math.min(animPct, 100)}%` }}
+            className="h-full rounded-full transition-all duration-1000 ease-out"
+            style={{
+              width: `${animPct}%`,
+              background: "linear-gradient(90deg, hsl(38 80% 55%), hsl(15 70% 50%))",
+            }}
           />
         </div>
 
         {/* Motivation */}
-        <p className="text-xs text-orange-600 dark:text-orange-400 italic">{getMotivation(percentage)}</p>
+        <p className="text-xs sm:text-sm italic" style={{ color: "hsl(25 30% 40%)" }}>
+          {getMotivation(percentage)}
+        </p>
 
         {/* Admin panel */}
         {isAdmin && showAdmin && (
-          <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800/60 space-y-2">
+          <div
+            className="mt-4 pt-4 space-y-3 animate-fade-in"
+            style={{ borderTop: "1px solid hsl(25 30% 80%)" }}
+          >
             {/* Add deposit */}
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="text-xs text-orange-700 dark:text-orange-300 font-medium">Částka (Kč)</label>
+            <div className="flex flex-wrap gap-2 items-end">
+              <div className="flex-1 min-w-[100px]">
+                <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Částka (Kč)</label>
                 <Input
                   type="number"
                   value={depAmount}
@@ -149,8 +164,8 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
                   className="h-8 text-sm bg-white/60 border-orange-200"
                 />
               </div>
-              <div>
-                <label className="text-xs text-orange-700 dark:text-orange-300 font-medium">Poznámka</label>
+              <div className="flex-1 min-w-[100px]">
+                <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Poznámka</label>
                 <Input
                   value={depNote}
                   onChange={(e) => setDepNote(e.target.value)}
@@ -158,8 +173,8 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
                   className="h-8 text-sm bg-white/60 border-orange-200"
                 />
               </div>
-              <div>
-                <label className="text-xs text-orange-700 dark:text-orange-300 font-medium">Datum</label>
+              <div className="min-w-[130px]">
+                <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Datum</label>
                 <Input
                   type="date"
                   value={depDate}
@@ -167,30 +182,41 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
                   className="h-8 text-sm bg-white/60 border-orange-200"
                 />
               </div>
+              <Button
+                size="sm"
+                className="h-8"
+                style={{ background: "hsl(25 50% 45%)", color: "white" }}
+                onClick={handleAddDeposit}
+              >
+                Přidat
+              </Button>
             </div>
-            <Button size="sm" onClick={handleAddDeposit} className="bg-orange-500 hover:bg-orange-600 text-white h-8">
-              Přidat
-            </Button>
 
             {/* Deposit list */}
             {entries.length > 0 && (
-              <div className="space-y-1 max-h-40 overflow-y-auto">
+              <div className="max-h-40 overflow-y-auto space-y-1">
                 {entries.map((e) => (
-                  <div key={e.id} className="flex items-center justify-between text-xs bg-white/50 dark:bg-orange-900/20 rounded px-2 py-1">
-                    <span className="text-orange-600 dark:text-orange-400">
+                  <div
+                    key={e.id}
+                    className="flex items-center justify-between text-xs px-2 py-1 rounded-md"
+                    style={{ background: "hsl(38 40% 88%)" }}
+                  >
+                    <span style={{ color: "hsl(25 30% 35%)" }}>
                       {format(new Date(e.created_at), "d.M.yyyy", { locale: cs })}
                     </span>
-                    <span className="font-medium text-orange-700 dark:text-orange-300">
+                    <span className="font-semibold" style={{ color: "hsl(25 40% 30%)" }}>
                       +{e.amount.toLocaleString("cs-CZ")} Kč
                     </span>
                     {e.note && (
-                      <span className="text-muted-foreground truncate max-w-[100px]">{e.note}</span>
+                      <span className="flex-1 mx-2 truncate" style={{ color: "hsl(25 20% 50%)" }}>
+                        {e.note}
+                      </span>
                     )}
                     <button
                       onClick={() => removeDeposit(e.id)}
                       className="p-1 rounded hover:bg-red-100 transition-colors"
                     >
-                      <Trash2 className="h-3 w-3 text-red-400" />
+                      <Trash2 className="h-3 w-3 text-destructive" />
                     </button>
                   </div>
                 ))}
@@ -201,7 +227,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
       </div>
 
       {/* PIN dialog */}
-      <Dialog open={showPin} onOpenChange={(open) => { if (!open) { setShowPin(false); setPin(""); setPinError(false); } }}>
+      <Dialog open={showPin} onOpenChange={setShowPin}>
         <DialogContent className="max-w-xs">
           <DialogHeader>
             <DialogTitle>Zadejte PIN</DialogTitle>
@@ -210,10 +236,7 @@ const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercen
             type="password"
             maxLength={4}
             value={pin}
-            onChange={(e) => {
-              setPin(e.target.value);
-              setPinError(false);
-            }}
+            onChange={(e) => { setPin(e.target.value); setPinError(false); }}
             onKeyDown={(e) => e.key === "Enter" && submitPin()}
             placeholder="****"
             className={cn("text-center text-lg tracking-widest", pinError && "border-destructive")}
