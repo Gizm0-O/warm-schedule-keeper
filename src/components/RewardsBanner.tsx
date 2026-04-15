@@ -139,7 +139,7 @@ export function RewardsBanner() {
       </div>
 
       {/* Admin dialog */}
-      <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) { setShowAdminDialog(false); setPinInput(''); } }}>
+      <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) { setShowAdminDialog(false); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Nastavení odměn</DialogTitle>
@@ -218,12 +218,11 @@ export function RewardsBanner() {
                   ({(adminConfig.basePercent + adminConfig.maxTasks * adminConfig.bonusPerTask).toFixed(1)}%)
                 </div>
               </div>
+            </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => { setShowAdminDialog(false); }}>Zrušit</Button>
+              <Button variant="outline" onClick={() => setShowAdminDialog(false)}>Zrušit</Button>
                 <Button onClick={saveAdmin}>Uložit</Button>
               </DialogFooter>
-            </div>
-          )}
         </DialogContent>
       </Dialog>
     </>
