@@ -23,8 +23,7 @@ export default function ItalySavingsBanner() {
     sessionStorage.removeItem('adminMode');
   }, []);
 
-  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings(, bonusPercent);
-  const [isAdmin, setIsAdmin] = useState(false);
+const { entries, total, percentage, goal, addDeposit, removeDeposit, bonusPercent } = useItalySavings();
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);

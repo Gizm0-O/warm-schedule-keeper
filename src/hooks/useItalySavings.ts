@@ -5,6 +5,7 @@ export interface SavingsEntry {
   id: string;
   amount: number;
   note: string | null;
+    bonus_percent: number;
   created_at: string;
 }
 
@@ -29,6 +30,7 @@ export function useItalySavings() {
 
   const total = entries.reduce((sum, e) => sum + e.amount, 0);
   const percentage = Math.min(Math.round((total / GOAL) * 100), 100);
+    const bonusPercent = entries[0]?.bonus_percent || 0;
 
   const addDeposit = useCallback(async (amount: number, note: string, date: string) => {
     const { error } = await supabase
@@ -43,5 +45,5 @@ export function useItalySavings() {
     await fetchEntries();
   }, [fetchEntries]);
 
-  return { entries, total, percentage, goal: GOAL, loading, addDeposit, removeDeposit };
+  return { entries, total, percentage, goal: GOAL, loading, addDeposit, removeDeposit, bonusPercent };
 }
