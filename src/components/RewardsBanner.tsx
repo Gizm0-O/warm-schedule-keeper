@@ -28,16 +28,8 @@ export function RewardsBanner() {
   const rewards = useRewards();
   const [expanded, setExpanded] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
-  const [adminMode, setAdminMode] = useState(() => sessionStorage.getItem('adminMode') === '1');
+  const [adminMode, setAdminMode] = useState(false);
   
-  useEffect(() => {
-    const handleStorage = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
-    window.addEventListener('storage', handleStorage);
-    const interval = setInterval(() => {
-      setAdminMode(sessionStorage.getItem('adminMode') === '1');
-    }, 500);
-    return () => { window.removeEventListener('storage', handleStorage); clearInterval(interval); };
-  }, []);
   const [adminConfig, setAdminConfig] = useState<RewardsConfig>(rewards.config);
 
 
@@ -106,7 +98,7 @@ export function RewardsBanner() {
                 {noEarnings ? 'Nastav výdělek \u2193' : `${totalPercent.toFixed(1)}% z výdělku`}
               </div>
             </div>
-            <button style={{display: adminMode ? undefined : "none"}} onClick={() => setShowAdminDialog(true)}>
+            {adminMode && <button onClick={() => setShowAdminDialog(true)}>
               <Settings className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
