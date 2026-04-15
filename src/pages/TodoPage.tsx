@@ -35,6 +35,9 @@ const TodoPage = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
   const [showAllActive, setShowAllActive] = useState(false);
+  const [custPctId, setCustPctId] = useState<string|null>(null);
+  const [custPctVal, setCustPctVal] = useState('');
+  const [customBonuses, setCustomBonuses] = useState<Record<string,number>>({});
 
   // New todo form state
   const [newText, setNewText] = useState("");
@@ -169,11 +172,14 @@ const TodoPage = () => {
 
   const TodoItem = ({ todo }: { todo: Todo }) => {
     const info = getDeadlineInfo(todo.deadline);
+    const currentBonus = getTaskBonus(todo.id);
+    const showBonusBtns = todo.category === 'work' && !todo.completed;
+    const btnBase = 'text-[11px] px-1.5 py-0.5 rounded border transition-all';
     return (
       <div
         onClick={() => !todo.completed && openEditDialog(todo)}
         className={cn(
-          "flex items-center gap-3 px-4 py-3 transition-colors cursor-pointer",
+          "flex items-center gap-2 px-4 py-3 transition-colors cursor-pointer",
           todo.completed && "opacity-50 cursor-default",
           !todo.completed && info.isToday && "bg-gradient-to-r from-orange-100 via-amber-50 to-orange-100 dark:from-orange-950/60 dark:via-amber-950/30 dark:to-orange-950/60",
           !todo.completed && info.isOverdue && "shadow-[inset_4px_0_0_0_hsl(var(--destructive))] bg-destructive/5",
@@ -181,10 +187,7 @@ const TodoPage = () => {
         )}
       >
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleTodo(todo.id);
-          }}
+          onClick={(e) => { e.stopPropagation(); toggleTodo(todo.id); }}
           className={cn(
             "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
             todo.completed
@@ -209,12 +212,46 @@ const TodoPage = () => {
             {deadlineLabel(todo.deadline)}
           </div>
         </div>
+        {showBonusBtns && (
+          <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setTaskBonus(todo.id, 'on_time')} title={`${rewardsConfig.bonusPerTask}% včas`}
+              className={`${btnBase} bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 ${currentBonus === 'on_time' ? 'opacity-100 ring-1 ring-emerald-500 scale-110' : 'opacity-40 hover:opacity-90'}`}>
+              ⭐ {rewardsConfig.bonusPerTask}%
+            </button>
+            <button onClick={() => setTaskBonus(todo.id, 'late')} title={`${rewardsConfig.bonusLate}% pozdě`}
+              className={`${btnBase} bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400 ${currentBonus === 'late' ? 'opacity-100 ring-1 ring-amber-500 scale-110' : 'opacity-40 hover:opacity-90'}`}>
+              ⏳ {rewardsConfig.bonusLate}%
+            </button>
+            <button onClick={() => setTaskBonus(todo.id, 'missed')} title="0% nesplněno"
+              className={`${btnBase} bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400 ${currentBonus === 'missed' ? 'opacity-100 ring-1 ring-red-400 scale-110' : 'opacity-40 hover:opacity-90'}`}>
+              ✕ 0%
+            </button>
+            {custPctId === todo.id ? (
+              <input autoFocus type="number" min="0" max="100" step="0.1"
+                value={custPctVal}
+                onChange={e => setCustPctVal(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && custPctVal !== '') {
+                    setCustomBonuses(prev => ({...prev, [todo.id]: parseFloat(custPctVal)}));
+                    setCustPctId(null); setCustPctVal('');
+                  }
+                  if (e.key === 'Escape') { setCustPctId(null); setCustPctVal(''); }
+                }}
+                onBlur={() => { setCustPctId(null); setCustPctVal(''); }}
+                className="w-14 text-xs text-center border rounded px-1 py-0.5 bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="%"
+              />
+            ) : (
+              <button onClick={() => setCustPctId(todo.id)} title="Vlastní %"
+                className={`${btnBase} border-dashed border-muted-foreground/40 text-muted-foreground ${customBonuses[todo.id] != null ? 'opacity-100 bg-purple-100 text-purple-700 border-purple-300' : 'opacity-40 hover:opacity-90'}`}>
+                ✎ {customBonuses[todo.id] != null ? `${customBonuses[todo.id]}%` : '%'}
+              </button>
+            )}
+          </div>
+        )}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            removeTodo(todo.id);
-          }}
-          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+          onClick={(e) => { e.stopPropagation(); removeTodo(todo.id); }}
+          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -291,33 +328,7 @@ const TodoPage = () => {
   };
 
 
-  // Bonus badge pro work ukoly (admin)
-  const BONUS_ADMIN_PIN = '1234';
-  const [bonusPinOpen, setBonusPinOpen] = useState<string | null>(null); // todoId
-  const [bonusPinInput, setBonusPinInput] = useState('');
-  const [bonusPinError, setBonusPinError] = useState(false);
-  const [pendingBonusTodoId, setPendingBonusTodoId] = useState<string | null>(null);
-  const [pendingBonusStatus, setPendingBonusStatus] = useState<'on_time' | 'late' | 'missed' | null>(null);
 
-  const handleBonusBadgeClick = (todoId: string, status: 'on_time' | 'late' | 'missed') => {
-    setPendingBonusTodoId(todoId);
-    setPendingBonusStatus(status);
-    setBonusPinOpen(todoId);
-    setBonusPinInput('');
-    setBonusPinError(false);
-  };
-
-  const submitBonusPin = () => {
-    if (bonusPinInput === BONUS_ADMIN_PIN) {
-      if (pendingBonusTodoId && pendingBonusStatus) {
-        setTaskBonus(pendingBonusTodoId, pendingBonusStatus);
-      }
-      setBonusPinOpen(null);
-      setBonusPinInput('');
-    } else {
-      setBonusPinError(true);
-    }
-  };
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
@@ -497,30 +508,7 @@ const TodoPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Bonus admin PIN dialog */}
-      {bonusPinOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setBonusPinOpen(null)}>
-          <div className="bg-background rounded-2xl p-6 shadow-xl w-72 space-y-4" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-amber-500" />
-              <h3 className="text-base font-bold">Bonus PIN</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">Zadejte PIN pro přidělení bonusu.</p>
-            <input
-              type="password"
-              maxLength={4}
-              value={bonusPinInput}
-              onChange={e => { setBonusPinInput(e.target.value); setBonusPinError(false); }}
-              onKeyDown={e => e.key === 'Enter' && submitBonusPin()}
-              placeholder="••••"
-              autoFocus
-              className={`w-full text-center text-xl tracking-widest border rounded-xl px-3 py-2 bg-background focus:outline-none ${bonusPinError ? 'border-destructive' : 'border-input'}`}
-            />
-            {bonusPinError && <p className="text-xs text-destructive text-center">Nesprávný PIN</p>}
-            <button onClick={submitBonusPin} className="w-full bg-primary text-primary-foreground rounded-xl py-2 font-semibold">Potvrdit</button>
-          </div>
-        </div>
-      )}
+
         </div>
 
   );
