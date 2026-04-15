@@ -50,18 +50,21 @@ export type Database = {
       italy_savings: {
         Row: {
           amount: number
+          bonus_percent: number | null
           created_at: string
           id: string
           note: string | null
         }
         Insert: {
           amount: number
+          bonus_percent?: number | null
           created_at?: string
           id?: string
           note?: string | null
         }
         Update: {
           amount?: number
+          bonus_percent?: number | null
           created_at?: string
           id?: string
           note?: string | null
@@ -119,8 +122,45 @@ export type Database = {
         }
         Relationships: []
       }
+      task_earnings: {
+        Row: {
+          amount: number
+          bonus_percent: number | null
+          bonus_type: string | null
+          completed_at: string
+          created_at: string
+          deadline: string | null
+          id: string
+          todo_id: string
+          todo_text: string
+        }
+        Insert: {
+          amount: number
+          bonus_percent?: number | null
+          bonus_type?: string | null
+          completed_at?: string
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          todo_id: string
+          todo_text: string
+        }
+        Update: {
+          amount?: number
+          bonus_percent?: number | null
+          bonus_type?: string | null
+          completed_at?: string
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          todo_id?: string
+          todo_text?: string
+        }
+        Relationships: []
+      }
       todos: {
         Row: {
+          amount: number | null
           category: string
           completed: boolean
           created_at: string
@@ -131,6 +171,7 @@ export type Database = {
           text: string
         }
         Insert: {
+          amount?: number | null
           category: string
           completed?: boolean
           created_at?: string
@@ -141,6 +182,7 @@ export type Database = {
           text: string
         }
         Update: {
+          amount?: number | null
           category?: string
           completed?: boolean
           created_at?: string
