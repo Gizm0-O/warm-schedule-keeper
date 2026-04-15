@@ -11,6 +11,7 @@ export interface Todo {
   person: Person;
   deadline?: Date;
   recurrence: Recurrence;
+  amount?: number;
 }
 
 interface TodoContextType {
