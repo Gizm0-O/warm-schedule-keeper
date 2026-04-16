@@ -36,6 +36,8 @@ export function RewardsBanner() {
   const [editingEarningId, setEditingEarningId] = useState<string | null>(null);
   const [editEarningAmount, setEditEarningAmount] = useState('');
   const [editEarningText, setEditEarningText] = useState('');
+  const [editEarningBonusType, setEditEarningBonusType] = useState<string>('');
+  const [editEarningBonusPercent, setEditEarningBonusPercent] = useState('');
 
   useEffect(() => {
     const handler = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
@@ -58,6 +60,8 @@ export function RewardsBanner() {
     setEditingEarningId(e.id);
     setEditEarningAmount(e.amount.toString());
     setEditEarningText(e.todo_text);
+    setEditEarningBonusType(e.bonus_type || '');
+    setEditEarningBonusPercent(e.bonus_percent?.toString() || '');
   };
 
   const saveEditEarning = () => {
@@ -65,6 +69,8 @@ export function RewardsBanner() {
     updateEarning(editingEarningId, {
       amount: parseInt(editEarningAmount) || 0,
       todo_text: editEarningText,
+      bonus_type: editEarningBonusType || null,
+      bonus_percent: editEarningBonusPercent ? parseFloat(editEarningBonusPercent) : null,
     });
     setEditingEarningId(null);
   };
@@ -133,15 +139,13 @@ export function RewardsBanner() {
                 {noEarnings ? 'Nastav výdělek ↓' : `${totalPercent.toFixed(1)}% z ${adminConfig.monthlyEarnings.toLocaleString('cs')} Kč`}
               </div>
             </div>
+            <button onClick={(e) => { e.stopPropagation(); setShowHistoryDialog(true); }}>
+              <History className="h-3.5 w-3.5 text-muted-foreground" />
+            </button>
             {adminMode && (
-              <>
-                <button onClick={(e) => { e.stopPropagation(); setShowHistoryDialog(true); }}>
-                  <History className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setShowAdminDialog(true); }}>
-                  <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-                </button>
-              </>
+              <button onClick={(e) => { e.stopPropagation(); setShowAdminDialog(true); }}>
+                <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
             )}
             {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
           </div>
@@ -255,22 +259,43 @@ export function RewardsBanner() {
             {earnings.map(e => (
               <div key={e.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
                 {editingEarningId === e.id ? (
-                  <div className="flex-1 flex gap-2">
-                    <Input
-                      value={editEarningText}
-                      onChange={ev => setEditEarningText(ev.target.value)}
-                      className="text-sm h-8"
-                      placeholder="Text"
-                    />
-                    <Input
-                      type="number"
-                      value={editEarningAmount}
-                      onChange={ev => setEditEarningAmount(ev.target.value)}
-                      className="text-sm h-8 w-24"
-                      placeholder="Kč"
-                    />
-                    <Button size="sm" onClick={saveEditEarning} className="h-8">✓</Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-8">✕</Button>
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex gap-2">
+                      <Input
+                        value={editEarningText}
+                        onChange={ev => setEditEarningText(ev.target.value)}
+                        className="text-sm h-8"
+                        placeholder="Text úkolu"
+                      />
+                      <Input
+                        type="number"
+                        value={editEarningAmount}
+                        onChange={ev => setEditEarningAmount(ev.target.value)}
+                        className="text-sm h-8 w-24"
+                        placeholder="Kč"
+                      />
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <select
+                        value={editEarningBonusType}
+                        onChange={ev => setEditEarningBonusType(ev.target.value)}
+                        className="text-xs h-7 rounded border border-input bg-background px-2"
+                      >
+                        <option value="">Bez bonusu</option>
+                        <option value="on_time">⭐ Včas</option>
+                        <option value="late">⏳ Pozdě</option>
+                      </select>
+                      <Input
+                        type="number"
+                        value={editEarningBonusPercent}
+                        onChange={ev => setEditEarningBonusPercent(ev.target.value)}
+                        className="text-sm h-7 w-20"
+                        placeholder="% bonus"
+                        step="0.5"
+                      />
+                      <Button size="sm" onClick={saveEditEarning} className="h-7">✓</Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-7">✕</Button>
+                    </div>
                   </div>
                 ) : (
                   <>
