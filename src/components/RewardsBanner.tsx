@@ -36,6 +36,8 @@ export function RewardsBanner() {
   const [editingEarningId, setEditingEarningId] = useState<string | null>(null);
   const [editEarningAmount, setEditEarningAmount] = useState('');
   const [editEarningText, setEditEarningText] = useState('');
+  const [editEarningBonusType, setEditEarningBonusType] = useState<string>('');
+  const [editEarningBonusPercent, setEditEarningBonusPercent] = useState('');
 
   useEffect(() => {
     const handler = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
@@ -58,6 +60,8 @@ export function RewardsBanner() {
     setEditingEarningId(e.id);
     setEditEarningAmount(e.amount.toString());
     setEditEarningText(e.todo_text);
+    setEditEarningBonusType(e.bonus_type || '');
+    setEditEarningBonusPercent(e.bonus_percent?.toString() || '');
   };
 
   const saveEditEarning = () => {
@@ -65,6 +69,8 @@ export function RewardsBanner() {
     updateEarning(editingEarningId, {
       amount: parseInt(editEarningAmount) || 0,
       todo_text: editEarningText,
+      bonus_type: editEarningBonusType || null,
+      bonus_percent: editEarningBonusPercent ? parseFloat(editEarningBonusPercent) : null,
     });
     setEditingEarningId(null);
   };
