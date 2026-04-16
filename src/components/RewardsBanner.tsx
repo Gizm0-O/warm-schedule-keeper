@@ -252,78 +252,121 @@ export function RewardsBanner() {
       <Dialog open={showHistoryDialog} onOpenChange={open => { if (!open) { setShowHistoryDialog(false); setEditingEarningId(null); } }}>
         <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Historie výdělků</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Historie & Bonusy</DialogTitle>
           </DialogHeader>
-          <div className="space-y-1">
-            {earnings.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné výdělky</p>
-            )}
-            {earnings.map(e => (
-              <div key={e.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                {editingEarningId === e.id ? (
-                  <div className="flex-1 space-y-1.5">
-                    <div className="flex gap-2">
-                      <Input
-                        value={editEarningText}
-                        onChange={ev => setEditEarningText(ev.target.value)}
-                        className="text-sm h-8"
-                        placeholder="Text úkolu"
-                      />
-                      <Input
-                        type="number"
-                        value={editEarningAmount}
-                        onChange={ev => setEditEarningAmount(ev.target.value)}
-                        className="text-sm h-8 w-24"
-                        placeholder="Kč"
-                      />
+
+          {/* Bonus task assignments section */}
+          {rewards.taskBonuses.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-xs font-semibold text-muted-foreground mb-1">Bonusové úkoly ({rewards.taskBonuses.filter(b => b.status === 'on_time' || b.status === 'late').length})</div>
+              {rewards.taskBonuses
+                .filter(b => b.status === 'on_time' || b.status === 'late')
+                .map(b => {
+                  const todo = todos.find(t => t.id === b.todoId);
+                  return (
+                    <div key={b.todoId} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-muted/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{todo?.text || b.todoId}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {b.status === 'on_time' ? `⭐ včas (+${config.bonusPerTask}%)` : `⏳ pozdě (+${config.bonusLate}%)`}
+                          {todo?.amount ? ` • ${todo.amount.toLocaleString('cs')} Kč` : ''}
+                        </div>
+                      </div>
+                      {adminMode && (
+                        <div className="flex gap-1 shrink-0">
+                          <select
+                            value={b.status}
+                            onChange={ev => rewards.setTaskBonus(b.todoId, ev.target.value as any)}
+                            className="text-[10px] h-6 rounded border border-input bg-background px-1"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <option value="on_time">⭐ Včas</option>
+                            <option value="late">⏳ Pozdě</option>
+                            <option value="pending">❌ Odebrat</option>
+                          </select>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <select
-                        value={editEarningBonusType}
-                        onChange={ev => setEditEarningBonusType(ev.target.value)}
-                        className="text-xs h-7 rounded border border-input bg-background px-2"
-                      >
-                        <option value="">Bez bonusu</option>
-                        <option value="on_time">⭐ Včas</option>
-                        <option value="late">⏳ Pozdě</option>
-                      </select>
-                      <Input
-                        type="number"
-                        value={editEarningBonusPercent}
-                        onChange={ev => setEditEarningBonusPercent(ev.target.value)}
-                        className="text-sm h-7 w-20"
-                        placeholder="% bonus"
-                        step="0.5"
-                      />
-                      <Button size="sm" onClick={saveEditEarning} className="h-7">✓</Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-7">✕</Button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-foreground truncate">{e.todo_text}</div>
-                      <div className="text-[10px] text-muted-foreground flex items-center gap-2">
-                        <span>{format(parseISO(e.completed_at), 'd.M.yyyy HH:mm', { locale: cs })}</span>
-                        {e.bonus_type && <span>{e.bonus_type === 'on_time' ? '⭐ včas' : '⏳ pozdě'} {e.bonus_percent}%</span>}
+                  );
+                })}
+            </div>
+          )}
+
+          {/* Earnings section */}
+          {(earnings.length > 0 || rewards.taskBonuses.length === 0) && (
+            <div className="space-y-1">
+              {earnings.length > 0 && <div className="text-xs font-semibold text-muted-foreground mb-1 pt-2 border-t">Výdělky ({earnings.length})</div>}
+              {earnings.length === 0 && rewards.taskBonuses.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné výdělky ani bonusy</p>
+              )}
+              {earnings.map(e => (
+                <div key={e.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
+                  {editingEarningId === e.id ? (
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex gap-2">
+                        <Input
+                          value={editEarningText}
+                          onChange={ev => setEditEarningText(ev.target.value)}
+                          className="text-sm h-8"
+                          placeholder="Text úkolu"
+                        />
+                        <Input
+                          type="number"
+                          value={editEarningAmount}
+                          onChange={ev => setEditEarningAmount(ev.target.value)}
+                          className="text-sm h-8 w-24"
+                          placeholder="Kč"
+                        />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <select
+                          value={editEarningBonusType}
+                          onChange={ev => setEditEarningBonusType(ev.target.value)}
+                          className="text-xs h-7 rounded border border-input bg-background px-2"
+                        >
+                          <option value="">Bez bonusu</option>
+                          <option value="on_time">⭐ Včas</option>
+                          <option value="late">⏳ Pozdě</option>
+                        </select>
+                        <Input
+                          type="number"
+                          value={editEarningBonusPercent}
+                          onChange={ev => setEditEarningBonusPercent(ev.target.value)}
+                          className="text-sm h-7 w-20"
+                          placeholder="% bonus"
+                          step="0.5"
+                        />
+                        <Button size="sm" onClick={saveEditEarning} className="h-7">✓</Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-7">✕</Button>
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-emerald-600 shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
-                    {adminMode && (
-                      <div className="flex gap-1 shrink-0">
-                        <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </button>
-                        <button onClick={() => removeEarning(e.id)} className="p-1 rounded hover:bg-destructive/10">
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                        </button>
+                  ) : (
+                    <>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{e.todo_text}</div>
+                        <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                          <span>{format(parseISO(e.completed_at), 'd.M.yyyy HH:mm', { locale: cs })}</span>
+                          {e.bonus_type && <span>{e.bonus_type === 'on_time' ? '⭐ včas' : '⏳ pozdě'} {e.bonus_percent}%</span>}
+                        </div>
                       </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
+                      <span className="text-sm font-bold text-emerald-600 shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
+                      {adminMode && (
+                        <div className="flex gap-1 shrink-0">
+                          <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </button>
+                          <button onClick={() => removeEarning(e.id)} className="p-1 rounded hover:bg-destructive/10">
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="pt-2 border-t">
             <div className="flex justify-between text-sm font-bold">
               <span>Celkem vyděláno:</span>
