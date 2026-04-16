@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
+import { useTodos } from '../contexts/TodoContext';
 import type { RewardsConfig } from '../hooks/useRewards';
 import { cn } from '../lib/utils';
 import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History } from 'lucide-react';
