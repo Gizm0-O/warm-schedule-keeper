@@ -259,22 +259,43 @@ export function RewardsBanner() {
             {earnings.map(e => (
               <div key={e.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
                 {editingEarningId === e.id ? (
-                  <div className="flex-1 flex gap-2">
-                    <Input
-                      value={editEarningText}
-                      onChange={ev => setEditEarningText(ev.target.value)}
-                      className="text-sm h-8"
-                      placeholder="Text"
-                    />
-                    <Input
-                      type="number"
-                      value={editEarningAmount}
-                      onChange={ev => setEditEarningAmount(ev.target.value)}
-                      className="text-sm h-8 w-24"
-                      placeholder="Kč"
-                    />
-                    <Button size="sm" onClick={saveEditEarning} className="h-8">✓</Button>
-                    <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-8">✕</Button>
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex gap-2">
+                      <Input
+                        value={editEarningText}
+                        onChange={ev => setEditEarningText(ev.target.value)}
+                        className="text-sm h-8"
+                        placeholder="Text úkolu"
+                      />
+                      <Input
+                        type="number"
+                        value={editEarningAmount}
+                        onChange={ev => setEditEarningAmount(ev.target.value)}
+                        className="text-sm h-8 w-24"
+                        placeholder="Kč"
+                      />
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <select
+                        value={editEarningBonusType}
+                        onChange={ev => setEditEarningBonusType(ev.target.value)}
+                        className="text-xs h-7 rounded border border-input bg-background px-2"
+                      >
+                        <option value="">Bez bonusu</option>
+                        <option value="on_time">⭐ Včas</option>
+                        <option value="late">⏳ Pozdě</option>
+                      </select>
+                      <Input
+                        type="number"
+                        value={editEarningBonusPercent}
+                        onChange={ev => setEditEarningBonusPercent(ev.target.value)}
+                        className="text-sm h-7 w-20"
+                        placeholder="% bonus"
+                        step="0.5"
+                      />
+                      <Button size="sm" onClick={saveEditEarning} className="h-7">✓</Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingEarningId(null)} className="h-7">✕</Button>
+                    </div>
                   </div>
                 ) : (
                   <>
