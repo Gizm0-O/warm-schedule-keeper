@@ -70,13 +70,24 @@ export default function ItalySavingsBanner() {
   const [depDate, setDepDate] = useState(format(new Date(), "yyyy-MM-dd"));
 
   const handleAddDeposit = async () => {
-    const amt = parseInt(depAmount);
-    if (!amt || amt <= 0) return;
-    const ok = await addDeposit(amt, depNote, new Date(depDate).toISOString());
+    const amt = parseInt(depAmount, 10);
+    if (!amt || amt <= 0) {
+      console.warn("[italy] invalid amount:", depAmount);
+      return;
+    }
+    const dateStr = depDate || format(new Date(), "yyyy-MM-dd");
+    const dateObj = new Date(dateStr);
+    if (isNaN(dateObj.getTime())) {
+      console.warn("[italy] invalid date:", depDate);
+      return;
+    }
+    const ok = await addDeposit(amt, depNote, dateObj.toISOString());
     if (ok) {
       setDepAmount("");
       setDepNote("");
       setDepDate(format(new Date(), "yyyy-MM-dd"));
+    } else {
+      console.error("[italy] addDeposit failed");
     }
   };
 
