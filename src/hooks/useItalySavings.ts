@@ -36,8 +36,12 @@ export function useItalySavings() {
     const { error } = await supabase
       .from("italy_savings")
       .insert({ amount, note: note || null, created_at: date });
-    if (!error) await fetchEntries();
-    return !error;
+    if (error) {
+      console.error("[italy_savings] insert error:", error);
+      return false;
+    }
+    await fetchEntries();
+    return true;
   }, [fetchEntries]);
 
   const removeDeposit = useCallback(async (id: string) => {
