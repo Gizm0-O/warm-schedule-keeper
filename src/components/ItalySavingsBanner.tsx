@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { cs } from "date-fns/locale";
 import { Trash2 } from "lucide-react";
 import { useItalySavings } from "@/hooks/useItalySavings";
+import { useAdminMode } from "@/hooks/useAdminMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,7 +20,7 @@ function getMotivation(pct: number) {
 
 export default function ItalySavingsBanner() {
   const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const isAdmin = useAdminMode();
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
   const [pinError, setPinError] = useState(false);
@@ -53,8 +54,6 @@ export default function ItalySavingsBanner() {
     if (pin === "2580") {
       sessionStorage.setItem("adminMode", "1");
       window.dispatchEvent(new Event("adminModeChanged"));
-      setIsAdmin(true);
-    sessionStorage.setItem('adminMode', '1');
       setShowPin(false);
       setPin("");
       setPinError(false);
