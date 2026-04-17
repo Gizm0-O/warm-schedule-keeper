@@ -428,7 +428,7 @@ const Index = () => {
       window.removeEventListener("mouseup", onUp);
       if (wasDrag && dragId) {
         const [srcDay] = dragId.split(":");
-        // Read current overrides via setState callback to get fresh values
+        // Read fresh values via setState callback (closure has stale values)
         let capturedTime: { startHour: number; endHour: number } | null = null;
         let capturedDay: string | null = null;
         setShiftTimeOverrides((prev) => {
@@ -440,10 +440,13 @@ const Index = () => {
           return prev;
         });
 
-        saveDragResult(dragId, srcDay);
-
-        // Use setTimeout to ensure capturedTime/capturedDay are set
+        // Persist fresh values directly (don't rely on saveDragResult's closure)
         setTimeout(() => {
+          if (capturedTime) {
+            setShiftTime(dragId, capturedTime.startHour, capturedTime.endHour);
+          }
+          setShiftDay(dragId, capturedDay);
+
           pushAction({
             undo: () => {
               if (origTimeOverride) {
@@ -458,7 +461,6 @@ const Index = () => {
                 setShiftTime(dragId, capturedTime.startHour, capturedTime.endHour);
               }
               setShiftDay(dragId, capturedDay);
-              saveDragResult(dragId, srcDay);
             },
           });
         }, 0);
