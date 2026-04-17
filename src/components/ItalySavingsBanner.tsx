@@ -68,24 +68,33 @@ export default function ItalySavingsBanner() {
   const [depAmount, setDepAmount] = useState("");
   const [depNote, setDepNote] = useState("");
   const [depDate, setDepDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const depAmountRef = useRef<HTMLInputElement | null>(null);
+  const depNoteRef = useRef<HTMLInputElement | null>(null);
+  const depDateRef = useRef<HTMLInputElement | null>(null);
 
   const handleAddDeposit = async () => {
-    const amt = parseInt(depAmount, 10);
+    const rawAmount = depAmountRef.current?.value?.trim() ?? depAmount.trim();
+    const rawNote = depNoteRef.current?.value ?? depNote;
+    const rawDate = depDateRef.current?.value || depDate;
+    const amt = parseInt(rawAmount, 10);
     if (!amt || amt <= 0) {
-      console.warn("[italy] invalid amount:", depAmount);
+      console.warn("[italy] invalid amount:", rawAmount);
       return;
     }
-    const dateStr = depDate || format(new Date(), "yyyy-MM-dd");
+    const dateStr = rawDate || format(new Date(), "yyyy-MM-dd");
     const dateObj = new Date(dateStr);
     if (isNaN(dateObj.getTime())) {
-      console.warn("[italy] invalid date:", depDate);
+      console.warn("[italy] invalid date:", rawDate);
       return;
     }
-    const ok = await addDeposit(amt, depNote, dateObj.toISOString());
+    const ok = await addDeposit(amt, rawNote, dateObj.toISOString());
     if (ok) {
       setDepAmount("");
       setDepNote("");
       setDepDate(format(new Date(), "yyyy-MM-dd"));
+      if (depAmountRef.current) depAmountRef.current.value = "";
+      if (depNoteRef.current) depNoteRef.current.value = "";
+      if (depDateRef.current) depDateRef.current.value = format(new Date(), "yyyy-MM-dd");
     } else {
       console.error("[italy] addDeposit failed");
     }
@@ -170,9 +179,11 @@ export default function ItalySavingsBanner() {
               <div className="flex-1 min-w-[100px]">
                 <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Částka (Kč)</label>
                 <Input
+                  ref={depAmountRef}
                   type="number"
                   value={depAmount}
                   onChange={(e) => setDepAmount(e.target.value)}
+                  onInput={(e) => setDepAmount((e.target as HTMLInputElement).value)}
                   placeholder="1000"
                   className="h-8 text-sm bg-white/60 border-orange-200"
                 />
@@ -180,6 +191,7 @@ export default function ItalySavingsBanner() {
               <div className="flex-1 min-w-[100px]">
                 <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Poznámka</label>
                 <Input
+                  ref={depNoteRef}
                   value={depNote}
                   onChange={(e) => setDepNote(e.target.value)}
                   placeholder="Výplata..."
@@ -189,6 +201,7 @@ export default function ItalySavingsBanner() {
               <div className="min-w-[130px]">
                 <label className="text-xs font-medium" style={{ color: "hsl(25 40% 30%)" }}>Datum</label>
                 <Input
+                  ref={depDateRef}
                   type="date"
                   value={depDate}
                   onChange={(e) => setDepDate(e.target.value)}
@@ -196,6 +209,7 @@ export default function ItalySavingsBanner() {
                 />
               </div>
               <Button
+                type="button"
                 size="sm"
                 className="h-8"
                 style={{ background: "hsl(25 50% 45%)", color: "white" }}
