@@ -396,7 +396,7 @@ const TodoPage = () => {
           {hasMore && (
             <button
               onClick={() => setShowAllActive(true)}
-              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-accent/30 transition-colors bg-primary/10 shadow-lg"
+              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-background/90 transition-colors bg-background/80 backdrop-blur-md shadow-lg"
             >
               Zobrazit více ({items.length - activeLimit} dalších)
             </button>
@@ -404,7 +404,7 @@ const TodoPage = () => {
           {showAllActive && items.length > activeLimit && (
             <button
               onClick={() => setShowAllActive(false)}
-              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-accent/30 transition-colors bg-primary/10 shadow-lg"
+              className="px-4 py-2 text-xs font-medium text-primary border border-current rounded-md hover:bg-background/90 transition-colors bg-background/80 backdrop-blur-md shadow-lg"
             >
               Skrýt
             </button>
