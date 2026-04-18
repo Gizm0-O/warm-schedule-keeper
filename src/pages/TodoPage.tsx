@@ -321,6 +321,35 @@ const TodoPage = () => {
             )}
           </div>
         )}
+        {showBonusBtns && !isAdmin && (() => {
+          const customPct = customBonuses[todo.id];
+          let pct: number | null = null;
+          let cls = "bg-muted text-muted-foreground border-border";
+          let icon = "";
+          if (customPct != null) {
+            pct = customPct;
+            cls = "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900/40 dark:text-purple-400";
+            icon = "✎";
+          } else if (currentBonus === 'on_time') {
+            pct = rewardsConfig.bonusPerTask;
+            cls = "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400";
+            icon = "⭐";
+          } else if (currentBonus === 'late') {
+            pct = rewardsConfig.bonusLate;
+            cls = "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400";
+            icon = "⏳";
+          } else if (currentBonus === 'missed') {
+            pct = 0;
+            cls = "bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400";
+            icon = "✕";
+          }
+          if (pct == null) return null;
+          return (
+            <span className={`${btnBase} ${cls} shrink-0 cursor-default`} title="Nastavený bonus">
+              {icon} {pct}%
+            </span>
+          );
+        })()}
         <button
           onClick={(e) => { e.stopPropagation(); removeTodo(todo.id); }}
           className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
