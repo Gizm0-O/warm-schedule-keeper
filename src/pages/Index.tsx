@@ -32,6 +32,8 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
+import { useRewards } from "@/hooks/useRewards";
+import { useAdminMode } from "@/hooks/useAdminMode";
 
 
 const FAMILY_NAMES = new Set([
@@ -202,6 +204,8 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
+  const { getTaskBonus, config: rewardsConfig } = useRewards();
+  const isAdmin = useAdminMode();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
@@ -1437,7 +1441,7 @@ const Index = () => {
                           </span>
                         )}
                       </span>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className={cn(
                           "inline-flex items-center gap-1 text-xs",
                           isOverdue && "text-destructive font-medium",
@@ -1452,6 +1456,36 @@ const Index = () => {
                             </span>
                           )}
                         </span>
+                        {!isAdmin && todo.person === "Barča" && todo.category === "work" && !todo.completed && (() => {
+                          const currentBonus = getTaskBonus(todo.id);
+                          let pct: number | null = null;
+                          let cls = "";
+                          let icon = "";
+                          if (currentBonus === 'on_time') {
+                            pct = rewardsConfig.bonusPerTask;
+                            cls = "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400";
+                            icon = "⭐";
+                          } else if (currentBonus === 'late') {
+                            pct = rewardsConfig.bonusLate;
+                            cls = "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400";
+                            icon = "⏳";
+                          } else if (currentBonus === 'missed') {
+                            pct = 0;
+                            cls = "bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400";
+                            icon = "✕";
+                          }
+                          if (pct == null) return null;
+                          return (
+                            <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border", cls)} title="Nastavený bonus">
+                              {icon} {pct}%
+                            </span>
+                          );
+                        })()}
+                        {!isAdmin && todo.amount != null && todo.amount > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50" title="Částka za úkol">
+                            💰 {todo.amount.toLocaleString('cs')} Kč
+                          </span>
+                        )}
                       </div>
                     </div>
                     <Badge variant="outline" className={cn(
