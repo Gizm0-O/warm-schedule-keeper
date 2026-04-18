@@ -204,6 +204,8 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
+  const { getTaskBonus, config: rewardsConfig } = useRewards();
+  const isAdmin = useAdminMode();
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
