@@ -32,6 +32,8 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
+import { useRewards } from "@/hooks/useRewards";
+import { useAdminMode } from "@/hooks/useAdminMode";
 
 
 const FAMILY_NAMES = new Set([
