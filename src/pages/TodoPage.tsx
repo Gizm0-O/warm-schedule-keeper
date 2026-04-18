@@ -344,11 +344,17 @@ const TodoPage = () => {
             icon = "✕";
           }
           if (pct == null) return null;
-          const amount = Math.round((rewardsConfig.monthlyEarnings * pct) / 100);
           return (
-            <span className={`${btnBase} ${cls} shrink-0 cursor-default`} title="Nastavený bonus">
-              {icon} {pct}% · {amount} Kč
-            </span>
+            <>
+              <span className={`${btnBase} ${cls} shrink-0 cursor-default`} title="Nastavený bonus">
+                {icon} {pct}%
+              </span>
+              {todo.amount != null && todo.amount > 0 && (
+                <span className={`${btnBase} bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 shrink-0 cursor-default`} title="Částka za úkol">
+                  💰 {todo.amount.toLocaleString('cs')} Kč
+                </span>
+              )}
+            </>
           );
         })()}
         <button
