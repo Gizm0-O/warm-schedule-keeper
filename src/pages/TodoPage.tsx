@@ -344,9 +344,10 @@ const TodoPage = () => {
             icon = "✕";
           }
           if (pct == null) return null;
+          const amount = Math.round((rewardsConfig.monthlyEarnings * pct) / 100);
           return (
             <span className={`${btnBase} ${cls} shrink-0 cursor-default`} title="Nastavený bonus">
-              {icon} {pct}%
+              {icon} {pct}% · {amount} Kč
             </span>
           );
         })()}
