@@ -133,13 +133,28 @@ export default function ItalySavingsBanner() {
             Itálie
           </h3>
           {isAdmin && (
-            <span
-              className="text-xs px-1.5 py-0.5 rounded-md cursor-pointer"
-              style={{ background: "hsl(38 50% 80%)", color: "hsl(25 40% 30%)" }}
-              onClick={() => setShowAdmin(!showAdmin)}
-            >
-              ✏️ Admin
-            </span>
+            <>
+              <span
+                className="text-xs px-1.5 py-0.5 rounded-md cursor-pointer"
+                style={{ background: "hsl(38 50% 80%)", color: "hsl(25 40% 30%)" }}
+                onClick={() => setShowAdmin(!showAdmin)}
+              >
+                ✏️ Admin
+              </span>
+              <button
+                type="button"
+                className="text-xs px-1.5 py-0.5 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+                style={{ background: "hsl(0 50% 85%)", color: "hsl(0 50% 30%)" }}
+                onClick={() => {
+                  sessionStorage.removeItem("adminMode");
+                  window.dispatchEvent(new Event("adminModeChanged"));
+                  setShowAdmin(false);
+                }}
+                title="Odhlásit z admin módu"
+              >
+                🔒 Odhlásit
+              </button>
+            </>
           )}
           <div className="ml-auto text-right">
             <span className="text-sm font-semibold" style={{ color: "hsl(25 40% 30%)" }}>
