@@ -594,8 +594,18 @@ const TodoPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Deadline (volitelné)</label>
-                <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} />
+                <label className="text-xs font-medium text-muted-foreground">
+                  Deadline (volitelné)
+                  {!isAdmin && editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && isReady(editingTodo.id) && (
+                    <span className="ml-1 text-[10px]">🔒 schváleno</span>
+                  )}
+                </label>
+                <Input
+                  type="date"
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                  disabled={!isAdmin && editingTodo?.person === 'Barča' && editingTodo?.category === 'work' && isReady(editingTodo.id)}
+                />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Opakování</label>
