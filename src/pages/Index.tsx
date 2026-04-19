@@ -34,6 +34,8 @@ import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
 import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
+import { useTaskReady } from "@/hooks/useTaskReady";
+import { toast } from "sonner";
 
 
 const FAMILY_NAMES = new Set([
