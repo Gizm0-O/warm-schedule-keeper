@@ -40,6 +40,7 @@ const TodoPage = () => {
   const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
+  const { isReady, setReady } = useTaskReady();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
