@@ -221,6 +221,10 @@ const Index = () => {
       return;
     }
     toggleTodo(id);
+    pushAction({
+      undo: async () => { await toggleTodo(id); },
+      redo: async () => { await toggleTodo(id); },
+    });
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
