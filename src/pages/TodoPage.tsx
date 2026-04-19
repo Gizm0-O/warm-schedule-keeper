@@ -103,6 +103,7 @@ const TodoPage = () => {
     const bonus = getTaskBonus(id);
     const hasAmount = todo.amount && todo.amount > 0;
     const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount && (bonus === 'on_time' || bonus === 'late');
+    const wasCompleted = todo.completed;
 
     await rawToggleTodo(id);
 
@@ -121,7 +122,6 @@ const TodoPage = () => {
       if (earning) {
         pushAction({
           undo: async () => {
-            // Undo: uncheck todo + remove earning
             await supabase.from("todos").update({ completed: false }).eq("id", id);
             setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
             await removeEarning(earning.id);
@@ -141,6 +141,19 @@ const TodoPage = () => {
           },
         });
       }
+    } else {
+      // Generic undo for plain toggle (no earning)
+      const newCompleted = !wasCompleted;
+      pushAction({
+        undo: async () => {
+          await supabase.from("todos").update({ completed: wasCompleted }).eq("id", id);
+          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: wasCompleted } : t));
+        },
+        redo: async () => {
+          await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
+          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: newCompleted } : t));
+        },
+      });
     }
   }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
 
