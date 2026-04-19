@@ -624,6 +624,22 @@ const TodoPage = () => {
                 />
               </div>
             )}
+            {/* Ready checkbox - admin only */}
+            {isAdmin && editingTodo && (
+              <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                <Checkbox
+                  id="ready-checkbox"
+                  checked={isReady(editingTodo.id)}
+                  onCheckedChange={(checked) => setReady(editingTodo.id, !!checked)}
+                />
+                <label
+                  htmlFor="ready-checkbox"
+                  className="text-sm font-medium cursor-pointer select-none"
+                >
+                  ✅ Ready – úkol schválen, uživatel ho může dokončit
+                </label>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
