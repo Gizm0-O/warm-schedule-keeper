@@ -1434,7 +1434,7 @@ const Index = () => {
                     isTodayTask && !isOverdue && "bg-warning/10"
                   )}>
                     <button
-                      onClick={() => toggleTodo(todo.id)}
+                      onClick={() => handleToggleTodo(todo.id)}
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
                         todo.person === "Tadeáš"
