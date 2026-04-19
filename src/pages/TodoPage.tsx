@@ -28,6 +28,9 @@ import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { useTaskReady } from "@/hooks/useTaskReady";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 const MAX_COMPLETED = 20;
 
