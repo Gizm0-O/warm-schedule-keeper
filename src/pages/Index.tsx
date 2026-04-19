@@ -248,7 +248,7 @@ const Index = () => {
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
     hideShift, unhideShift,
   } = useShiftOverrides();
-  const { pushAction } = useUndoRedo();
+  
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
