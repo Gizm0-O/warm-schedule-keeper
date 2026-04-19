@@ -88,8 +88,8 @@ const TodoPage = () => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
 
-    // Block completing for non-admin users if not approved (Ready)
-    if (!isAdmin && !todo.completed && !isReady(id)) {
+    // Block completing for non-admin users if not approved (Ready) - only for Barča work tasks
+    if (!isAdmin && !todo.completed && todo.person === 'Barča' && todo.category === 'work' && !isReady(id)) {
       toast.error("Tvůj boss úkol ještě neschválil.");
       return;
     }
