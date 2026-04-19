@@ -212,7 +212,7 @@ const Index = () => {
   const handleToggleTodo = (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
-    if (!isAdmin && !todo.completed && !isReady(id)) {
+    if (!isAdmin && !todo.completed && todo.person === 'Barča' && todo.category === 'work' && !isReady(id)) {
       toast.error("Tvůj boss úkol ještě neschválil.");
       return;
     }
