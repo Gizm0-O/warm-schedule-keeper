@@ -625,7 +625,7 @@ const TodoPage = () => {
               </div>
             )}
             {/* Ready checkbox - admin only */}
-            {isAdmin && editingTodo && (
+            {isAdmin && editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && (
               <div className="flex items-center gap-2 pt-2 border-t border-border/50">
                 <Checkbox
                   id="ready-checkbox"
