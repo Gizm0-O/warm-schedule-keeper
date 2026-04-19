@@ -208,6 +208,16 @@ const Index = () => {
   const { todos, toggleTodo } = useTodos();
   const { getTaskBonus, config: rewardsConfig } = useRewards();
   const isAdmin = useAdminMode();
+  const { isReady } = useTaskReady();
+  const handleToggleTodo = (id: string) => {
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+    if (!isAdmin && !todo.completed && !isReady(id)) {
+      toast.error("Tvůj boss úkol ještě neschválil.");
+      return;
+    }
+    toggleTodo(id);
+  };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
