@@ -209,6 +209,9 @@ const Index = () => {
   const { getTaskBonus, config: rewardsConfig } = useRewards();
   const isAdmin = useAdminMode();
   const { isReady } = useTaskReady();
+  const { pushAction } = useUndoRedo();
+  const toggleTodoRef = useRef(toggleTodo);
+  useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
   const handleToggleTodo = (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
@@ -222,8 +225,8 @@ const Index = () => {
     }
     toggleTodo(id);
     pushAction({
-      undo: async () => { await toggleTodo(id); },
-      redo: async () => { await toggleTodo(id); },
+      undo: async () => { await toggleTodoRef.current(id); },
+      redo: async () => { await toggleTodoRef.current(id); },
     });
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
@@ -248,7 +251,7 @@ const Index = () => {
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
     hideShift, unhideShift,
   } = useShiftOverrides();
-  const { pushAction } = useUndoRedo();
+  
 
   // Edit event dialog
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
