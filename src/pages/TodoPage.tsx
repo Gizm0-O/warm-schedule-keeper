@@ -28,6 +28,9 @@ import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
+import { useTaskReady } from "@/hooks/useTaskReady";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 
 const MAX_COMPLETED = 20;
 
@@ -37,6 +40,7 @@ const TodoPage = () => {
   const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
+  const { isReady, setReady } = useTaskReady();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -84,6 +88,12 @@ const TodoPage = () => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
 
+    // Block completing for non-admin users if not approved (Ready)
+    if (!isAdmin && !todo.completed && !isReady(id)) {
+      toast.error("Tvůj boss úkol ještě neschválil.");
+      return;
+    }
+
     // If completing a Barča work task with amount set and bonus configured
     const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
     const bonus = getTaskBonus(id);
@@ -128,7 +138,7 @@ const TodoPage = () => {
         });
       }
     }
-  }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos]);
+  }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
@@ -612,6 +622,22 @@ const TodoPage = () => {
                   onChange={(e) => setEditAmount(e.target.value)}
                   min={0}
                 />
+              </div>
+            )}
+            {/* Ready checkbox - admin only */}
+            {isAdmin && editingTodo && (
+              <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+                <Checkbox
+                  id="ready-checkbox"
+                  checked={isReady(editingTodo.id)}
+                  onCheckedChange={(checked) => setReady(editingTodo.id, !!checked)}
+                />
+                <label
+                  htmlFor="ready-checkbox"
+                  className="text-sm font-medium cursor-pointer select-none"
+                >
+                  ✅ Ready – úkol schválen, uživatel ho může dokončit
+                </label>
               </div>
             )}
           </div>

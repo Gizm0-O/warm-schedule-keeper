@@ -34,6 +34,8 @@ import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
 import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
+import { useTaskReady } from "@/hooks/useTaskReady";
+import { toast } from "sonner";
 
 
 const FAMILY_NAMES = new Set([
@@ -206,6 +208,16 @@ const Index = () => {
   const { todos, toggleTodo } = useTodos();
   const { getTaskBonus, config: rewardsConfig } = useRewards();
   const isAdmin = useAdminMode();
+  const { isReady } = useTaskReady();
+  const handleToggleTodo = (id: string) => {
+    const todo = todos.find(t => t.id === id);
+    if (!todo) return;
+    if (!isAdmin && !todo.completed && !isReady(id)) {
+      toast.error("Tvůj boss úkol ještě neschválil.");
+      return;
+    }
+    toggleTodo(id);
+  };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
@@ -1422,7 +1434,7 @@ const Index = () => {
                     isTodayTask && !isOverdue && "bg-warning/10"
                   )}>
                     <button
-                      onClick={() => toggleTodo(todo.id)}
+                      onClick={() => handleToggleTodo(todo.id)}
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
                         todo.person === "Tadeáš"
