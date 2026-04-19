@@ -90,7 +90,11 @@ const TodoPage = () => {
 
     // Block completing for non-admin users if not approved (Ready) - only for Barča work tasks
     if (!isAdmin && !todo.completed && todo.person === 'Barča' && todo.category === 'work' && !isReady(id)) {
-      toast.error("Tvůj boss úkol ještě neschválil.");
+      toast.error("Tvůj boss úkol ještě neschválil.", {
+        position: "top-center",
+        duration: 4000,
+        className: "!bg-destructive !text-destructive-foreground !border-destructive !text-lg !font-semibold !py-5 !px-6 !shadow-2xl",
+      });
       return;
     }
 

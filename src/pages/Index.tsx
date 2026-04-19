@@ -213,7 +213,11 @@ const Index = () => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
     if (!isAdmin && !todo.completed && todo.person === 'Barča' && todo.category === 'work' && !isReady(id)) {
-      toast.error("Tvůj boss úkol ještě neschválil.");
+      toast.error("Tvůj boss úkol ještě neschválil.", {
+        position: "top-center",
+        duration: 4000,
+        className: "!bg-destructive !text-destructive-foreground !border-destructive !text-lg !font-semibold !py-5 !px-6 !shadow-2xl",
+      });
       return;
     }
     toggleTodo(id);
