@@ -33,6 +33,8 @@ import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
 import { useRewards } from "@/hooks/useRewards";
+import { useTaskEarnings } from "@/hooks/useTaskEarnings";
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { toast } from "sonner";
@@ -206,13 +208,14 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
-  const { getTaskBonus, config: rewardsConfig } = useRewards();
+  const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
+  const { addEarning, removeEarning } = useTaskEarnings();
   const isAdmin = useAdminMode();
   const { isReady } = useTaskReady();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
-  const handleToggleTodo = (id: string) => {
+  const handleToggleTodo = async (id: string) => {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
     if (!isAdmin && !todo.completed && todo.person === 'Barča' && todo.category === 'work' && !isReady(id)) {
@@ -223,9 +226,43 @@ const Index = () => {
       });
       return;
     }
-    toggleTodo(id);
+
+    const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
+    const hasAmount = todo.amount && todo.amount > 0;
+    const wasCompleted = todo.completed;
+    const completing = !wasCompleted;
+
+    // Auto-determine bonus from deadline if not set
+    let bonus = getTaskBonus(id);
+    if (completing && isBarCaWork && hasAmount && bonus === 'pending') {
+      const today = startOfDay(new Date());
+      const deadline = todo.deadline ? startOfDay(todo.deadline) : today;
+      bonus = isBefore(deadline, today) ? 'late' : 'on_time';
+      await setTaskBonus(id, bonus);
+    }
+
+    await toggleTodo(id);
+
+    let createdEarningId: string | null = null;
+    if (completing && isBarCaWork && hasAmount && (bonus === 'on_time' || bonus === 'late')) {
+      const bonusPercent = bonus === 'on_time' ? rewardsConfig.bonusPerTask : rewardsConfig.bonusLate;
+      const earning = await addEarning({
+        todo_id: id,
+        todo_text: todo.text,
+        amount: todo.amount!,
+        bonus_type: bonus,
+        bonus_percent: bonusPercent,
+        deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+        completed_at: new Date().toISOString(),
+      });
+      if (earning) createdEarningId = earning.id;
+    }
+
     pushAction({
-      undo: async () => { await toggleTodoRef.current(id); },
+      undo: async () => {
+        await toggleTodoRef.current(id);
+        if (createdEarningId) await removeEarning(createdEarningId);
+      },
       redo: async () => { await toggleTodoRef.current(id); },
     });
   };
