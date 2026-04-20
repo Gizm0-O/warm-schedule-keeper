@@ -266,6 +266,7 @@ const Index = () => {
       redo: async () => { await toggleTodoRef.current(id); },
     });
   };
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
