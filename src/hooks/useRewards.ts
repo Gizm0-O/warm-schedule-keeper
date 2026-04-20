@@ -141,6 +141,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
   // Výpočty
   const completedOnTime = effectiveBonuses.filter(b => b.status === 'on_time').length;
   const completedLate = effectiveBonuses.filter(b => b.status === 'late').length;
+  const completedMissed = effectiveBonuses.filter(b => b.status === 'missed').length;
   const totalBonusPercent = Math.min(
     completedOnTime * config.bonusPerTask + completedLate * config.bonusLate,
     config.maxTasks * config.bonusPerTask
@@ -150,8 +151,8 @@ export function useRewards(completedTodoIds?: Set<string>) {
   const baseAmount = Math.round(config.monthlyEarnings * config.basePercent / 100);
   const bonusAmount = totalAmount - baseAmount;
 
-  // Level systém - jen dokončené bonusové úkoly
-  const activeTasks = effectiveBonuses.filter(b => b.status === 'on_time' || b.status === 'late').length;
+  // Level systém - všechny dokončené úkoly (včas, pozdě i příliš pozdě = 0%)
+  const activeTasks = effectiveBonuses.filter(b => b.status === 'on_time' || b.status === 'late' || b.status === 'missed').length;
   const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
   const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
   const nextLevelAt = [1, 4, 7, 10, 10][level];
@@ -170,6 +171,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
     bonusAmount,
     completedOnTime,
     completedLate,
+    completedMissed,
     totalBonusPercent,
     level,
     levelLabel,

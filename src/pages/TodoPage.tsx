@@ -100,10 +100,19 @@ const TodoPage = () => {
 
     // If completing a Barča work task with amount set
     const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
-    const bonus = getTaskBonus(id);
     const hasAmount = todo.amount && todo.amount > 0;
     const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount;
     const wasCompleted = todo.completed;
+
+    // Auto-determine bonus from deadline if not set
+    let bonus = getTaskBonus(id);
+    if (shouldRecordEarning && bonus === 'pending') {
+      const today = startOfDay(new Date());
+      const deadline = todo.deadline ? startOfDay(todo.deadline) : today;
+      const daysLate = differenceInDays(today, deadline);
+      bonus = daysLate > 7 ? 'missed' : daysLate > 0 ? 'late' : 'on_time';
+      await setTaskBonus(id, bonus);
+    }
 
     await rawToggleTodo(id);
 
@@ -157,7 +166,7 @@ const TodoPage = () => {
         },
       });
     }
-  }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
+  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
