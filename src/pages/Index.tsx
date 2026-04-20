@@ -244,13 +244,15 @@ const Index = () => {
     await toggleTodo(id);
 
     let createdEarningId: string | null = null;
-    if (completing && isBarCaWork && hasAmount && (bonus === 'on_time' || bonus === 'late')) {
-      const bonusPercent = bonus === 'on_time' ? rewardsConfig.bonusPerTask : rewardsConfig.bonusLate;
+    if (completing && isBarCaWork && hasAmount) {
+      const bonusPercent =
+        bonus === 'on_time' ? rewardsConfig.bonusPerTask :
+        bonus === 'late' ? rewardsConfig.bonusLate : 0;
       const earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
         amount: todo.amount!,
-        bonus_type: bonus,
+        bonus_type: bonus === 'pending' ? null : bonus,
         bonus_percent: bonusPercent,
         deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
         completed_at: new Date().toISOString(),
