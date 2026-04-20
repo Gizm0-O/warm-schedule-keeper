@@ -33,6 +33,8 @@ import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
 import { useRewards } from "@/hooks/useRewards";
+import { useTaskEarnings } from "@/hooks/useTaskEarnings";
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { toast } from "sonner";
