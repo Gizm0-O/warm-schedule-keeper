@@ -24,7 +24,7 @@ const defaultConfig: RewardsConfig = {
   month: new Date().toISOString().slice(0, 7),
 };
 
-export function useRewards() {
+export function useRewards(completedTodoIds?: Set<string>) {
   const [config, setConfigState] = useState<RewardsConfig>(defaultConfig);
   const [taskBonuses, setTaskBonusesState] = useState<TaskBonus[]>([]);
   const [loaded, setLoaded] = useState(false);
