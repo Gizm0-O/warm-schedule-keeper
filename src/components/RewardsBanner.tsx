@@ -262,9 +262,9 @@ export function RewardsBanner() {
           {/* Bonus task assignments section */}
           {rewards.taskBonuses.length > 0 && (
             <div className="space-y-1">
-              <div className="text-xs font-semibold text-muted-foreground mb-1">Bonusové úkoly ({rewards.taskBonuses.filter(b => b.status === 'on_time' || b.status === 'late').length})</div>
+              <div className="text-xs font-semibold text-muted-foreground mb-1">Bonusové úkoly ({rewards.taskBonuses.filter(b => b.status === 'on_time' || b.status === 'late' || b.status === 'missed').length})</div>
               {rewards.taskBonuses
-                .filter(b => b.status === 'on_time' || b.status === 'late')
+                .filter(b => b.status === 'on_time' || b.status === 'late' || b.status === 'missed')
                 .map(b => {
                   const todo = todos.find(t => t.id === b.todoId);
                   return (
@@ -272,7 +272,9 @@ export function RewardsBanner() {
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-foreground truncate">{todo?.text || b.todoId}</div>
                         <div className="text-[10px] text-muted-foreground">
-                          {b.status === 'on_time' ? `⭐ včas (+${config.bonusPerTask}%)` : `⏳ pozdě (+${config.bonusLate}%)`}
+                          {b.status === 'on_time' ? `⭐ včas (+${config.bonusPerTask}%)` :
+                           b.status === 'late' ? `⏳ pozdě (+${config.bonusLate}%)` :
+                           `⏰ příliš pozdě (0%)`}
                           {todo?.amount ? ` • ${todo.amount.toLocaleString('cs')} Kč` : ''}
                         </div>
                       </div>
@@ -286,6 +288,7 @@ export function RewardsBanner() {
                           >
                             <option value="on_time">⭐ Včas</option>
                             <option value="late">⏳ Pozdě</option>
+                            <option value="missed">⏰ Příliš pozdě</option>
                             <option value="pending">❌ Odebrat</option>
                           </select>
                         </div>
