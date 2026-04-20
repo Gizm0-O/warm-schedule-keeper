@@ -70,7 +70,7 @@ export function useRewards() {
   // Realtime sync across browsers
   useEffect(() => {
     const channel = supabase
-      .channel('rewards-sync')
+      .channel(`rewards-sync-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rewards_config' }, (payload: any) => {
         const row = payload.new;
         if (!row) return;
