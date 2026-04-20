@@ -237,7 +237,8 @@ const Index = () => {
     if (completing && isBarCaWork && hasAmount && bonus === 'pending') {
       const today = startOfDay(new Date());
       const deadline = todo.deadline ? startOfDay(todo.deadline) : today;
-      bonus = isBefore(deadline, today) ? 'late' : 'on_time';
+      const daysLate = differenceInDays(today, deadline);
+      bonus = daysLate > 7 ? 'missed' : daysLate > 0 ? 'late' : 'on_time';
       await setTaskBonus(id, bonus);
     }
 
