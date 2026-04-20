@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useTodos } from '@/contexts/TodoContext';
 
 export interface RewardsConfig {
   monthlyEarnings: number;
@@ -25,7 +24,7 @@ const defaultConfig: RewardsConfig = {
   month: new Date().toISOString().slice(0, 7),
 };
 
-export function useRewards() {
+export function useRewards(completedTodoIds?: Set<string>) {
   const [config, setConfigState] = useState<RewardsConfig>(defaultConfig);
   const [taskBonuses, setTaskBonusesState] = useState<TaskBonus[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -133,12 +132,10 @@ export function useRewards() {
     return taskBonuses.find(b => b.todoId === todoId)?.status ?? 'pending';
   }, [taskBonuses]);
 
-  // Bonusy se počítají JEN pro dokončené úkoly
-  const { todos } = useTodos();
-  const completedIds = useMemo(() => new Set(todos.filter(t => t.completed).map(t => t.id)), [todos]);
+  // Bonusy se počítají JEN pro dokončené úkoly (filtrováno přes completedTodoIds z volajícího)
   const effectiveBonuses = useMemo(
-    () => taskBonuses.filter(b => completedIds.has(b.todoId)),
-    [taskBonuses, completedIds]
+    () => completedTodoIds ? taskBonuses.filter(b => completedTodoIds.has(b.todoId)) : [],
+    [taskBonuses, completedTodoIds]
   );
 
   // Výpočty

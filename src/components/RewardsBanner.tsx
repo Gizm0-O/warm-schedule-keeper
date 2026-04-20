@@ -28,8 +28,13 @@ const LEVEL_BG = [
 ];
 
 export function RewardsBanner() {
-  const rewards = useRewards();
   const { todos } = useTodos();
+  const completedTodoIds = (() => {
+    const s = new Set<string>();
+    todos.forEach(t => { if (t.completed) s.add(t.id); });
+    return s;
+  })();
+  const rewards = useRewards(completedTodoIds);
   const { earnings, totalEarned, removeEarning, updateEarning } = useTaskEarnings();
   const [expanded, setExpanded] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
