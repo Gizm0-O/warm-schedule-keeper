@@ -132,12 +132,10 @@ export function useRewards(completedTodoIds?: Set<string>) {
     return taskBonuses.find(b => b.todoId === todoId)?.status ?? 'pending';
   }, [taskBonuses]);
 
-  // Bonusy se počítají JEN pro dokončené úkoly
-  const { todos } = useTodos();
-  const completedIds = useMemo(() => new Set(todos.filter(t => t.completed).map(t => t.id)), [todos]);
+  // Bonusy se počítají JEN pro dokončené úkoly (filtrováno přes completedTodoIds z volajícího)
   const effectiveBonuses = useMemo(
-    () => taskBonuses.filter(b => completedIds.has(b.todoId)),
-    [taskBonuses, completedIds]
+    () => completedTodoIds ? taskBonuses.filter(b => completedTodoIds.has(b.todoId)) : [],
+    [taskBonuses, completedTodoIds]
   );
 
   // Výpočty
