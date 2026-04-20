@@ -84,7 +84,7 @@ export function RewardsBanner() {
 
   const { level, levelLabel, activeTasks, nextLevelAt, progressToNext,
     totalPercent, totalAmount, baseAmount, bonusAmount,
-    completedOnTime, completedLate, config } = rewards;
+    completedOnTime, completedLate, completedMissed, config } = rewards;
 
   const noEarnings = config.monthlyEarnings === 0;
 
@@ -171,13 +171,12 @@ export function RewardsBanner() {
                 <div className="text-9px text-muted-foreground">Bonus +{rewards.totalBonusPercent.toFixed(1)}%</div>
               </div>
               <div className="text-center rounded-xl bg-white/60 dark:bg-white/5 p-2">
-                <div className="text-lg font-bold text-foreground">{completedOnTime + completedLate}/{config.maxTasks}</div>
+                <div className="text-lg font-bold text-foreground">{completedOnTime + completedLate + completedMissed}/{config.maxTasks}</div>
                 <div className="text-9px text-muted-foreground">Splněné úkoly</div>
               </div>
             </div>
-            <div className="flex gap-2 text-10px">
-              <span className="flex items-center gap-1 text-emerald-600"><Star className="h-3 w-3 fill-emerald-500" /> {completedOnTime}× včas (+{config.bonusPerTask}%)</span>
-              <span className="flex items-center gap-1 text-amber-600"><Star className="h-3 w-3 fill-amber-400" /> {completedLate}× pozdě (+{config.bonusLate}%)</span>
+            <div className="text-center text-[11px] text-muted-foreground">
+              Splněno {completedOnTime + completedLate + completedMissed}/{config.maxTasks} úkolů · bonus +{rewards.totalBonusPercent.toFixed(1)}%
             </div>
 
             {/* Recent earnings preview */}
