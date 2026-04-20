@@ -71,6 +71,42 @@ export type Database = {
         }
         Relationships: []
       }
+      rewards_config: {
+        Row: {
+          base_percent: number
+          bonus_late: number
+          bonus_per_task: number
+          created_at: string
+          id: string
+          max_tasks: number
+          month: string
+          monthly_earnings: number
+          updated_at: string
+        }
+        Insert: {
+          base_percent?: number
+          bonus_late?: number
+          bonus_per_task?: number
+          created_at?: string
+          id?: string
+          max_tasks?: number
+          month: string
+          monthly_earnings?: number
+          updated_at?: string
+        }
+        Update: {
+          base_percent?: number
+          bonus_late?: number
+          bonus_per_task?: number
+          created_at?: string
+          id?: string
+          max_tasks?: number
+          month?: string
+          monthly_earnings?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       shift_overrides: {
         Row: {
           created_at: string
@@ -119,6 +155,30 @@ export type Database = {
           id?: string
           name?: string
           quantity?: number
+        }
+        Relationships: []
+      }
+      task_bonuses: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          todo_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          todo_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          todo_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
