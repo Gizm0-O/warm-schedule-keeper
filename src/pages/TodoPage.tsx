@@ -98,22 +98,24 @@ const TodoPage = () => {
       return;
     }
 
-    // If completing a Barča work task with amount set and bonus configured
+    // If completing a Barča work task with amount set
     const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
     const bonus = getTaskBonus(id);
     const hasAmount = todo.amount && todo.amount > 0;
-    const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount && (bonus === 'on_time' || bonus === 'late');
+    const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount;
     const wasCompleted = todo.completed;
 
     await rawToggleTodo(id);
 
     if (shouldRecordEarning) {
-      const bonusPercent = bonus === 'on_time' ? rewardsConfig.bonusPerTask : rewardsConfig.bonusLate;
+      const bonusPercent =
+        bonus === 'on_time' ? rewardsConfig.bonusPerTask :
+        bonus === 'late' ? rewardsConfig.bonusLate : 0;
       const earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
         amount: todo.amount!,
-        bonus_type: bonus,
+        bonus_type: bonus === 'pending' ? null : bonus,
         bonus_percent: bonusPercent,
         deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
         completed_at: new Date().toISOString(),
@@ -133,7 +135,7 @@ const TodoPage = () => {
               todo_id: id,
               todo_text: todo.text,
               amount: todo.amount!,
-              bonus_type: bonus,
+              bonus_type: bonus === 'pending' ? null : bonus,
               bonus_percent: bonusPercent,
               deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
               completed_at: new Date().toISOString(),
