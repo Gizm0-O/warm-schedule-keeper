@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useTodos } from '@/contexts/TodoContext';
 
 export interface RewardsConfig {
   monthlyEarnings: number;
@@ -132,9 +133,17 @@ export function useRewards() {
     return taskBonuses.find(b => b.todoId === todoId)?.status ?? 'pending';
   }, [taskBonuses]);
 
+  // Bonusy se počítají JEN pro dokončené úkoly
+  const { todos } = useTodos();
+  const completedIds = useMemo(() => new Set(todos.filter(t => t.completed).map(t => t.id)), [todos]);
+  const effectiveBonuses = useMemo(
+    () => taskBonuses.filter(b => completedIds.has(b.todoId)),
+    [taskBonuses, completedIds]
+  );
+
   // Výpočty
-  const completedOnTime = taskBonuses.filter(b => b.status === 'on_time').length;
-  const completedLate = taskBonuses.filter(b => b.status === 'late').length;
+  const completedOnTime = effectiveBonuses.filter(b => b.status === 'on_time').length;
+  const completedLate = effectiveBonuses.filter(b => b.status === 'late').length;
   const totalBonusPercent = Math.min(
     completedOnTime * config.bonusPerTask + completedLate * config.bonusLate,
     config.maxTasks * config.bonusPerTask
@@ -144,8 +153,8 @@ export function useRewards() {
   const baseAmount = Math.round(config.monthlyEarnings * config.basePercent / 100);
   const bonusAmount = totalAmount - baseAmount;
 
-  // Level systém
-  const activeTasks = taskBonuses.filter(b => b.status === 'on_time' || b.status === 'late').length;
+  // Level systém - jen dokončené bonusové úkoly
+  const activeTasks = effectiveBonuses.filter(b => b.status === 'on_time' || b.status === 'late').length;
   const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
   const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
   const nextLevelAt = [1, 4, 7, 10, 10][level];
