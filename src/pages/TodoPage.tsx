@@ -166,7 +166,7 @@ const TodoPage = () => {
         },
       });
     }
-  }, [todos, rawToggleTodo, getTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
+  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
