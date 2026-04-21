@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+const TASK_EARNINGS_CHANGED_EVENT = 'task-earnings-changed';
+
+const emitTaskEarningsChanged = () => {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(TASK_EARNINGS_CHANGED_EVENT));
+  }
+};
+
 export interface TaskEarning {
   id: string;
   todo_id: string;
@@ -26,7 +34,18 @@ export function useTaskEarnings() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchEarnings(); }, [fetchEarnings]);
+  useEffect(() => {
+    fetchEarnings();
+
+    const handleChange = () => {
+      fetchEarnings();
+    };
+
+    window.addEventListener(TASK_EARNINGS_CHANGED_EVENT, handleChange);
+    return () => {
+      window.removeEventListener(TASK_EARNINGS_CHANGED_EVENT, handleChange);
+    };
+  }, [fetchEarnings]);
 
   const addEarning = useCallback(async (earning: Omit<TaskEarning, 'id' | 'created_at'>) => {
     const { data } = await supabase
@@ -44,6 +63,7 @@ export function useTaskEarnings() {
       .single();
     if (data) {
       setEarnings(prev => [data as TaskEarning, ...prev]);
+      emitTaskEarningsChanged();
       return data as TaskEarning;
     }
     return null;
@@ -52,11 +72,13 @@ export function useTaskEarnings() {
   const removeEarning = useCallback(async (id: string) => {
     await supabase.from('task_earnings').delete().eq('id', id);
     setEarnings(prev => prev.filter(e => e.id !== id));
+    emitTaskEarningsChanged();
   }, []);
 
   const updateEarning = useCallback(async (id: string, updates: Partial<Pick<TaskEarning, 'amount' | 'bonus_type' | 'bonus_percent' | 'todo_text'>>) => {
     await supabase.from('task_earnings').update(updates).eq('id', id);
     setEarnings(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+    emitTaskEarningsChanged();
   }, []);
 
   const totalEarned = earnings.reduce((sum, e) => sum + e.amount, 0);
