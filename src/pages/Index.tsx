@@ -170,23 +170,23 @@ interface DisplayShift extends Shift {
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   1: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
   2: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
   ],
   3: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
   4: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
   ],
   5: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 14, endHour: 21, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
+    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
   ],
 };
 
@@ -201,7 +201,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
   const [morning, afternoon] = shifts;
   return [
     { ...afternoon, startHour: 7, endHour: 14 },
-    { ...morning, startHour: 14, endHour: 21 },
+    { ...morning, startHour: 15, endHour: 22 },
   ];
 };
 
