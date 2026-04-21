@@ -259,53 +259,12 @@ export function RewardsBanner() {
             <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Historie & Bonusy</DialogTitle>
           </DialogHeader>
 
-          {/* Bonus task assignments section */}
-          {rewards.taskBonuses.length > 0 && (
-            <div className="space-y-1">
-              <div className="text-xs font-semibold text-muted-foreground mb-1">Bonusové úkoly ({rewards.taskBonuses.filter(b => b.status === 'on_time' || b.status === 'late' || b.status === 'missed').length})</div>
-              {rewards.taskBonuses
-                .filter(b => b.status === 'on_time' || b.status === 'late' || b.status === 'missed')
-                .map(b => {
-                  const todo = todos.find(t => t.id === b.todoId);
-                  return (
-                    <div key={b.todoId} className="flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-foreground truncate">{todo?.text || b.todoId}</div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {b.status === 'on_time' ? `⭐ včas (+${config.bonusPerTask}%)` :
-                           b.status === 'late' ? `⏳ pozdě (+${config.bonusLate}%)` :
-                           `⏰ příliš pozdě (0%)`}
-                          {todo?.amount ? ` • ${todo.amount.toLocaleString('cs')} Kč` : ''}
-                        </div>
-                      </div>
-                      {adminMode && (
-                        <div className="flex gap-1 shrink-0">
-                          <select
-                            value={b.status}
-                            onChange={ev => rewards.setTaskBonus(b.todoId, ev.target.value as any)}
-                            className="text-[10px] h-6 rounded border border-input bg-background px-1"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <option value="on_time">⭐ Včas</option>
-                            <option value="late">⏳ Pozdě</option>
-                            <option value="missed">⏰ Příliš pozdě</option>
-                            <option value="pending">❌ Odebrat</option>
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-
-          {/* Earnings section */}
-          {(earnings.length > 0 || rewards.taskBonuses.length === 0) && (
-            <div className="space-y-1">
-              {earnings.length > 0 && <div className="text-xs font-semibold text-muted-foreground mb-1 pt-2 border-t">Výdělky ({earnings.length})</div>}
-              {earnings.length === 0 && rewards.taskBonuses.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné výdělky ani bonusy</p>
-              )}
+          {/* Earnings section - only completed tasks with recorded earnings */}
+          <div className="space-y-1">
+            <div className="text-xs font-semibold text-muted-foreground mb-1">Odevzdané úkoly ({earnings.length})</div>
+            {earnings.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné odevzdané úkoly</p>
+            )}
               {earnings.map(e => (
                 <div key={e.id} className="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-muted/50 transition-colors">
                   {editingEarningId === e.id ? (
