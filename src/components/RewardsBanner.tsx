@@ -330,8 +330,7 @@ export function RewardsBanner() {
                   )}
                 </div>
               ))}
-            </div>
-          )}
+          </div>
 
           <div className="pt-2 border-t">
             <div className="flex justify-between text-sm font-bold">
