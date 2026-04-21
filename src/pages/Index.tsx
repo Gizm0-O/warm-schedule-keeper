@@ -1254,19 +1254,17 @@ const Index = () => {
                   });
                 })}
 
-                {/* SWITCH BREAK strip 14:00–15:00 (non-interactive) */}
-                {weekDays.map((day, dayIdx) => {
-                  const shifts = getShiftsForDay(day);
-                  if (shifts.length < 2) return null;
+                {/* SWITCH BREAK bar 14:00–15:00 across the work week (Mon–Fri) */}
+                {(() => {
                   const top = getHourTop(14);
                   const height = getHourHeight(14);
                   const colWidth = `calc((100% - 60px) / 7)`;
-                  const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                  const left = `calc(60px + 0 * ${colWidth})`;
                   return (
                     <div
-                      key={`switch-break-${dayIdx}`}
-                      className="absolute pointer-events-none z-[4] flex items-center justify-center rounded-md bg-muted/60 border border-dashed border-muted-foreground/30 mx-0.5"
-                      style={{ top, height, left, width: `calc(${colWidth} - 4px)` }}
+                      key="switch-break-bar"
+                      className="absolute pointer-events-none z-[4] flex items-center justify-center bg-muted/60 border border-muted-foreground/40"
+                      style={{ top, height, left, width: `calc(${colWidth} * 5)` }}
                       aria-label="SWITCH BREAK"
                     >
                       <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
@@ -1274,7 +1272,7 @@ const Index = () => {
                       </span>
                     </div>
                   );
-                })}
+                })()}
 
                 {/* Current time indicator */}
                 {isCurrentWeek && (
