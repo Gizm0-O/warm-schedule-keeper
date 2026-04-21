@@ -1515,20 +1515,20 @@ const Index = () => {
                     >
                     </button>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-foreground inline-flex items-center gap-1.5 flex-wrap">
-                            {todo.text}
+                      <div className="flex items-start justify-between gap-x-2 gap-y-1 flex-wrap">
+                        <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+                          <div className="text-foreground flex items-center gap-1.5 min-w-0">
+                            <span className="truncate">{todo.text}</span>
                             {todo.recurrence !== "none" && (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground font-normal">
+                              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground font-normal shrink-0 whitespace-nowrap">
                                 <Repeat className="h-3 w-3" />
                                 {RECURRENCE_LABELS[todo.recurrence]}
                               </span>
                             )}
-                          </span>
-                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          </div>
+                          <div className="flex items-center gap-2 mt-0.5">
                             <span className={cn(
-                              "inline-flex items-center gap-1 text-xs",
+                              "inline-flex items-center gap-1 text-xs whitespace-nowrap",
                               isOverdue && "text-destructive font-medium",
                               isTodayTask && !isOverdue && "font-medium text-orange-700 dark:text-orange-300"
                             )}>
@@ -1536,7 +1536,7 @@ const Index = () => {
                               <CalendarDays className="h-3 w-3" />
                               {isTodayTask ? "Dnes" : format(todo.deadline!, "d.M.", { locale: cs })}
                               {isOverdue && (
-                                <span className="text-destructive font-semibold ml-0.5">
+                                <span className="text-destructive font-semibold ml-0.5 whitespace-nowrap">
                                   ({daysLate} {daysLate === 1 ? "den" : daysLate < 5 ? "dny" : "dní"} zpoždění)
                                 </span>
                               )}
@@ -1564,18 +1564,18 @@ const Index = () => {
                             }
                             if (pct == null) return null;
                             return (
-                              <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border", cls)} title="Nastavený bonus">
+                              <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap", cls)} title="Nastavený bonus">
                                 {icon} {pct}%
                               </span>
                             );
                           })()}
                           {!isAdmin && todo.amount != null && todo.amount > 0 && (
-                            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50" title="Částka za úkol">
+                            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap" title="Částka za úkol">
                               💰 {todo.amount.toLocaleString('cs')} Kč
                             </span>
                           )}
                           <Badge variant="outline" className={cn(
-                            "text-[10px] px-1.5 py-0 h-4",
+                            "text-[10px] px-1.5 py-0 h-4 whitespace-nowrap",
                             todo.person === "Tadeáš"
                               ? "border-shift-office/40 bg-shift-office/35 text-shift-office"
                               : "border-shift-partner/40 bg-shift-partner/35 text-shift-partner"
