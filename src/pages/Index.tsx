@@ -1555,7 +1555,10 @@ const Index = () => {
                             </span>
                           )}
                         </span>
-                        {!isAdmin && todo.person === "Barča" && todo.category === "work" && !todo.completed && (() => {
+                      </div>
+                      {(() => {
+                        const bonusPct = (() => {
+                          if (isAdmin || todo.person !== "Barča" || todo.category !== "work" || todo.completed) return null;
                           const currentBonus = getTaskBonus(todo.id);
                           let pct: number | null = null;
                           let cls = "";
@@ -1574,23 +1577,31 @@ const Index = () => {
                             icon = "✕";
                           }
                           if (pct == null) return null;
-                          return (
-                            <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap", cls)} title="Nastavený bonus">
-                              {icon} {pct}%
-                            </span>
-                          );
-                        })()}
-                        {!isAdmin && todo.amount != null && todo.amount > 0 && (
-                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap" title="Částka za úkol">
-                            💰 {todo.amount.toLocaleString('cs')} Kč
-                          </span>
-                        )}
-                        {hasBonus(todo.id) && (
-                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap" title="Bonusová částka">
-                            🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
-                          </span>
-                        )}
-                      </div>
+                          return { pct, cls, icon };
+                        })();
+                        const showAmount = !isAdmin && todo.amount != null && todo.amount > 0;
+                        const showBonus = hasBonus(todo.id);
+                        if (!bonusPct && !showAmount && !showBonus) return null;
+                        return (
+                          <div className="flex items-center gap-2 mt-0.5 flex-nowrap overflow-x-auto">
+                            {bonusPct && (
+                              <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap shrink-0", bonusPct.cls)} title="Nastavený bonus">
+                                {bonusPct.icon} {bonusPct.pct}%
+                              </span>
+                            )}
+                            {showAmount && (
+                              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap shrink-0" title="Částka za úkol">
+                                💰 {todo.amount!.toLocaleString('cs')} Kč
+                              </span>
+                            )}
+                            {showBonus && (
+                              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap shrink-0" title="Bonusová částka">
+                                🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                     <Badge variant="outline" className={cn(
                       "absolute top-2 right-2 text-[10px] px-1.5 py-0 h-4 whitespace-nowrap",
