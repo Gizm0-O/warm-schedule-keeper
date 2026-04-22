@@ -1514,77 +1514,71 @@ const Index = () => {
                       )}
                     >
                     </button>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-x-2 gap-y-1 flex-wrap">
-                        <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-                          <div className="text-foreground flex items-center gap-1.5 min-w-0">
-                            <span className="truncate">{todo.text}</span>
-                            {todo.recurrence !== "none" && (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground font-normal shrink-0 whitespace-nowrap">
-                                <Repeat className="h-3 w-3" />
-                                {RECURRENCE_LABELS[todo.recurrence]}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className={cn(
-                              "inline-flex items-center gap-1 text-xs whitespace-nowrap",
-                              isOverdue && "text-destructive font-medium",
-                              isTodayTask && !isOverdue && "font-medium text-orange-700 dark:text-orange-300"
-                            )}>
-                              {isOverdue && <AlertCircle className="h-3 w-3" />}
-                              <CalendarDays className="h-3 w-3" />
-                              {isTodayTask ? "Dnes" : format(todo.deadline!, "d.M.", { locale: cs })}
-                              {isOverdue && (
-                                <span className="text-destructive font-semibold ml-0.5 whitespace-nowrap">
-                                  ({daysLate} {daysLate === 1 ? "den" : daysLate < 5 ? "dny" : "dní"} zpoždění)
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 flex-wrap justify-end shrink-0">
-                          {!isAdmin && todo.person === "Barča" && todo.category === "work" && !todo.completed && (() => {
-                            const currentBonus = getTaskBonus(todo.id);
-                            let pct: number | null = null;
-                            let cls = "";
-                            let icon = "";
-                            if (currentBonus === 'on_time') {
-                              pct = rewardsConfig.bonusPerTask;
-                              cls = "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400";
-                              icon = "⭐";
-                            } else if (currentBonus === 'late') {
-                              pct = rewardsConfig.bonusLate;
-                              cls = "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400";
-                              icon = "⏳";
-                            } else if (currentBonus === 'missed') {
-                              pct = 0;
-                              cls = "bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400";
-                              icon = "✕";
-                            }
-                            if (pct == null) return null;
-                            return (
-                              <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap", cls)} title="Nastavený bonus">
-                                {icon} {pct}%
-                              </span>
-                            );
-                          })()}
-                          {!isAdmin && todo.amount != null && todo.amount > 0 && (
-                            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap" title="Částka za úkol">
-                              💰 {todo.amount.toLocaleString('cs')} Kč
+                    <div className="flex-1 min-w-0 pr-16">
+                      <div className="text-foreground flex items-center gap-1.5 min-w-0">
+                        <span className="truncate">{todo.text}</span>
+                        {todo.recurrence !== "none" && (
+                          <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground font-normal shrink-0 whitespace-nowrap">
+                            <Repeat className="h-3 w-3" />
+                            {RECURRENCE_LABELS[todo.recurrence]}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className={cn(
+                          "inline-flex items-center gap-1 text-xs whitespace-nowrap",
+                          isOverdue && "text-destructive font-medium",
+                          isTodayTask && !isOverdue && "font-medium text-orange-700 dark:text-orange-300"
+                        )}>
+                          {isOverdue && <AlertCircle className="h-3 w-3" />}
+                          <CalendarDays className="h-3 w-3" />
+                          {isTodayTask ? "Dnes" : format(todo.deadline!, "d.M.", { locale: cs })}
+                          {isOverdue && (
+                            <span className="text-destructive font-semibold ml-0.5 whitespace-nowrap">
+                              ({daysLate} {daysLate === 1 ? "den" : daysLate < 5 ? "dny" : "dní"} zpoždění)
                             </span>
                           )}
-                          <Badge variant="outline" className={cn(
-                            "text-[10px] px-1.5 py-0 h-4 whitespace-nowrap",
-                            todo.person === "Tadeáš"
-                              ? "border-shift-office/40 bg-shift-office/35 text-shift-office"
-                              : "border-shift-partner/40 bg-shift-partner/35 text-shift-partner"
-                          )}>
-                            {todo.person}
-                          </Badge>
-                        </div>
+                        </span>
+                        {!isAdmin && todo.person === "Barča" && todo.category === "work" && !todo.completed && (() => {
+                          const currentBonus = getTaskBonus(todo.id);
+                          let pct: number | null = null;
+                          let cls = "";
+                          let icon = "";
+                          if (currentBonus === 'on_time') {
+                            pct = rewardsConfig.bonusPerTask;
+                            cls = "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400";
+                            icon = "⭐";
+                          } else if (currentBonus === 'late') {
+                            pct = rewardsConfig.bonusLate;
+                            cls = "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400";
+                            icon = "⏳";
+                          } else if (currentBonus === 'missed') {
+                            pct = 0;
+                            cls = "bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400";
+                            icon = "✕";
+                          }
+                          if (pct == null) return null;
+                          return (
+                            <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap", cls)} title="Nastavený bonus">
+                              {icon} {pct}%
+                            </span>
+                          );
+                        })()}
+                        {!isAdmin && todo.amount != null && todo.amount > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap" title="Částka za úkol">
+                            💰 {todo.amount.toLocaleString('cs')} Kč
+                          </span>
+                        )}
                       </div>
                     </div>
+                    <Badge variant="outline" className={cn(
+                      "absolute top-2 right-2 text-[10px] px-1.5 py-0 h-4 whitespace-nowrap",
+                      todo.person === "Tadeáš"
+                        ? "border-shift-office/40 bg-shift-office/35 text-shift-office"
+                        : "border-shift-partner/40 bg-shift-partner/35 text-shift-partner"
+                    )}>
+                      {todo.person}
+                    </Badge>
                   </div>
                 );
               };
