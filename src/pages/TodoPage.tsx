@@ -212,6 +212,9 @@ const TodoPage = () => {
       recurrence: editRecurrence,
       amount: editAmount ? parseInt(editAmount) : undefined,
     });
+    // Persist bonus
+    const bonusVal = editBonusEnabled && editBonusAmount ? parseInt(editBonusAmount) : 0;
+    await setBonusAmount(editingTodo.id, bonusVal);
     setEditingTodo(null);
   };
 
