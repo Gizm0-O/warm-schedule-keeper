@@ -37,6 +37,7 @@ import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
+import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { toast } from "sonner";
 
 
@@ -212,6 +213,7 @@ const Index = () => {
   const { addEarning, removeEarning } = useTaskEarnings();
   const isAdmin = useAdminMode();
   const { isReady } = useTaskReady();
+  const { getBonusAmount, hasBonus } = useTaskBonus();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
@@ -259,6 +261,20 @@ const Index = () => {
         completed_at: new Date().toISOString(),
       });
       if (earning) createdEarningId = earning.id;
+
+      // Bonusový samostatný earning záznam
+      const bonusAmt = getBonusAmount(id);
+      if (bonusAmt > 0) {
+        await addEarning({
+          todo_id: `${id}__bonus`,
+          todo_text: `🎁 Bonus: ${todo.text}`,
+          amount: bonusAmt,
+          bonus_type: 'bonus',
+          bonus_percent: null,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
     }
 
     pushAction({
@@ -1567,6 +1583,11 @@ const Index = () => {
                         {!isAdmin && todo.amount != null && todo.amount > 0 && (
                           <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap" title="Částka za úkol">
                             💰 {todo.amount.toLocaleString('cs')} Kč
+                          </span>
+                        )}
+                        {hasBonus(todo.id) && (
+                          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap" title="Bonusová částka">
+                            🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
                           </span>
                         )}
                       </div>
