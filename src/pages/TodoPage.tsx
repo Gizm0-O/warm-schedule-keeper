@@ -711,6 +711,38 @@ const TodoPage = () => {
                 </label>
               </div>
             )}
+            {/* Bonus checkbox + amount - admin only, Barča work tasks */}
+            {isAdmin && editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && (
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="bonus-checkbox"
+                    checked={editBonusEnabled}
+                    onCheckedChange={(checked) => {
+                      const enabled = !!checked;
+                      setEditBonusEnabled(enabled);
+                      if (!enabled) setEditBonusAmount("");
+                    }}
+                  />
+                  <label
+                    htmlFor="bonus-checkbox"
+                    className="text-sm font-medium cursor-pointer select-none"
+                  >
+                    🎁 Bonus – přidat extra odměnu k úkolu
+                  </label>
+                </div>
+                {editBonusEnabled && (
+                  <Input
+                    type="number"
+                    placeholder="Bonusová částka (Kč)"
+                    value={editBonusAmount}
+                    onChange={(e) => setEditBonusAmount(e.target.value)}
+                    min={0}
+                    className="ml-6 w-48"
+                  />
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
