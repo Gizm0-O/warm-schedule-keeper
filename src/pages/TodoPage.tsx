@@ -29,6 +29,7 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useTaskReady } from "@/hooks/useTaskReady";
+import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -41,6 +42,7 @@ const TodoPage = () => {
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
   const { isReady, setReady } = useTaskReady();
+  const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -65,6 +67,8 @@ const TodoPage = () => {
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
   const [editAmount, setEditAmount] = useState("");
+  const [editBonusEnabled, setEditBonusEnabled] = useState(false);
+  const [editBonusAmount, setEditBonusAmount] = useState("");
 
   // Reset "show more" when switching tabs
   useEffect(() => {
