@@ -83,10 +83,14 @@ export function RewardsBanner() {
   };
 
   const { level, levelLabel, activeTasks, nextLevelAt, progressToNext,
-    totalPercent, totalAmount, baseAmount, bonusAmount,
-    completedOnTime, completedLate, completedMissed, config } = rewards;
+    totalPercent, completedOnTime, completedLate, completedMissed, config } = rewards;
 
-  const noEarnings = config.monthlyEarnings === 0;
+  // Kapesné = procenta z celkově vydělané částky (Vyděláno)
+  const totalAmount = Math.round(totalEarned * totalPercent / 100);
+  const baseAmount = Math.round(totalEarned * config.basePercent / 100);
+  const bonusAmount = totalAmount - baseAmount;
+
+  const noEarnings = totalEarned === 0;
 
   return (
     <>
