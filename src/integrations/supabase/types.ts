@@ -158,6 +158,30 @@ export type Database = {
         }
         Relationships: []
       }
+      task_bonus_amounts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          todo_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          todo_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          todo_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       task_bonuses: {
         Row: {
           created_at: string

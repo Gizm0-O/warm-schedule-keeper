@@ -29,6 +29,7 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useTaskReady } from "@/hooks/useTaskReady";
+import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -41,6 +42,7 @@ const TodoPage = () => {
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
   const { isReady, setReady } = useTaskReady();
+  const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -65,6 +67,8 @@ const TodoPage = () => {
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
   const [editAmount, setEditAmount] = useState("");
+  const [editBonusEnabled, setEditBonusEnabled] = useState(false);
+  const [editBonusAmount, setEditBonusAmount] = useState("");
 
   // Reset "show more" when switching tabs
   useEffect(() => {
@@ -130,6 +134,20 @@ const TodoPage = () => {
         completed_at: new Date().toISOString(),
       });
 
+      // Bonus záznam (samostatný), pokud je bonus přiřazen k úkolu
+      const bonusAmt = getBonusAmount(id);
+      if (bonusAmt > 0) {
+        await addEarning({
+          todo_id: `${id}__bonus`,
+          todo_text: `🎁 Bonus: ${todo.text}`,
+          amount: bonusAmt,
+          bonus_type: 'bonus',
+          bonus_percent: null,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
+
       if (earning) {
         pushAction({
           undo: async () => {
@@ -166,7 +184,7 @@ const TodoPage = () => {
         },
       });
     }
-  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady]);
+  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady, getBonusAmount]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
@@ -194,6 +212,8 @@ const TodoPage = () => {
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
     setEditAmount(todo.amount ? todo.amount.toString() : "");
+    setEditBonusEnabled(hasBonus(todo.id));
+    setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
   };
 
   const saveEdit = async () => {
@@ -206,6 +226,9 @@ const TodoPage = () => {
       recurrence: editRecurrence,
       amount: editAmount ? parseInt(editAmount) : undefined,
     });
+    // Persist bonus
+    const bonusVal = editBonusEnabled && editBonusAmount ? parseInt(editBonusAmount) : 0;
+    await setBonusAmount(editingTodo.id, bonusVal);
     setEditingTodo(null);
   };
 
@@ -310,6 +333,11 @@ const TodoPage = () => {
                 {todo.amount.toLocaleString('cs')} Kč
               </span>
             )}
+            {todo.person === 'Barča' && hasBonus(todo.id) && isAdmin && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-medium">
+                🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
@@ -390,6 +418,11 @@ const TodoPage = () => {
               {todo.amount != null && todo.amount > 0 && (
                 <span className={`${btnBase} bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 shrink-0 cursor-default`} title="Částka za úkol">
                   💰 {todo.amount.toLocaleString('cs')} Kč
+                </span>
+              )}
+              {hasBonus(todo.id) && (
+                <span className={`${btnBase} bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 shrink-0 cursor-default`} title="Bonusová částka">
+                  🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
                 </span>
               )}
             </>
@@ -676,6 +709,38 @@ const TodoPage = () => {
                 >
                   ✅ Ready – úkol schválen, uživatel ho může dokončit
                 </label>
+              </div>
+            )}
+            {/* Bonus checkbox + amount - admin only, Barča work tasks */}
+            {isAdmin && editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && (
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="bonus-checkbox"
+                    checked={editBonusEnabled}
+                    onCheckedChange={(checked) => {
+                      const enabled = !!checked;
+                      setEditBonusEnabled(enabled);
+                      if (!enabled) setEditBonusAmount("");
+                    }}
+                  />
+                  <label
+                    htmlFor="bonus-checkbox"
+                    className="text-sm font-medium cursor-pointer select-none"
+                  >
+                    🎁 Bonus – přidat extra odměnu k úkolu
+                  </label>
+                </div>
+                {editBonusEnabled && (
+                  <Input
+                    type="number"
+                    placeholder="Bonusová částka (Kč)"
+                    value={editBonusAmount}
+                    onChange={(e) => setEditBonusAmount(e.target.value)}
+                    min={0}
+                    className="ml-6 w-48"
+                  />
+                )}
               </div>
             )}
           </div>
