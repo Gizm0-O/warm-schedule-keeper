@@ -198,6 +198,8 @@ const TodoPage = () => {
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
     setEditAmount(todo.amount ? todo.amount.toString() : "");
+    setEditBonusEnabled(hasBonus(todo.id));
+    setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
   };
 
   const saveEdit = async () => {
