@@ -147,7 +147,7 @@ export function RewardsBanner() {
                 </span>
               </div>
               <div className="text-10px text-muted-foreground">
-                {noEarnings ? 'Nastav výdělek ↓' : `${totalPercent.toFixed(1)}% z ${adminConfig.monthlyEarnings.toLocaleString('cs')} Kč`}
+                {noEarnings ? 'Žádné výdělky' : `${totalPercent.toFixed(1)}% z ${totalEarned.toLocaleString('cs')} Kč`}
               </div>
             </div>
             <button onClick={(e) => { e.stopPropagation(); setShowHistoryDialog(true); }}>
