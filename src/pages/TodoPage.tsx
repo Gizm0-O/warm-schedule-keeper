@@ -333,6 +333,11 @@ const TodoPage = () => {
                 {todo.amount.toLocaleString('cs')} Kč
               </span>
             )}
+            {todo.person === 'Barča' && hasBonus(todo.id) && isAdmin && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-medium">
+                🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
@@ -413,6 +418,11 @@ const TodoPage = () => {
               {todo.amount != null && todo.amount > 0 && (
                 <span className={`${btnBase} bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 shrink-0 cursor-default`} title="Částka za úkol">
                   💰 {todo.amount.toLocaleString('cs')} Kč
+                </span>
+              )}
+              {hasBonus(todo.id) && (
+                <span className={`${btnBase} bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 shrink-0 cursor-default`} title="Bonusová částka">
+                  🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
                 </span>
               )}
             </>
