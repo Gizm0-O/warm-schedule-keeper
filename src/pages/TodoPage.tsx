@@ -134,6 +134,20 @@ const TodoPage = () => {
         completed_at: new Date().toISOString(),
       });
 
+      // Bonus záznam (samostatný), pokud je bonus přiřazen k úkolu
+      const bonusAmt = getBonusAmount(id);
+      if (bonusAmt > 0) {
+        await addEarning({
+          todo_id: `${id}__bonus`,
+          todo_text: `🎁 Bonus: ${todo.text}`,
+          amount: bonusAmt,
+          bonus_type: 'bonus',
+          bonus_percent: null,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
+
       if (earning) {
         pushAction({
           undo: async () => {
