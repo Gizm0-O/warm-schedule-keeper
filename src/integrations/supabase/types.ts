@@ -218,6 +218,24 @@ export type Database = {
         }
         Relationships: []
       }
+      task_ready: {
+        Row: {
+          created_at: string
+          id: string
+          todo_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          todo_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          todo_id?: string
+        }
+        Relationships: []
+      }
       todos: {
         Row: {
           amount: number | null
