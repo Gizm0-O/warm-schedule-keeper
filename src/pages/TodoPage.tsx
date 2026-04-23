@@ -70,6 +70,12 @@ const TodoPage = () => {
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
 
+  // Story generator state
+  const [showStoriesDialog, setShowStoriesDialog] = useState(false);
+  const [storiesMonth, setStoriesMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [storyDrafts, setStoryDrafts] = useState<import("@/lib/storyGenerator").DraftStory[]>([]);
+  const [generating, setGenerating] = useState(false);
+
   // Reset "show more" when switching tabs
   useEffect(() => {
     setShowAllActive(false);
