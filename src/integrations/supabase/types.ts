@@ -270,6 +270,8 @@ export type Database = {
           id: string
           person: string
           recurrence: string
+          story_month: string | null
+          story_number: number | null
           text: string
         }
         Insert: {
@@ -281,6 +283,8 @@ export type Database = {
           id?: string
           person: string
           recurrence?: string
+          story_month?: string | null
+          story_number?: number | null
           text: string
         }
         Update: {
@@ -292,6 +296,8 @@ export type Database = {
           id?: string
           person?: string
           recurrence?: string
+          story_month?: string | null
+          story_number?: number | null
           text?: string
         }
         Relationships: []
@@ -325,7 +331,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_stories_for_month: {
+        Args: { p_month: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

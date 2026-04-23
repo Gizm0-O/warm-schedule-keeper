@@ -12,6 +12,8 @@ export interface Todo {
   deadline?: Date;
   recurrence: Recurrence;
   amount?: number;
+  storyNumber?: number;
+  storyMonth?: string;
 }
 
 interface TodoContextType {
@@ -47,6 +49,8 @@ const rowToTodo = (row: any): Todo => ({
   deadline: row.deadline ? parseISO(row.deadline) : undefined,
   recurrence: row.recurrence as Recurrence,
   amount: row.amount ?? undefined,
+  storyNumber: row.story_number ?? undefined,
+  storyMonth: row.story_month ?? undefined,
 });
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {

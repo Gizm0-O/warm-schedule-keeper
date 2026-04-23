@@ -102,6 +102,21 @@ const TodoPage = () => {
       return;
     }
 
+    // Block completing if previous story in series is not done (applies to everyone, admin too)
+    if (!todo.completed) {
+      const { getBlockingPrevStory } = await import("@/lib/storyBlock");
+      const blocker = getBlockingPrevStory(todo, todos);
+      if (blocker) {
+        toast.error("Musíš nejdříve odevzdat předchozí příběh", {
+          position: "top-center",
+          duration: 4000,
+          className: "!bg-destructive !text-destructive-foreground !border-destructive !text-lg !font-semibold !py-5 !px-6 !shadow-2xl",
+        });
+        return;
+      }
+    }
+
+
     // If completing a Barča work task with amount set
     const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
     const hasAmount = todo.amount && todo.amount > 0;
@@ -487,11 +502,50 @@ const TodoPage = () => {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h2 className="text-2xl font-bold text-foreground">Úkoly</h2>
-        <Button onClick={() => setShowDialog(true)} size="sm">
-          <Plus className="mr-1 h-4 w-4" /> Nový úkol
-        </Button>
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                const month = window.prompt("Vygenerovat 6 příběhů pro měsíc (formát YYYY-MM):", new Date().toISOString().slice(0, 7));
+                if (!month || !/^\d{4}-\d{2}$/.test(month)) {
+                  if (month) toast.error("Neplatný formát měsíce. Použij YYYY-MM.");
+                  return;
+                }
+                const { error } = await supabase.rpc("generate_stories_for_month" as any, { p_month: month });
+                if (error) {
+                  toast.error("Chyba: " + error.message);
+                } else {
+                  toast.success(`Příběhy pro ${month} připraveny. Obnov stránku.`);
+                  // refresh todos
+                  const { data } = await supabase.from("todos").select("*").order("created_at");
+                  if (data) {
+                    setTodos(data.map((row: any) => ({
+                      id: row.id,
+                      text: row.text,
+                      completed: row.completed,
+                      category: row.category,
+                      person: row.person,
+                      deadline: row.deadline ? new Date(row.deadline) : undefined,
+                      recurrence: row.recurrence,
+                      amount: row.amount ?? undefined,
+                      storyNumber: row.story_number ?? undefined,
+                      storyMonth: row.story_month ?? undefined,
+                    })));
+                  }
+                }
+              }}
+            >
+              📚 Generovat příběhy
+            </Button>
+          )}
+          <Button onClick={() => setShowDialog(true)} size="sm">
+            <Plus className="mr-1 h-4 w-4" /> Nový úkol
+          </Button>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>

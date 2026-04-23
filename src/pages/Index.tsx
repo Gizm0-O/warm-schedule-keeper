@@ -229,6 +229,21 @@ const Index = () => {
       return;
     }
 
+    // Block completing if previous story in series is not done
+    if (!todo.completed) {
+      const { getBlockingPrevStory } = await import("@/lib/storyBlock");
+      const blocker = getBlockingPrevStory(todo, todos);
+      if (blocker) {
+        toast.error("Musíš nejdříve odevzdat předchozí příběh", {
+          position: "top-center",
+          duration: 4000,
+          className: "!bg-destructive !text-destructive-foreground !border-destructive !text-lg !font-semibold !py-5 !px-6 !shadow-2xl",
+        });
+        return;
+      }
+    }
+
+
     const isBarCaWork = todo.person === 'Barča' && todo.category === 'work';
     const hasAmount = todo.amount && todo.amount > 0;
     const wasCompleted = todo.completed;
