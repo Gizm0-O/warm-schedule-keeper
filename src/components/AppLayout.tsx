@@ -3,6 +3,7 @@ import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit } from "lucide-re
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import AdminToggle from "@/components/AdminToggle";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
@@ -69,8 +70,8 @@ const AppLayout = () => {
         />
       </div>
 
-      <header className="sticky top-0 z-50 glass-strong">
-        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
+      <header className="group/header sticky top-0 z-50 glass-strong">
+        <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
           <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer">
         <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
             <Orbit className="h-5 w-5 text-primary animate-twinkle" />
@@ -79,6 +80,10 @@ const AppLayout = () => {
             </span>
           </h1>
         </RouterNavLink>
+          {/* Skryté admin tlačítko uprostřed lišty */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <AdminToggle />
+          </div>
           <div className="flex items-center gap-1">
             <nav className="flex gap-1">
               {navItems.map((item) => (
