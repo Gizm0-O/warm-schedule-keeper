@@ -516,33 +516,10 @@ const TodoPage = () => {
               size="sm"
               variant="outline"
               onClick={async () => {
-                const month = window.prompt("Vygenerovat 6 příběhů pro měsíc (formát YYYY-MM):", new Date().toISOString().slice(0, 7));
-                if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-                  if (month) toast.error("Neplatný formát měsíce. Použij YYYY-MM.");
-                  return;
-                }
-                const { error } = await supabase.rpc("generate_stories_for_month" as any, { p_month: month });
-                if (error) {
-                  toast.error("Chyba: " + error.message);
-                } else {
-                  toast.success(`Příběhy pro ${month} připraveny. Obnov stránku.`);
-                  // refresh todos
-                  const { data } = await supabase.from("todos").select("*").order("created_at");
-                  if (data) {
-                    setTodos(data.map((row: any) => ({
-                      id: row.id,
-                      text: row.text,
-                      completed: row.completed,
-                      category: row.category,
-                      person: row.person,
-                      deadline: row.deadline ? new Date(row.deadline) : undefined,
-                      recurrence: row.recurrence,
-                      amount: row.amount ?? undefined,
-                      storyNumber: row.story_number ?? undefined,
-                      storyMonth: row.story_month ?? undefined,
-                    })));
-                  }
-                }
+                const { buildDefaultDrafts } = await import("@/lib/storyGenerator");
+                setStoriesMonth(new Date().toISOString().slice(0, 7));
+                setStoryDrafts(buildDefaultDrafts(new Date().toISOString().slice(0, 7)));
+                setShowStoriesDialog(true);
               }}
             >
               📚 Generovat příběhy
