@@ -70,6 +70,12 @@ const TodoPage = () => {
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
 
+  // Story generator state
+  const [showStoriesDialog, setShowStoriesDialog] = useState(false);
+  const [storiesMonth, setStoriesMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [storyDrafts, setStoryDrafts] = useState<import("@/lib/storyGenerator").DraftStory[]>([]);
+  const [generating, setGenerating] = useState(false);
+
   // Reset "show more" when switching tabs
   useEffect(() => {
     setShowAllActive(false);
@@ -510,33 +516,10 @@ const TodoPage = () => {
               size="sm"
               variant="outline"
               onClick={async () => {
-                const month = window.prompt("Vygenerovat 6 příběhů pro měsíc (formát YYYY-MM):", new Date().toISOString().slice(0, 7));
-                if (!month || !/^\d{4}-\d{2}$/.test(month)) {
-                  if (month) toast.error("Neplatný formát měsíce. Použij YYYY-MM.");
-                  return;
-                }
-                const { error } = await supabase.rpc("generate_stories_for_month" as any, { p_month: month });
-                if (error) {
-                  toast.error("Chyba: " + error.message);
-                } else {
-                  toast.success(`Příběhy pro ${month} připraveny. Obnov stránku.`);
-                  // refresh todos
-                  const { data } = await supabase.from("todos").select("*").order("created_at");
-                  if (data) {
-                    setTodos(data.map((row: any) => ({
-                      id: row.id,
-                      text: row.text,
-                      completed: row.completed,
-                      category: row.category,
-                      person: row.person,
-                      deadline: row.deadline ? new Date(row.deadline) : undefined,
-                      recurrence: row.recurrence,
-                      amount: row.amount ?? undefined,
-                      storyNumber: row.story_number ?? undefined,
-                      storyMonth: row.story_month ?? undefined,
-                    })));
-                  }
-                }
+                const { buildDefaultDrafts } = await import("@/lib/storyGenerator");
+                setStoriesMonth(new Date().toISOString().slice(0, 7));
+                setStoryDrafts(buildDefaultDrafts(new Date().toISOString().slice(0, 7)));
+                setShowStoriesDialog(true);
               }}
             >
               📚 Generovat příběhy
@@ -801,6 +784,168 @@ const TodoPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
             <Button onClick={saveEdit} disabled={!editText.trim()}>Uložit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Stories Dialog */}
+      <Dialog open={showStoriesDialog} onOpenChange={setShowStoriesDialog}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>📚 Generovat příběhy</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Měsíc (YYYY-MM)</label>
+              <Input
+                type="month"
+                value={storiesMonth}
+                onChange={async (e) => {
+                  const v = e.target.value;
+                  setStoriesMonth(v);
+                  if (/^\d{4}-\d{2}$/.test(v)) {
+                    const { buildDefaultDrafts } = await import("@/lib/storyGenerator");
+                    setStoryDrafts(buildDefaultDrafts(v));
+                  }
+                }}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Náhled příběhů (uprav před vygenerováním):</p>
+              {storyDrafts.map((draft, idx) => (
+                <div key={idx} className="rounded-lg border border-border bg-muted/20 p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-primary shrink-0">#{draft.storyNumber}</span>
+                    <Input
+                      value={draft.text}
+                      onChange={(e) => setStoryDrafts((prev) => prev.map((d, i) => i === idx ? { ...d, text: e.target.value } : d))}
+                      className="flex-1 h-8 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Deadline</label>
+                      <Input
+                        type="date"
+                        value={draft.deadline}
+                        onChange={(e) => setStoryDrafts((prev) => prev.map((d, i) => i === idx ? { ...d, deadline: e.target.value } : d))}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Částka (Kč)</label>
+                      <Input
+                        type="number"
+                        value={draft.amount}
+                        onChange={(e) => setStoryDrafts((prev) => prev.map((d, i) => i === idx ? { ...d, amount: parseInt(e.target.value) || 0 } : d))}
+                        className="h-8 text-xs"
+                        min={0}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Bonus (Kč)</label>
+                      <Input
+                        type="number"
+                        value={draft.bonusAmount}
+                        onChange={(e) => setStoryDrafts((prev) => prev.map((d, i) => i === idx ? { ...d, bonusAmount: parseInt(e.target.value) || 0 } : d))}
+                        className="h-8 text-xs"
+                        min={0}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] uppercase tracking-wider text-muted-foreground">Bonus %</label>
+                    <Select
+                      value={draft.bonusPercent}
+                      onValueChange={(v) => setStoryDrafts((prev) => prev.map((d, i) => i === idx ? { ...d, bonusPercent: v as any } : d))}
+                    >
+                      <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="on_time">⭐ {rewardsConfig.bonusPerTask}% (včas)</SelectItem>
+                        <SelectItem value="late">⏳ {rewardsConfig.bonusLate}% (pozdě)</SelectItem>
+                        <SelectItem value="missed">✕ 0% (nesplněno)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowStoriesDialog(false)} disabled={generating}>Zrušit</Button>
+            <Button
+              disabled={generating || storyDrafts.length === 0}
+              onClick={async () => {
+                setGenerating(true);
+                try {
+                  // Check existing
+                  const { data: existing } = await supabase
+                    .from("todos")
+                    .select("id")
+                    .eq("story_month", storiesMonth);
+                  if (existing && existing.length > 0) {
+                    toast.error(`Pro měsíc ${storiesMonth} už příběhy existují (${existing.length}).`);
+                    setGenerating(false);
+                    return;
+                  }
+                  // Insert all
+                  const rows = storyDrafts.map((d) => ({
+                    text: d.text,
+                    completed: false,
+                    category: "work",
+                    person: "Barča",
+                    deadline: d.deadline,
+                    recurrence: "none",
+                    amount: d.amount,
+                    story_number: d.storyNumber,
+                    story_month: storiesMonth,
+                  }));
+                  const { data: inserted, error } = await supabase
+                    .from("todos")
+                    .insert(rows)
+                    .select();
+                  if (error || !inserted) {
+                    toast.error("Chyba: " + (error?.message ?? "neznámá"));
+                    setGenerating(false);
+                    return;
+                  }
+                  // Set bonus amounts and bonus % for each
+                  await Promise.all(
+                    inserted.map(async (row: any) => {
+                      const draft = storyDrafts.find((d) => d.storyNumber === row.story_number);
+                      if (!draft) return;
+                      if (draft.bonusAmount > 0) {
+                        await setBonusAmount(row.id, draft.bonusAmount);
+                      }
+                      await setTaskBonus(row.id, draft.bonusPercent);
+                    })
+                  );
+                  // Refresh todos in context
+                  setTodos((prev) => [
+                    ...prev,
+                    ...inserted.map((row: any) => ({
+                      id: row.id,
+                      text: row.text,
+                      completed: row.completed,
+                      category: row.category,
+                      person: row.person,
+                      deadline: row.deadline ? new Date(row.deadline) : undefined,
+                      recurrence: row.recurrence,
+                      amount: row.amount ?? undefined,
+                      storyNumber: row.story_number ?? undefined,
+                      storyMonth: row.story_month ?? undefined,
+                    })),
+                  ]);
+                  toast.success(`Vygenerováno ${inserted.length} příběhů pro ${storiesMonth}.`);
+                  setShowStoriesDialog(false);
+                } finally {
+                  setGenerating(false);
+                }
+              }}
+            >
+              {generating ? "Generuji..." : `Vygenerovat ${storyDrafts.length} příběhů`}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
