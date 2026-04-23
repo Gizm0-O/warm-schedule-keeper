@@ -21,6 +21,8 @@ export interface Todo {
   deadline?: Date;
   recurrence: Recurrence;
   amount?: number;
+  storyNumber?: number;
+  storyMonth?: string;
 }
 
 export const INITIAL_TODOS: Todo[] = [
