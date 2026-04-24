@@ -68,10 +68,14 @@ export function useRewards(completedTodoIds?: Set<string>) {
     const refetch = () => { if (!document.hidden) load(); };
     window.addEventListener('focus', refetch);
     document.addEventListener('visibilitychange', refetch);
+    window.addEventListener('task-bonuses-changed', refetch);
+    window.addEventListener('rewards-config-changed', refetch);
     return () => {
       cancelled = true;
       window.removeEventListener('focus', refetch);
       document.removeEventListener('visibilitychange', refetch);
+      window.removeEventListener('task-bonuses-changed', refetch);
+      window.removeEventListener('rewards-config-changed', refetch);
     };
   }, []);
 
