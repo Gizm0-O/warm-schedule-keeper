@@ -29,7 +29,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
   const [taskBonuses, setTaskBonusesState] = useState<TaskBonus[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Load from cloud
+  // Load from cloud (with refetch on focus/visibility to keep state fresh across tab switches)
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -64,7 +64,15 @@ export function useRewards(completedTodoIds?: Set<string>) {
       setLoaded(true);
     };
     load();
-    return () => { cancelled = true; };
+
+    const refetch = () => { if (!document.hidden) load(); };
+    window.addEventListener('focus', refetch);
+    document.addEventListener('visibilitychange', refetch);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', refetch);
+      document.removeEventListener('visibilitychange', refetch);
+    };
   }, []);
 
   // Realtime sync across browsers
