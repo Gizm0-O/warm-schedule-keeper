@@ -126,6 +126,24 @@ export function useRewards(completedTodoIds?: Set<string>) {
       );
   }, []);
 
+  const saveConfig = useCallback(async (newConfig: RewardsConfig) => {
+    setConfigState(newConfig);
+    await supabase
+      .from('rewards_config')
+      .upsert(
+        {
+          month: newConfig.month,
+          monthly_earnings: newConfig.monthlyEarnings,
+          base_percent: newConfig.basePercent,
+          bonus_per_task: newConfig.bonusPerTask,
+          bonus_late: newConfig.bonusLate,
+          max_tasks: newConfig.maxTasks,
+        },
+        { onConflict: 'month' }
+      );
+    window.dispatchEvent(new CustomEvent('rewards-config-changed'));
+  }, []);
+
   const setTaskBonus = useCallback(async (todoId: string, status: TaskBonus['status']) => {
     setTaskBonusesState(prev => {
       const next = prev.filter(b => b.todoId !== todoId);
@@ -134,6 +152,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
     await supabase
       .from('task_bonuses')
       .upsert({ todo_id: todoId, status }, { onConflict: 'todo_id' });
+    window.dispatchEvent(new CustomEvent('task-bonuses-changed', { detail: { todoId, status } }));
   }, []);
 
   const getTaskBonus = useCallback((todoId: string): TaskBonus['status'] => {
