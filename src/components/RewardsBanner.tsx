@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
 import { useTodos } from '../contexts/TodoContext';
@@ -6,7 +6,7 @@ import type { RewardsConfig } from '../hooks/useRewards';
 import { cn } from '../lib/utils';
 import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History } from 'lucide-react';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
@@ -82,11 +82,47 @@ export function RewardsBanner() {
     setEditingEarningId(null);
   };
 
-  const { level, levelLabel, activeTasks, nextLevelAt, progressToNext,
-    totalPercent, completedOnTime, completedLate, completedMissed, config } = rewards;
+  const { config, saveConfig } = rewards;
+
+  const bonusSummary = useMemo(() => {
+    const taskEarnings = earnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
+    const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
+    const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
+    const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
+    const totalBonusPercent = Math.min(
+      completedOnTime * config.bonusPerTask + completedLate * config.bonusLate,
+      config.maxTasks * config.bonusPerTask
+    );
+    const activeTasks = completedOnTime + completedLate + completedMissed;
+    const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
+    const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
+    const nextLevelAt = [1, 4, 7, 10, 10][level];
+    const progressBase = [0, 0, 4, 7, 10][level];
+    const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
+
+    return {
+      completedOnTime,
+      completedLate,
+      completedMissed,
+      totalBonusPercent,
+      activeTasks,
+      level,
+      levelLabel,
+      nextLevelAt,
+      progressToNext,
+    };
+  }, [earnings, config]);
+
+  const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
+  const effectiveLevel = bonusSummary.level;
+  const effectiveLevelLabel = bonusSummary.levelLabel;
+  const effectiveActiveTasks = bonusSummary.activeTasks;
+  const effectiveNextLevelAt = bonusSummary.nextLevelAt;
+  const effectiveProgressToNext = bonusSummary.progressToNext;
 
   // Kapesné = procenta z celkově vydělané částky (Vyděláno)
-  const totalAmount = Math.round(totalEarned * totalPercent / 100);
+  const effectiveTotalPercent = config.basePercent + totalBonusPercent;
+  const totalAmount = Math.round(totalEarned * effectiveTotalPercent / 100);
   const baseAmount = Math.round(totalEarned * config.basePercent / 100);
   const bonusAmount = totalAmount - baseAmount;
 
@@ -98,7 +134,7 @@ export function RewardsBanner() {
         className={cn(
           'rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none',
           'dark:bg-opacity-10',
-          LEVEL_BG[level]
+          LEVEL_BG[effectiveLevel]
         )}
         onClick={() => setExpanded(!expanded)}
       >
@@ -107,24 +143,24 @@ export function RewardsBanner() {
           <div className="flex items-center gap-3">
             <div className={cn(
               'flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl shadow-inner',
-              LEVEL_COLORS[level]
+              LEVEL_COLORS[effectiveLevel]
             )}>
-              {LEVEL_ICONS[level]}
+              {LEVEL_ICONS[effectiveLevel]}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-foreground">{levelLabel}</span>
-                <span className="text-xs text-muted-foreground">Lv.{level}</span>
+                <span className="text-sm font-bold text-foreground">{effectiveLevelLabel}</span>
+                <span className="text-xs text-muted-foreground">Lv.{effectiveLevel}</span>
               </div>
               <div className="mt-1 flex items-center gap-2">
                 <div className="h-2 w-24 rounded-full bg-muted overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', LEVEL_COLORS[level])}
-                    style={{ width: `${Math.max(progressToNext, level >= 4 ? 100 : 5)}%` }}
+                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', LEVEL_COLORS[effectiveLevel])}
+                    style={{ width: `${Math.max(effectiveProgressToNext, effectiveLevel >= 4 ? 100 : 5)}%` }}
                   />
                 </div>
                 <span className="text-10px text-muted-foreground">
-                  {level >= 4 ? 'MAX' : `${activeTasks}/${nextLevelAt} úkolů`}
+                  {effectiveLevel >= 4 ? 'MAX' : `${effectiveActiveTasks}/${effectiveNextLevelAt} úkolů`}
                 </span>
               </div>
             </div>
@@ -141,13 +177,13 @@ export function RewardsBanner() {
           <div className="flex items-center gap-2">
             <div className="text-right">
               <div className="flex items-center gap-1 justify-end">
-                <Coins className="h-4 w-4 text-amber-500" />
+                <Coins className="h-4 w-4 text-warning" />
                 <span className="text-lg font-bold text-foreground">
                   {noEarnings ? '?? Kč' : `${totalAmount.toLocaleString('cs')} Kč`}
                 </span>
               </div>
               <div className="text-10px text-muted-foreground">
-                {noEarnings ? 'Žádné výdělky' : `${totalPercent.toFixed(1)}% z ${totalEarned.toLocaleString('cs')} Kč`}
+                {noEarnings ? 'Žádné výdělky' : `${effectiveTotalPercent.toFixed(1)}% z ${totalEarned.toLocaleString('cs')} Kč`}
               </div>
             </div>
             <button onClick={(e) => { e.stopPropagation(); setShowHistoryDialog(true); }}>
@@ -166,21 +202,21 @@ export function RewardsBanner() {
         {expanded && (
           <div className="mt-3 pt-3 border-t border-current/10 space-y-2">
             <div className="grid grid-cols-3 gap-2">
-              <div className="text-center rounded-xl bg-white/60 dark:bg-white/5 p-2">
+              <div className="text-center rounded-xl bg-card/70 p-2">
                 <div className="text-lg font-bold text-foreground">{noEarnings ? '—' : `${baseAmount.toLocaleString('cs')} Kč`}</div>
                 <div className="text-9px text-muted-foreground">Základ {config.basePercent}%</div>
               </div>
-              <div className="text-center rounded-xl bg-white/60 dark:bg-white/5 p-2">
-                <div className="text-lg font-bold text-emerald-600">+{noEarnings ? '—' : `${bonusAmount.toLocaleString('cs')} Kč`}</div>
-                <div className="text-9px text-muted-foreground">Bonus +{rewards.totalBonusPercent.toFixed(1)}%</div>
+              <div className="text-center rounded-xl bg-card/70 p-2">
+                <div className="text-lg font-bold text-success">+{noEarnings ? '—' : `${bonusAmount.toLocaleString('cs')} Kč`}</div>
+                <div className="text-9px text-muted-foreground">Bonus +{totalBonusPercent.toFixed(1)}%</div>
               </div>
-              <div className="text-center rounded-xl bg-white/60 dark:bg-white/5 p-2">
+              <div className="text-center rounded-xl bg-card/70 p-2">
                 <div className="text-lg font-bold text-foreground">{completedOnTime + completedLate + completedMissed}/{config.maxTasks}</div>
                 <div className="text-9px text-muted-foreground">Splněné úkoly</div>
               </div>
             </div>
             <div className="text-center text-[11px] text-muted-foreground">
-              Splněno {completedOnTime + completedLate + completedMissed}/{config.maxTasks} úkolů · bonus +{rewards.totalBonusPercent.toFixed(1)}%
+              Splněno {completedOnTime + completedLate + completedMissed}/{config.maxTasks} úkolů · bonus +{totalBonusPercent.toFixed(1)}%
             </div>
 
             {/* Recent earnings preview */}
@@ -190,7 +226,7 @@ export function RewardsBanner() {
                 {earnings.slice(0, 3).map(e => (
                   <div key={e.id} className="flex justify-between text-[11px] py-0.5">
                     <span className="text-foreground truncate mr-2">{e.todo_text}</span>
-                    <span className="text-emerald-600 font-medium shrink-0">
+                    <span className="text-success font-medium shrink-0">
                       +{e.amount.toLocaleString('cs')} Kč
                       {e.bonus_type && <span className="text-muted-foreground ml-1">({e.bonus_type === 'on_time' ? '⭐' : '⏳'} {e.bonus_percent}%)</span>}
                     </span>
@@ -212,9 +248,12 @@ export function RewardsBanner() {
 
       {/* Admin Settings Dialog */}
       <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) setShowAdminDialog(false); }}>
-        <DialogContent>
+        <DialogContent aria-describedby="rewards-admin-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Nastavení odměn</DialogTitle>
+            <DialogDescription id="rewards-admin-description">
+              Nastavení základního procenta a bonusů pro výpočet odměn.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -251,16 +290,19 @@ export function RewardsBanner() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdminDialog(false)}>Zrušit</Button>
-            <Button onClick={saveAdmin}>Uložit</Button>
+            <Button onClick={() => { saveConfig(adminConfig); setShowAdminDialog(false); }}>Uložit</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Earnings History Dialog */}
       <Dialog open={showHistoryDialog} onOpenChange={open => { if (!open) { setShowHistoryDialog(false); setEditingEarningId(null); } }}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto" aria-describedby="rewards-history-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Historie & Bonusy</DialogTitle>
+            <DialogDescription id="rewards-history-description">
+              Přehled zaznamenaných výdělků a bonusových procent u dokončených úkolů.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Earnings section - only completed tasks with recorded earnings */}
@@ -319,7 +361,7 @@ export function RewardsBanner() {
                           {e.bonus_type && <span>{e.bonus_type === 'on_time' ? '⭐ včas' : '⏳ pozdě'} {e.bonus_percent}%</span>}
                         </div>
                       </div>
-                      <span className="text-sm font-bold text-emerald-600 shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
+                      <span className="text-sm font-bold text-success shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
                       {adminMode && (
                         <div className="flex gap-1 shrink-0">
                           <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
@@ -339,7 +381,7 @@ export function RewardsBanner() {
           <div className="pt-2 border-t">
             <div className="flex justify-between text-sm font-bold">
               <span>Celkem vyděláno:</span>
-              <span className="text-emerald-600">{totalEarned.toLocaleString('cs')} Kč</span>
+              <span className="text-success">{totalEarned.toLocaleString('cs')} Kč</span>
             </div>
           </div>
         </DialogContent>
