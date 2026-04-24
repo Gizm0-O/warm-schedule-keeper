@@ -248,9 +248,12 @@ export function RewardsBanner() {
 
       {/* Admin Settings Dialog */}
       <Dialog open={showAdminDialog} onOpenChange={open => { if (!open) setShowAdminDialog(false); }}>
-        <DialogContent>
+        <DialogContent aria-describedby="rewards-admin-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Lock className="h-4 w-4" /> Nastavení odměn</DialogTitle>
+            <DialogDescription id="rewards-admin-description">
+              Nastavení základního procenta a bonusů pro výpočet odměn.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -287,16 +290,19 @@ export function RewardsBanner() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdminDialog(false)}>Zrušit</Button>
-            <Button onClick={saveAdmin}>Uložit</Button>
+            <Button onClick={() => { saveConfig(adminConfig); setShowAdminDialog(false); }}>Uložit</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Earnings History Dialog */}
       <Dialog open={showHistoryDialog} onOpenChange={open => { if (!open) { setShowHistoryDialog(false); setEditingEarningId(null); } }}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto" aria-describedby="rewards-history-description">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><History className="h-4 w-4" /> Historie & Bonusy</DialogTitle>
+            <DialogDescription id="rewards-history-description">
+              Přehled zaznamenaných výdělků a bonusových procent u dokončených úkolů.
+            </DialogDescription>
           </DialogHeader>
 
           {/* Earnings section - only completed tasks with recorded earnings */}
