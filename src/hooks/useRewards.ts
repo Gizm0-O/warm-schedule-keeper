@@ -124,23 +124,6 @@ export function useRewards(completedTodoIds?: Set<string>) {
         },
         { onConflict: 'month' }
       );
-  }, []);
-
-  const saveConfig = useCallback(async (newConfig: RewardsConfig) => {
-    setConfigState(newConfig);
-    await supabase
-      .from('rewards_config')
-      .upsert(
-        {
-          month: newConfig.month,
-          monthly_earnings: newConfig.monthlyEarnings,
-          base_percent: newConfig.basePercent,
-          bonus_per_task: newConfig.bonusPerTask,
-          bonus_late: newConfig.bonusLate,
-          max_tasks: newConfig.maxTasks,
-        },
-        { onConflict: 'month' }
-      );
     window.dispatchEvent(new CustomEvent('rewards-config-changed'));
   }, []);
 
