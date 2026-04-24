@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
 import { useTodos } from '../contexts/TodoContext';
@@ -6,7 +6,7 @@ import type { RewardsConfig } from '../hooks/useRewards';
 import { cn } from '../lib/utils';
 import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History } from 'lucide-react';
 import { Button } from './ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
