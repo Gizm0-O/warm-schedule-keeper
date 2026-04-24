@@ -82,11 +82,45 @@ export function RewardsBanner() {
     setEditingEarningId(null);
   };
 
-  const { level, levelLabel, activeTasks, nextLevelAt, progressToNext,
-    totalPercent, completedOnTime, completedLate, completedMissed, config } = rewards;
+  const bonusSummary = useMemo(() => {
+    const taskEarnings = earnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
+    const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
+    const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
+    const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
+    const totalBonusPercent = Math.min(
+      completedOnTime * config.bonusPerTask + completedLate * config.bonusLate,
+      config.maxTasks * config.bonusPerTask
+    );
+    const activeTasks = completedOnTime + completedLate + completedMissed;
+    const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
+    const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
+    const nextLevelAt = [1, 4, 7, 10, 10][level];
+    const progressBase = [0, 0, 4, 7, 10][level];
+    const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
+
+    return {
+      completedOnTime,
+      completedLate,
+      completedMissed,
+      totalBonusPercent,
+      activeTasks,
+      level,
+      levelLabel,
+      nextLevelAt,
+      progressToNext,
+    };
+  }, [earnings, config]);
+
+  const { level, levelLabel, activeTasks, nextLevelAt, progressToNext, totalPercent, config } = rewards;
+  const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
+  const effectiveLevel = bonusSummary.level;
+  const effectiveLevelLabel = bonusSummary.levelLabel;
+  const effectiveNextLevelAt = bonusSummary.nextLevelAt;
+  const effectiveProgressToNext = bonusSummary.progressToNext;
 
   // Kapesné = procenta z celkově vydělané částky (Vyděláno)
-  const totalAmount = Math.round(totalEarned * totalPercent / 100);
+  const effectiveTotalPercent = config.basePercent + totalBonusPercent;
+  const totalAmount = Math.round(totalEarned * effectiveTotalPercent / 100);
   const baseAmount = Math.round(totalEarned * config.basePercent / 100);
   const bonusAmount = totalAmount - baseAmount;
 
