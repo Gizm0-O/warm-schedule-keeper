@@ -82,6 +82,8 @@ export function RewardsBanner() {
     setEditingEarningId(null);
   };
 
+  const { config, saveConfig } = rewards;
+
   const bonusSummary = useMemo(() => {
     const taskEarnings = earnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
     const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
@@ -111,10 +113,10 @@ export function RewardsBanner() {
     };
   }, [earnings, config]);
 
-  const { level, levelLabel, activeTasks, nextLevelAt, progressToNext, totalPercent, config } = rewards;
   const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
   const effectiveLevel = bonusSummary.level;
   const effectiveLevelLabel = bonusSummary.levelLabel;
+  const effectiveActiveTasks = bonusSummary.activeTasks;
   const effectiveNextLevelAt = bonusSummary.nextLevelAt;
   const effectiveProgressToNext = bonusSummary.progressToNext;
 
