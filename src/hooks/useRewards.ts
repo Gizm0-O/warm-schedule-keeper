@@ -29,7 +29,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
   const [taskBonuses, setTaskBonusesState] = useState<TaskBonus[]>([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Load from cloud
+  // Load from cloud (with refetch on focus/visibility to keep state fresh across tab switches)
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
@@ -64,7 +64,19 @@ export function useRewards(completedTodoIds?: Set<string>) {
       setLoaded(true);
     };
     load();
-    return () => { cancelled = true; };
+
+    const refetch = () => { if (!document.hidden) load(); };
+    window.addEventListener('focus', refetch);
+    document.addEventListener('visibilitychange', refetch);
+    window.addEventListener('task-bonuses-changed', refetch);
+    window.addEventListener('rewards-config-changed', refetch);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', refetch);
+      document.removeEventListener('visibilitychange', refetch);
+      window.removeEventListener('task-bonuses-changed', refetch);
+      window.removeEventListener('rewards-config-changed', refetch);
+    };
   }, []);
 
   // Realtime sync across browsers
@@ -116,6 +128,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
         },
         { onConflict: 'month' }
       );
+    window.dispatchEvent(new CustomEvent('rewards-config-changed'));
   }, []);
 
   const setTaskBonus = useCallback(async (todoId: string, status: TaskBonus['status']) => {
@@ -126,6 +139,7 @@ export function useRewards(completedTodoIds?: Set<string>) {
     await supabase
       .from('task_bonuses')
       .upsert({ todo_id: todoId, status }, { onConflict: 'todo_id' });
+    window.dispatchEvent(new CustomEvent('task-bonuses-changed', { detail: { todoId, status } }));
   }, []);
 
   const getTaskBonus = useCallback((todoId: string): TaskBonus['status'] => {
