@@ -262,6 +262,7 @@ const Index = () => {
     await toggleTodo(id);
 
     let createdEarningId: string | null = null;
+    let createdBonusEarningId: string | null = null;
     if (completing && isBarCaWork && hasAmount) {
       const bonusPercent =
         bonus === 'on_time' ? rewardsConfig.bonusPerTask :
@@ -277,10 +278,9 @@ const Index = () => {
       });
       if (earning) createdEarningId = earning.id;
 
-      // Bonusový samostatný earning záznam
       const bonusAmt = getBonusAmount(id);
       if (bonusAmt > 0) {
-        await addEarning({
+        const bonusEarning = await addEarning({
           todo_id: `${id}__bonus`,
           todo_text: `🎁 Bonus: ${todo.text}`,
           amount: bonusAmt,
@@ -289,6 +289,7 @@ const Index = () => {
           deadline: null,
           completed_at: new Date().toISOString(),
         });
+        if (bonusEarning) createdBonusEarningId = bonusEarning.id;
       }
     }
 
@@ -296,6 +297,7 @@ const Index = () => {
       undo: async () => {
         await toggleTodoRef.current(id);
         if (createdEarningId) await removeEarning(createdEarningId);
+        if (createdBonusEarningId) await removeEarning(createdBonusEarningId);
       },
       redo: async () => { await toggleTodoRef.current(id); },
     });
