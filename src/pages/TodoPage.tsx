@@ -157,8 +157,9 @@ const TodoPage = () => {
 
       // Bonus záznam (samostatný), pokud je bonus přiřazen k úkolu
       const bonusAmt = getBonusAmount(id);
+      let bonusEarning: Awaited<ReturnType<typeof addEarning>> | null = null;
       if (bonusAmt > 0) {
-        await addEarning({
+        bonusEarning = await addEarning({
           todo_id: `${id}__bonus`,
           todo_text: `🎁 Bonus: ${todo.text}`,
           amount: bonusAmt,
@@ -175,6 +176,7 @@ const TodoPage = () => {
             await supabase.from("todos").update({ completed: false }).eq("id", id);
             setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
             await removeEarning(earning.id);
+            if (bonusEarning) await removeEarning(bonusEarning.id);
           },
           redo: async () => {
             await supabase.from("todos").update({ completed: true }).eq("id", id);
@@ -188,6 +190,17 @@ const TodoPage = () => {
               deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
               completed_at: new Date().toISOString(),
             });
+            if (bonusAmt > 0) {
+              bonusEarning = await addEarning({
+                todo_id: `${id}__bonus`,
+                todo_text: `🎁 Bonus: ${todo.text}`,
+                amount: bonusAmt,
+                bonus_type: 'bonus',
+                bonus_percent: null,
+                deadline: null,
+                completed_at: new Date().toISOString(),
+              });
+            }
           },
         });
       }
