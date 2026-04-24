@@ -361,7 +361,7 @@ export function RewardsBanner() {
                           {e.bonus_type && <span>{e.bonus_type === 'on_time' ? '⭐ včas' : '⏳ pozdě'} {e.bonus_percent}%</span>}
                         </div>
                       </div>
-                      <span className="text-sm font-bold text-emerald-600 shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
+                      <span className="text-sm font-bold text-success shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
                       {adminMode && (
                         <div className="flex gap-1 shrink-0">
                           <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
@@ -381,7 +381,7 @@ export function RewardsBanner() {
           <div className="pt-2 border-t">
             <div className="flex justify-between text-sm font-bold">
               <span>Celkem vyděláno:</span>
-              <span className="text-emerald-600">{totalEarned.toLocaleString('cs')} Kč</span>
+              <span className="text-success">{totalEarned.toLocaleString('cs')} Kč</span>
             </div>
           </div>
         </DialogContent>
