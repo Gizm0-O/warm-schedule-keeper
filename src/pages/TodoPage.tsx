@@ -558,6 +558,26 @@ const TodoPage = () => {
         </TabsList>
       </Tabs>
 
+      {(() => {
+        const filteredHourly = activeTab === "all" ? hourlyTasks : hourlyTasks.filter((t) => t.person === activeTab);
+        if (filteredHourly.length === 0) return null;
+        return (
+          <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Hodinové úkoly ({filteredHourly.length})
+              </span>
+            </div>
+            <div className="p-2 space-y-1.5">
+              {filteredHourly.map((task) => (
+                <HourlyTaskRow key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
         {workPending.length === 0 && homePending.length === 0 && completed.length === 0 && (
           <p className="p-6 text-center text-sm text-muted-foreground">
