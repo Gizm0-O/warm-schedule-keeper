@@ -19,7 +19,7 @@ import {
   getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useShiftOverrides } from "@/hooks/useShiftOverrides";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -32,7 +32,7 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
-import { HourlyTaskRow } from "@/components/HourlyTaskRow";
+import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
 import { useHourlyTasks } from "@/hooks/useHourlyTasks";
 import { useRewards } from "@/hooks/useRewards";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
