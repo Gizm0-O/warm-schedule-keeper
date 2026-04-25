@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight, Star, Coins } from "lucide-react";
+import { Plus, Trash2, Check, Briefcase, Home, User, CalendarDays, AlertCircle, Pencil, Repeat, ChevronDown, ChevronRight, Star, Coins, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,8 @@ import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fn
 import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
+import { useHourlyTasks } from "@/hooks/useHourlyTasks";
+import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
 import { supabase } from "@/integrations/supabase/client";
 import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
@@ -41,6 +43,7 @@ const TodoPage = () => {
   const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
+  const { tasks: hourlyTasks } = useHourlyTasks();
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
@@ -538,6 +541,7 @@ const TodoPage = () => {
               📚 Generovat příběhy
             </Button>
           )}
+          <NewHourlyTaskButton />
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="mr-1 h-4 w-4" /> Nový úkol
           </Button>
@@ -553,6 +557,26 @@ const TodoPage = () => {
           <TabsTrigger value="Barča" className="flex-1">Barča</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      {(() => {
+        const filteredHourly = activeTab === "all" ? hourlyTasks : hourlyTasks.filter((t) => t.person === activeTab);
+        if (filteredHourly.length === 0) return null;
+        return (
+          <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
+            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Hodinové úkoly ({filteredHourly.length})
+              </span>
+            </div>
+            <div className="p-2 space-y-1.5">
+              {filteredHourly.map((task) => (
+                <HourlyTaskRow key={task.id} task={task} />
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
         {workPending.length === 0 && homePending.length === 0 && completed.length === 0 && (

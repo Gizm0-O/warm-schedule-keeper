@@ -19,7 +19,7 @@ import {
   getDay,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useShiftOverrides } from "@/hooks/useShiftOverrides";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
@@ -32,7 +32,8 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
-import { HourlyTasksPanel } from "@/components/HourlyTasksPanel";
+import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
+import { useHourlyTasks } from "@/hooks/useHourlyTasks";
 import { useRewards } from "@/hooks/useRewards";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { supabase } from "@/integrations/supabase/client";
@@ -210,6 +211,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
   const { todos, toggleTodo } = useTodos();
+  const { tasks: hourlyTasks } = useHourlyTasks();
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
   const { addEarning, removeEarning } = useTaskEarnings();
   const isAdmin = useAdminMode();
@@ -809,7 +811,6 @@ const Index = () => {
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
         <RewardsBanner />
-        <HourlyTasksPanel />
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
@@ -1634,13 +1635,32 @@ const Index = () => {
                 );
               };
 
-              if (workTodos.length === 0 && homeTodos.length === 0) {
-                return <p className="text-sm text-muted-foreground">Žádné úkoly na dnes 🎉</p>;
+              if (workTodos.length === 0 && homeTodos.length === 0 && hourlyTasks.length === 0) {
+                return (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Žádné úkoly na dnes 🎉</p>
+                    <NewHourlyTaskButton />
+                  </div>
+                );
               }
 
               return (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
+                    <NewHourlyTaskButton />
+                  </div>
+                  {hourlyTasks.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hodinové ({hourlyTasks.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {hourlyTasks.map((t) => <HourlyTaskRow key={t.id} task={t} />)}
+                      </div>
+                    </div>
+                  )}
                   {workTodos.length > 0 && (
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
