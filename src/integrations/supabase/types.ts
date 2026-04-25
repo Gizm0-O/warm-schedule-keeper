@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      hourly_tasks: {
+        Row: {
+          color: string
+          created_at: string
+          hours_worked: number
+          id: string
+          milestone_bonus_percent: number
+          milestone_hours: number
+          month: string
+          name: string
+          person: string
+          rate_per_hour: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          hours_worked?: number
+          id?: string
+          milestone_bonus_percent?: number
+          milestone_hours?: number
+          month?: string
+          name: string
+          person?: string
+          rate_per_hour?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          hours_worked?: number
+          id?: string
+          milestone_bonus_percent?: number
+          milestone_hours?: number
+          month?: string
+          name?: string
+          person?: string
+          rate_per_hour?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       italy_savings: {
         Row: {
           amount: number
