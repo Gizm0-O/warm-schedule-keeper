@@ -43,6 +43,7 @@ const TodoPage = () => {
   const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
+  const { tasks: hourlyTasks } = useHourlyTasks();
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
@@ -540,6 +541,7 @@ const TodoPage = () => {
               📚 Generovat příběhy
             </Button>
           )}
+          <NewHourlyTaskButton />
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="mr-1 h-4 w-4" /> Nový úkol
           </Button>
