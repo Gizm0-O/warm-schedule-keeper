@@ -23,6 +23,8 @@ import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fn
 import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
+import { useHourlyTasks } from "@/hooks/useHourlyTasks";
+import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
 import { supabase } from "@/integrations/supabase/client";
 import { useRewards } from "@/hooks/useRewards";
 import { useAdminMode } from "@/hooks/useAdminMode";
