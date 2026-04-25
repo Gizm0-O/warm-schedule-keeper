@@ -1600,7 +1600,7 @@ const Index = () => {
                         const showBonus = hasBonus(todo.id);
                         if (!bonusPct && !showAmount && !showBonus) return null;
                         return (
-                          <div className="flex items-center gap-2 mt-0.5 flex-nowrap overflow-x-auto">
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {bonusPct && (
                               <span className={cn("inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap shrink-0", bonusPct.cls)} title="Nastavený bonus">
                                 {bonusPct.icon} {bonusPct.pct}%
