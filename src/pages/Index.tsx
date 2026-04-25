@@ -1635,13 +1635,32 @@ const Index = () => {
                 );
               };
 
-              if (workTodos.length === 0 && homeTodos.length === 0) {
-                return <p className="text-sm text-muted-foreground">Žádné úkoly na dnes 🎉</p>;
+              if (workTodos.length === 0 && homeTodos.length === 0 && hourlyTasks.length === 0) {
+                return (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Žádné úkoly na dnes 🎉</p>
+                    <NewHourlyTaskButton />
+                  </div>
+                );
               }
 
               return (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
+                    <NewHourlyTaskButton />
+                  </div>
+                  {hourlyTasks.length > 0 && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Hodinové ({hourlyTasks.length})</span>
+                      </div>
+                      <div className="space-y-1">
+                        {hourlyTasks.map((t) => <HourlyTaskRow key={t.id} task={t} />)}
+                      </div>
+                    </div>
+                  )}
                   {workTodos.length > 0 && (
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
