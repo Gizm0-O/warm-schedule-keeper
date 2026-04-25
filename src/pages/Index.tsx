@@ -32,6 +32,7 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
+import { HourlyTasksPanel } from "@/components/HourlyTasksPanel";
 import { useRewards } from "@/hooks/useRewards";
 import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { supabase } from "@/integrations/supabase/client";
@@ -808,6 +809,7 @@ const Index = () => {
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
         <RewardsBanner />
+        <HourlyTasksPanel />
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
