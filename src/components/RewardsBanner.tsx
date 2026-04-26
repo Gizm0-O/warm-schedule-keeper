@@ -43,7 +43,29 @@ export function RewardsBanner() {
     return s;
   })();
   const rewards = useRewards(completedTodoIds);
-  const { earnings, totalEarned, removeEarning, updateEarning } = useTaskEarnings();
+  const { earnings: liveEarnings, totalEarned: liveTotalEarned, removeEarning: removeLiveEarning, updateEarning: updateLiveEarning } = useTaskEarnings();
+
+  // Auto-archivace předchozích měsíců při prvním otevření v novém měsíci
+  useMonthlyAutoArchive();
+
+  // Měsíční navigace
+  const { months: archivedMonths } = useArchivedMonths();
+  const [viewMonth, setViewMonth] = useState<string>(CURRENT_MONTH());
+  const isArchiveView = viewMonth !== CURRENT_MONTH();
+  const { archive, updateEarning: updateArchiveEarning, removeEarning: removeArchiveEarning, updateConfig: updateArchiveConfig } = useMonthlyArchive(isArchiveView ? viewMonth : null);
+
+  // Sestav timeline měsíců: aktuální + všechny archivované, sestupně
+  const monthTimeline = useMemo(() => {
+    const set = new Set<string>([CURRENT_MONTH(), ...archivedMonths]);
+    return Array.from(set).sort().reverse();
+  }, [archivedMonths]);
+
+  const currentIdx = monthTimeline.indexOf(viewMonth);
+  const canGoOlder = currentIdx >= 0 && currentIdx < monthTimeline.length - 1;
+  const canGoNewer = currentIdx > 0;
+  const goOlder = () => { if (canGoOlder) setViewMonth(monthTimeline[currentIdx + 1]); };
+  const goNewer = () => { if (canGoNewer) setViewMonth(monthTimeline[currentIdx - 1]); };
+
   const [expanded, setExpanded] = useState(false);
   const [showAdminDialog, setShowAdminDialog] = useState(false);
   const [showHistoryDialog, setShowHistoryDialog] = useState(false);
@@ -67,9 +89,18 @@ export function RewardsBanner() {
   const [adminConfig, setAdminConfig] = useState<RewardsConfig>(rewards.config);
 
   const saveAdmin = () => {
-    rewards.saveConfig(adminConfig);
+    if (isArchiveView) {
+      updateArchiveConfig(adminConfig);
+    } else {
+      rewards.saveConfig(adminConfig);
+    }
     setShowAdminDialog(false);
   };
+
+  // Adapter — earnings/handlery podle režimu
+  const earnings = isArchiveView ? (archive?.earnings_snapshot ?? []) : liveEarnings;
+  const removeEarning = isArchiveView ? removeArchiveEarning : removeLiveEarning;
+  const updateEarning = isArchiveView ? updateArchiveEarning : updateLiveEarning;
 
   const startEditEarning = (e: any) => {
     setEditingEarningId(e.id);
@@ -90,25 +121,47 @@ export function RewardsBanner() {
     setEditingEarningId(null);
   };
 
-  const { config, saveConfig } = rewards;
+  const { config: liveConfig, saveConfig } = rewards;
+  const config = isArchiveView && archive ? archive.config_snapshot as RewardsConfig : liveConfig;
+
+  // Synchronizuj adminConfig s aktuálně zobrazeným měsícem
+  useEffect(() => {
+    setAdminConfig(config);
+  }, [viewMonth, config.basePercent, config.bonusPerTask, config.bonusLate, config.maxTasks, config.monthlyEarnings]);
+
+  // ========== Pro archivní režim používáme předpočítané hodnoty ze snapshotu ==========
+  const archiveSummary = isArchiveView && archive ? {
+    completedOnTime: archive.completed_on_time,
+    completedLate: archive.completed_late,
+    completedMissed: archive.completed_missed,
+    totalBonusPercent: Number(archive.total_bonus_percent),
+    activeTasks: archive.completed_on_time + archive.completed_late + archive.completed_missed,
+  } : null;
 
   const bonusSummary = useMemo(() => {
-    const taskEarnings = earnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
+    if (archiveSummary) {
+      const activeTasks = archiveSummary.activeTasks;
+      const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
+      const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
+      const nextLevelAt = [1, 4, 7, 10, 10][level];
+      const progressBase = [0, 0, 4, 7, 10][level];
+      const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
+      return { ...archiveSummary, level, levelLabel, nextLevelAt, progressToNext };
+    }
+    const taskEarnings = liveEarnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
     const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
     const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
     const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
-    // Sečteme bonusy: pokud má řádek vlastní bonus_percent (např. hodinové úkoly), použijeme ho;
-    // jinak fallback na config (1% včas / 0.5% pozdě).
     const rawBonusPercent = taskEarnings.reduce((sum, e) => {
       if (e.bonus_type === 'on_time') {
-        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : config.bonusPerTask);
+        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : liveConfig.bonusPerTask);
       }
       if (e.bonus_type === 'late') {
-        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : config.bonusLate);
+        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : liveConfig.bonusLate);
       }
       return sum;
     }, 0);
-    const totalBonusPercent = Math.min(rawBonusPercent, config.maxTasks * config.bonusPerTask);
+    const totalBonusPercent = Math.min(rawBonusPercent, liveConfig.maxTasks * liveConfig.bonusPerTask);
     const activeTasks = completedOnTime + completedLate + completedMissed;
     const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
     const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
@@ -127,7 +180,7 @@ export function RewardsBanner() {
       nextLevelAt,
       progressToNext,
     };
-  }, [earnings, config]);
+  }, [liveEarnings, liveConfig, archiveSummary]);
 
   const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
   const effectiveLevel = bonusSummary.level;
@@ -136,11 +189,13 @@ export function RewardsBanner() {
   const effectiveNextLevelAt = bonusSummary.nextLevelAt;
   const effectiveProgressToNext = bonusSummary.progressToNext;
 
-  // Kapesné = procenta z celkově vydělané částky (Vyděláno)
-  const effectiveTotalPercent = config.basePercent + totalBonusPercent;
-  const totalAmount = Math.round(totalEarned * effectiveTotalPercent / 100);
-  const baseAmount = Math.round(totalEarned * config.basePercent / 100);
-  const bonusAmount = totalAmount - baseAmount;
+  // Vyděláno + odvozená čísla
+  const totalEarned = isArchiveView && archive ? archive.total_earned : liveTotalEarned;
+  const effectiveTotalPercent = isArchiveView && archive ? Number(archive.total_percent) : config.basePercent + totalBonusPercent;
+  const totalAmount = isArchiveView && archive ? archive.allowance_amount : Math.round(totalEarned * effectiveTotalPercent / 100);
+  const baseAmount = isArchiveView && archive ? archive.base_amount : Math.round(totalEarned * config.basePercent / 100);
+  const bonusAmount = isArchiveView && archive ? archive.bonus_amount : totalAmount - baseAmount;
+  const toHandOver = totalEarned - totalAmount;
 
   const noEarnings = totalEarned === 0;
 
