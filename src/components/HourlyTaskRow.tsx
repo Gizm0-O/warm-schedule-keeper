@@ -129,7 +129,6 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
 export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }) {
   const { createTask } = useHourlyTasks();
   const isAdmin = useAdminMode();
-  if (!isAdmin) return null;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [rate, setRate] = useState(250);
@@ -137,6 +136,8 @@ export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }
   const [bonus, setBonus] = useState(0.5);
   const [color, setColor] = useState("#10b981");
   const [person, setPerson] = useState<"Tadeáš" | "Barča">("Tadeáš");
+
+  if (!isAdmin) return null;
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
