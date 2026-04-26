@@ -411,7 +411,7 @@ export function RewardsBanner() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAdminDialog(false)}>Zrušit</Button>
-            <Button onClick={() => { saveConfig(adminConfig); setShowAdminDialog(false); }}>Uložit</Button>
+            <Button onClick={saveAdmin}>Uložit{isArchiveView ? ' (do archivu)' : ''}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
