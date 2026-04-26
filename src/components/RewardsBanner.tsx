@@ -3,13 +3,21 @@ import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
 import { useTodos } from '../contexts/TodoContext';
 import type { RewardsConfig } from '../hooks/useRewards';
+import { useArchivedMonths, useMonthlyArchive, useMonthlyAutoArchive } from '../hooks/useMonthlyArchive';
 import { cn } from '../lib/utils';
-import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History } from 'lucide-react';
+import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
+
+const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
+const formatMonthLabel = (month: string) => {
+  const [y, m] = month.split('-').map(Number);
+  if (!y || !m) return month;
+  return format(new Date(y, m - 1, 1), 'LLLL yyyy', { locale: cs }).replace(/^./, c => c.toUpperCase());
+};
 
 const LEVEL_ICONS = ['🌱', '⭐', '💪', '💎', '👑'];
 const LEVEL_COLORS = [
