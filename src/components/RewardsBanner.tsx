@@ -201,11 +201,50 @@ export function RewardsBanner() {
 
   return (
     <>
+      {/* Měsíční navigace - viditelná jen pokud existuje historie */}
+      {(monthTimeline.length > 1) && (
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <button
+            type="button"
+            onClick={goOlder}
+            disabled={!canGoOlder}
+            className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition"
+            aria-label="Starší měsíc"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="flex items-center gap-1.5 text-sm font-semibold">
+            {isArchiveView && <Archive className="h-3.5 w-3.5 text-muted-foreground" />}
+            <span className={cn(isArchiveView && 'text-muted-foreground')}>{formatMonthLabel(viewMonth)}</span>
+            {isArchiveView && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                uzavřeno
+              </span>
+            )}
+            {!isArchiveView && (
+              <span className="text-[9px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-success/15 text-success">
+                aktuální
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={goNewer}
+            disabled={!canGoNewer}
+            className="p-1 rounded hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed transition"
+            aria-label="Novější měsíc"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div
         className={cn(
           'rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none',
           'dark:bg-opacity-10',
-          LEVEL_BG[effectiveLevel]
+          LEVEL_BG[effectiveLevel],
+          isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10'
         )}
         onClick={() => setExpanded(!expanded)}
       >
