@@ -325,6 +325,17 @@ export function RewardsBanner() {
                 <div className="text-9px text-muted-foreground">Splněné úkoly</div>
               </div>
             </div>
+            {/* Souhrn - kapesné vs k odevzdání */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="text-center rounded-xl bg-warning/10 border border-warning/20 p-2">
+                <div className="text-base font-bold text-warning">{noEarnings ? '—' : `${totalAmount.toLocaleString('cs')} Kč`}</div>
+                <div className="text-9px text-muted-foreground">Kapesné ({effectiveTotalPercent.toFixed(1)}%)</div>
+              </div>
+              <div className="text-center rounded-xl bg-primary/10 border border-primary/20 p-2">
+                <div className="text-base font-bold text-primary">{noEarnings ? '—' : `${toHandOver.toLocaleString('cs')} Kč`}</div>
+                <div className="text-9px text-muted-foreground">K odevzdání</div>
+              </div>
+            </div>
             <div className="text-center text-[11px] text-muted-foreground">
               Splněno {completedOnTime + completedLate + completedMissed}/{config.maxTasks} úkolů · bonus +{totalBonusPercent.toFixed(1)}%
             </div>
