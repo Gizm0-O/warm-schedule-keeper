@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useHourlyTasks, type HourlyTask } from "@/hooks/useHourlyTasks";
+import { useAdminMode } from "@/hooks/useAdminMode";
 
 /**
  * Kompaktní řádek hodinového úkolu - používá se v seznamu úkolů
