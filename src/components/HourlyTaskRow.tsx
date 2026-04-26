@@ -127,6 +127,8 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
  */
 export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }) {
   const { createTask } = useHourlyTasks();
+  const isAdmin = useAdminMode();
+  if (!isAdmin) return null;
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [rate, setRate] = useState(250);
