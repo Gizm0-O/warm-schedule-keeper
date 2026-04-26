@@ -113,6 +113,72 @@ export type Database = {
         }
         Relationships: []
       }
+      monthly_archives: {
+        Row: {
+          allowance_amount: number
+          base_amount: number
+          bonus_amount: number
+          bonuses_snapshot: Json
+          closed_at: string
+          completed_late: number
+          completed_missed: number
+          completed_on_time: number
+          config_snapshot: Json
+          created_at: string
+          earnings_snapshot: Json
+          hourly_tasks_snapshot: Json
+          id: string
+          month: string
+          to_hand_over: number
+          total_bonus_percent: number
+          total_earned: number
+          total_percent: number
+          updated_at: string
+        }
+        Insert: {
+          allowance_amount?: number
+          base_amount?: number
+          bonus_amount?: number
+          bonuses_snapshot?: Json
+          closed_at?: string
+          completed_late?: number
+          completed_missed?: number
+          completed_on_time?: number
+          config_snapshot?: Json
+          created_at?: string
+          earnings_snapshot?: Json
+          hourly_tasks_snapshot?: Json
+          id?: string
+          month: string
+          to_hand_over?: number
+          total_bonus_percent?: number
+          total_earned?: number
+          total_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          allowance_amount?: number
+          base_amount?: number
+          bonus_amount?: number
+          bonuses_snapshot?: Json
+          closed_at?: string
+          completed_late?: number
+          completed_missed?: number
+          completed_on_time?: number
+          config_snapshot?: Json
+          created_at?: string
+          earnings_snapshot?: Json
+          hourly_tasks_snapshot?: Json
+          id?: string
+          month?: string
+          to_hand_over?: number
+          total_bonus_percent?: number
+          total_earned?: number
+          total_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rewards_config: {
         Row: {
           base_percent: number
