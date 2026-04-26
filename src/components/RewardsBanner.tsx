@@ -89,10 +89,18 @@ export function RewardsBanner() {
     const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
     const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
     const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
-    const totalBonusPercent = Math.min(
-      completedOnTime * config.bonusPerTask + completedLate * config.bonusLate,
-      config.maxTasks * config.bonusPerTask
-    );
+    // Sečteme bonusy: pokud má řádek vlastní bonus_percent (např. hodinové úkoly), použijeme ho;
+    // jinak fallback na config (1% včas / 0.5% pozdě).
+    const rawBonusPercent = taskEarnings.reduce((sum, e) => {
+      if (e.bonus_type === 'on_time') {
+        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : config.bonusPerTask);
+      }
+      if (e.bonus_type === 'late') {
+        return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : config.bonusLate);
+      }
+      return sum;
+    }, 0);
+    const totalBonusPercent = Math.min(rawBonusPercent, config.maxTasks * config.bonusPerTask);
     const activeTasks = completedOnTime + completedLate + completedMissed;
     const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
     const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
