@@ -75,6 +75,7 @@ const TodoPage = () => {
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
+  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean }[]>([]);
 
   // Story generator state
   const [showStoriesDialog, setShowStoriesDialog] = useState(false);
