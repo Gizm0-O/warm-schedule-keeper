@@ -411,6 +411,15 @@ const TodoPage = () => {
                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
               </span>
             )}
+            {todo.person === 'Barča' && getRewardsForTodo(todo.id).map((r) => (
+              <span
+                key={r.id}
+                className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-4 rounded border bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300 dark:bg-fuchsia-900/40 dark:text-fuchsia-300 dark:border-fuchsia-800/50 whitespace-nowrap"
+                title={r.repeat_on_recurring ? "Poukázka (opakovaná)" : "Poukázka"}
+              >
+                🎟️ {r.label}
+              </span>
+            ))}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
