@@ -281,6 +281,8 @@ const TodoPage = () => {
     setEditAmount(todo.amount ? todo.amount.toString() : "");
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
+    const existing = getRewardsForTodo(todo.id);
+    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring })));
   };
 
   const saveEdit = async () => {
@@ -296,6 +298,10 @@ const TodoPage = () => {
     // Persist bonus
     const bonusVal = editBonusEnabled && editBonusAmount ? parseInt(editBonusAmount) : 0;
     await setBonusAmount(editingTodo.id, bonusVal);
+    // Persist custom rewards (admin only)
+    if (isAdmin) {
+      await setRewardsForTodo(editingTodo.id, editCustomRewards);
+    }
     setEditingTodo(null);
   };
 
