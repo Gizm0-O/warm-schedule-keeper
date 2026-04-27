@@ -47,6 +47,48 @@ export type Database = {
         }
         Relationships: []
       }
+      earned_rewards: {
+        Row: {
+          activated_at: string | null
+          completed_at: string | null
+          created_at: string
+          earned_at: string
+          id: string
+          label: string
+          source_reward_id: string | null
+          status: string
+          todo_id: string | null
+          todo_text: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          earned_at?: string
+          id?: string
+          label: string
+          source_reward_id?: string | null
+          status?: string
+          todo_id?: string | null
+          todo_text?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          earned_at?: string
+          id?: string
+          label?: string
+          source_reward_id?: string | null
+          status?: string
+          todo_id?: string | null
+          todo_text?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hourly_tasks: {
         Row: {
           color: string
@@ -309,6 +351,36 @@ export type Database = {
           created_at?: string
           id?: string
           status?: string
+          todo_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      task_custom_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          position: number
+          repeat_on_recurring: boolean
+          todo_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          position?: number
+          repeat_on_recurring?: boolean
+          todo_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          position?: number
+          repeat_on_recurring?: boolean
           todo_id?: string
           updated_at?: string
         }

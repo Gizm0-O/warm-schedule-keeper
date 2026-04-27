@@ -40,6 +40,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
+import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
+import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
+import { Gift } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -217,6 +220,8 @@ const Index = () => {
   const isAdmin = useAdminMode();
   const { isReady } = useTaskReady();
   const { getBonusAmount, hasBonus } = useTaskBonus();
+  const { getRewardsForTodo } = useCustomRewards();
+  const { grant: grantReward } = useEarnedRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
@@ -296,6 +301,31 @@ const Index = () => {
       }
     }
 
+    // Grant custom rewards (poukázky) for any completed Barča task
+    if (completing && todo.person === 'Barča') {
+      const customRewards = getRewardsForTodo(id);
+      const isRecurring = todo.recurrence !== 'none';
+      const grantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      for (const r of grantable) {
+        try {
+          await grantReward({
+            source_reward_id: r.id,
+            todo_id: id,
+            todo_text: todo.text,
+            label: r.label,
+          });
+        } catch (e) {
+          console.error('Failed to grant reward', e);
+        }
+      }
+      if (grantable.length > 0) {
+        toast.success(`🎁 Získala jsi ${grantable.length} ${grantable.length === 1 ? 'poukázku' : grantable.length < 5 ? 'poukázky' : 'poukázek'}!`, {
+          position: "top-center",
+          duration: 3500,
+        });
+      }
+    }
+
     pushAction({
       undo: async () => {
         await toggleTodoRef.current(id);
@@ -306,6 +336,7 @@ const Index = () => {
     });
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [sidePanelTab, setSidePanelTab] = useState<"todos" | "vouchers">("todos");
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -1516,6 +1547,36 @@ const Index = () => {
               </div>
             </div>
           ) : (
+            <div className="space-y-4">
+              {/* Tab switcher */}
+              <div className="flex rounded-lg border border-border bg-muted p-0.5">
+                <button
+                  onClick={() => setSidePanelTab("todos")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                    sidePanelTab === "todos"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <CalendarDays className="h-3.5 w-3.5" /> Dnešní úkoly
+                </button>
+                <button
+                  onClick={() => setSidePanelTab("vouchers")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                    sidePanelTab === "vouchers"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Gift className="h-3.5 w-3.5" /> Poukázky
+                </button>
+              </div>
+
+              {sidePanelTab === "vouchers" ? (
+                <RewardsVouchersPanel />
+              ) : (
             (() => {
               const today = startOfDay(new Date());
               const urgentTodos = todos.filter((t) => {
@@ -1601,7 +1662,8 @@ const Index = () => {
                         })();
                         const showAmount = !isAdmin && todo.amount != null && todo.amount > 0;
                         const showBonus = hasBonus(todo.id);
-                        if (!bonusPct && !showAmount && !showBonus) return null;
+                        const customRewards = todo.person === 'Barča' ? getRewardsForTodo(todo.id) : [];
+                        if (!bonusPct && !showAmount && !showBonus && customRewards.length === 0) return null;
                         return (
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {bonusPct && (
@@ -1619,6 +1681,15 @@ const Index = () => {
                                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
                               </span>
                             )}
+                            {customRewards.map((r) => (
+                              <span
+                                key={r.id}
+                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300 dark:bg-fuchsia-900/40 dark:text-fuchsia-300 dark:border-fuchsia-800/50 whitespace-nowrap shrink-0"
+                                title="Custom poukázka za splnění"
+                              >
+                                🎟️ {r.label}
+                              </span>
+                            ))}
                           </div>
                         );
                       })()}
@@ -1686,6 +1757,8 @@ const Index = () => {
                 </div>
               );
             })()
+              )}
+            </div>
           )}
         </div>
       </div>
