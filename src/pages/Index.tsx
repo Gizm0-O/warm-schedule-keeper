@@ -325,6 +325,8 @@ const Index = () => {
         });
       }
     }
+
+    pushAction({
       undo: async () => {
         await toggleTodoRef.current(id);
         if (createdEarningId) await removeEarning(createdEarningId);
