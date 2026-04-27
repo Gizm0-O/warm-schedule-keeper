@@ -40,6 +40,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
+import { useCustomRewards } from "@/hooks/useCustomRewards";
+import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
+import { Gift } from "lucide-react";
 import { toast } from "sonner";
 
 
