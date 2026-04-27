@@ -694,17 +694,26 @@ const TodoPage = () => {
           <DialogHeader>
             <DialogTitle>Upravit úkol</DialogTitle>
           </DialogHeader>
+          {(() => {
+            const lockedForUser = !isAdmin && !!editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && isReady(editingTodo.id);
+            return (
           <div className="space-y-4 py-2">
+            {lockedForUser && (
+              <div className="rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                🔒 Úkol byl schválen adminem – úpravy jsou uzamčené.
+              </div>
+            )}
             <Input
               placeholder="Název úkolu..."
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveEdit()}
+              disabled={lockedForUser}
             />
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Kategorie</label>
-                <Select value={editCategory} onValueChange={(v) => setEditCategory(v as Category)}>
+                <Select value={editCategory} onValueChange={(v) => setEditCategory(v as Category)} disabled={lockedForUser}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="work">
@@ -718,7 +727,7 @@ const TodoPage = () => {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Osoba</label>
-                <Select value={editPerson} onValueChange={(v) => setEditPerson(v as Person)}>
+                <Select value={editPerson} onValueChange={(v) => setEditPerson(v as Person)} disabled={lockedForUser}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Tadeáš">Tadeáš</SelectItem>
@@ -731,7 +740,7 @@ const TodoPage = () => {
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">
                   Deadline (volitelné)
-                  {!isAdmin && editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && isReady(editingTodo.id) && (
+                  {lockedForUser && (
                     <span className="ml-1 text-[10px]">🔒 schváleno</span>
                   )}
                 </label>
@@ -739,12 +748,12 @@ const TodoPage = () => {
                   type="date"
                   value={editDeadline}
                   onChange={(e) => setEditDeadline(e.target.value)}
-                  disabled={!isAdmin && editingTodo?.person === 'Barča' && editingTodo?.category === 'work' && isReady(editingTodo.id)}
+                  disabled={lockedForUser}
                 />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-muted-foreground">Opakování</label>
-                <Select value={editRecurrence} onValueChange={(v) => setEditRecurrence(v as Recurrence)}>
+                <Select value={editRecurrence} onValueChange={(v) => setEditRecurrence(v as Recurrence)} disabled={lockedForUser}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(RECURRENCE_LABELS).map(([value, label]) => (
