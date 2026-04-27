@@ -871,6 +871,59 @@ const TodoPage = () => {
                 )}
               </div>
             )}
+            {/* Custom rewards (poukázky) - admin only, Barča tasks */}
+            {isAdmin && editingTodo && editingTodo.person === 'Barča' && (
+              <div className="space-y-2 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium select-none">
+                    🎟️ Poukázky (custom odměny)
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none' }])}
+                  >
+                    <Plus className="h-3 w-3" /> Přidat
+                  </Button>
+                </div>
+                {editCustomRewards.length === 0 && (
+                  <p className="text-xs text-muted-foreground">Žádné poukázky. Přidej např. „Kino", „Snídaně do postele", „Výlet"…</p>
+                )}
+                {editCustomRewards.map((r, idx) => (
+                  <div key={idx} className="space-y-1 rounded-md border border-border/40 bg-muted/20 p-2">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Název poukázky (např. Kino)"
+                        value={r.label}
+                        onChange={(e) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))}
+                        className="flex-1 h-8 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEditCustomRewards(prev => prev.filter((_, i) => i !== idx))}
+                        className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    {editRecurrence !== 'none' && (
+                      <div className="flex items-center gap-2 pl-1">
+                        <Checkbox
+                          id={`repeat-reward-${idx}`}
+                          checked={r.repeat_on_recurring}
+                          onCheckedChange={(checked) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, repeat_on_recurring: !!checked } : x))}
+                        />
+                        <label htmlFor={`repeat-reward-${idx}`} className="text-[11px] text-muted-foreground cursor-pointer select-none">
+                          Udělit při každém opakování úkolu
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
             );
           })()}
