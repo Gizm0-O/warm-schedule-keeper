@@ -220,6 +220,7 @@ const Index = () => {
   const isAdmin = useAdminMode();
   const { isReady } = useTaskReady();
   const { getBonusAmount, hasBonus } = useTaskBonus();
+  const { getRewardsForTodo } = useCustomRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
