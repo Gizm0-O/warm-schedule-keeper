@@ -148,6 +148,32 @@ const TodoPage = () => {
 
     await rawToggleTodo(id);
 
+    // Grant custom rewards (poukázky) for any completed Barča task
+    const completing = !todo.completed;
+    if (completing && todo.person === 'Barča') {
+      const customRewards = getRewardsForTodo(id);
+      const isRecurring = todo.recurrence !== 'none';
+      const grantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      for (const r of grantable) {
+        try {
+          await grantReward({
+            source_reward_id: r.id,
+            todo_id: id,
+            todo_text: todo.text,
+            label: r.label,
+          });
+        } catch (e) {
+          console.error('Failed to grant reward', e);
+        }
+      }
+      if (grantable.length > 0) {
+        toast.success(`🎁 Získala jsi ${grantable.length} ${grantable.length === 1 ? 'poukázku' : grantable.length < 5 ? 'poukázky' : 'poukázek'}!`, {
+          position: "top-center",
+          duration: 3500,
+        });
+      }
+    }
+
     if (shouldRecordEarning) {
       const bonusPercent =
         bonus === 'on_time' ? rewardsConfig.bonusPerTask :
