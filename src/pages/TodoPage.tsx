@@ -827,6 +827,8 @@ const TodoPage = () => {
               </div>
             )}
           </div>
+            );
+          })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
             <Button onClick={saveEdit} disabled={!editText.trim()}>Uložit</Button>
