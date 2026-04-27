@@ -831,7 +831,12 @@ const TodoPage = () => {
           })()}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingTodo(null)}>Zrušit</Button>
-            <Button onClick={saveEdit} disabled={!editText.trim()}>Uložit</Button>
+            <Button
+              onClick={saveEdit}
+              disabled={!editText.trim() || (!isAdmin && !!editingTodo && editingTodo.person === 'Barča' && editingTodo.category === 'work' && isReady(editingTodo.id))}
+            >
+              Uložit
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
