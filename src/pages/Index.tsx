@@ -221,6 +221,7 @@ const Index = () => {
   const { isReady } = useTaskReady();
   const { getBonusAmount, hasBonus } = useTaskBonus();
   const { getRewardsForTodo } = useCustomRewards();
+  const { grant: grantReward } = (await import("@/hooks/useCustomRewards"), { grant: undefined as any });
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
