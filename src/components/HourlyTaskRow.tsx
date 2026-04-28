@@ -117,20 +117,35 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
         {task.person}
       </Badge>
 
-      {!compact && (
+      {!compact && isAdmin && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            if (confirm(`Smazat hodinový úkol "${task.name}"? Vymaže i všechny vydělané odměny.`)) {
-              deleteTask(task.id);
-            }
-          }}
+          onClick={(e) => { e.stopPropagation(); setConfirmDelete(true); }}
           className="absolute bottom-2 right-2 rounded-lg p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
           title="Smazat"
         >
           <Trash2 className="h-3 w-3" />
         </button>
       )}
+
+      <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Smazat hodinový úkol?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Opravdu chcete smazat „{task.name}"? Vymažou se i všechny vydělané odměny.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Nechat</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTask(task.id)}
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
