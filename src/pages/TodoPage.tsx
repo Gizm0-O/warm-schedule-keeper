@@ -51,7 +51,7 @@ const MAX_COMPLETED = 20;
 const TodoPage = () => {
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
   const isAdmin = useAdminMode();
-  const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
+  const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, restoreTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
   const { tasks: hourlyTasks } = useHourlyTasks();
