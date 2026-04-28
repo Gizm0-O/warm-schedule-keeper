@@ -21,6 +21,7 @@ interface TodoContextType {
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   toggleTodo: (id: string) => void;
   removeTodo: (id: string) => void;
+  restoreTodo: (todo: Todo) => Promise<void>;
   addTodo: (todo: Omit<Todo, "id">) => void;
   updateTodo: (id: string, updates: Partial<Omit<Todo, "id">>) => void;
   loading: boolean;
