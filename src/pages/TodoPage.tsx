@@ -521,12 +521,15 @@ const TodoPage = () => {
             </>
           );
         })()}
-        <button
-          onClick={(e) => { e.stopPropagation(); removeTodo(todo.id); }}
-          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        {isAdmin && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(todo); }}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
+            title="Smazat úkol"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
     );
   };
