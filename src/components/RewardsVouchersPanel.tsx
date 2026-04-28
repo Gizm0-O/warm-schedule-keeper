@@ -48,54 +48,56 @@ export const RewardsVouchersPanel = () => {
                 z úkolu: {r.todo_text}
               </div>
             )}
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              {!isDone && !isActive && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-6 text-[11px] px-2 gap-1 border-primary/40 text-primary hover:bg-primary/10"
-                  onClick={() => activate(r.id)}
-                >
-                  <Sparkles className="h-3 w-3" /> Aktivovat
-                </Button>
-              )}
-              {isActive && !isAdmin && (
-                <>
-                  <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
-                    aktivní – čeká na potvrzení
+            {(isActive || isDone) && (
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                {isActive && !isAdmin && (
+                  <>
+                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                      aktivní – čeká na potvrzení
+                    </span>
+                    <button
+                      onClick={() => deactivate(r.id)}
+                      className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                    >
+                      zrušit
+                    </button>
+                  </>
+                )}
+                {isActive && isAdmin && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="h-6 text-[11px] px-2 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={() => complete(r.id)}
+                    >
+                      <Check className="h-3 w-3" /> Splněno
+                    </Button>
+                    <button
+                      onClick={() => deactivate(r.id)}
+                      className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                    >
+                      zrušit aktivaci
+                    </button>
+                  </>
+                )}
+                {isDone && r.completed_at && (
+                  <span className="text-[10px] text-muted-foreground">
+                    splněno {format(new Date(r.completed_at), "d.M.yyyy", { locale: cs })}
                   </span>
-                  <button
-                    onClick={() => deactivate(r.id)}
-                    className="text-[10px] text-muted-foreground hover:text-foreground underline"
-                  >
-                    zrušit
-                  </button>
-                </>
-              )}
-              {isActive && isAdmin && (
-                <>
-                  <Button
-                    size="sm"
-                    className="h-6 text-[11px] px-2 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
-                    onClick={() => complete(r.id)}
-                  >
-                    <Check className="h-3 w-3" /> Splněno
-                  </Button>
-                  <button
-                    onClick={() => deactivate(r.id)}
-                    className="text-[10px] text-muted-foreground hover:text-foreground underline"
-                  >
-                    zrušit aktivaci
-                  </button>
-                </>
-              )}
-              {isDone && r.completed_at && (
-                <span className="text-[10px] text-muted-foreground">
-                  splněno {format(new Date(r.completed_at), "d.M.yyyy", { locale: cs })}
-                </span>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
+          {!isDone && !isActive && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-[11px] px-2 gap-1 border-primary/40 text-primary hover:bg-primary/10 shrink-0"
+              onClick={() => activate(r.id)}
+            >
+              <Sparkles className="h-3 w-3" /> Aktivovat
+            </Button>
+          )}
           {isAdmin && (
             <button
               onClick={() => remove(r.id)}
