@@ -58,7 +58,7 @@ const TodoPage = () => {
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
-  const { grant: grantReward, remove: removeReward } = useEarnedRewards();
+  const { grant: grantReward, remove: removeReward, revokeForTodo } = useEarnedRewards();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -167,6 +167,10 @@ const TodoPage = () => {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
       grantableTemplates = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const grantableTemplateIds = grantableTemplates.map((r) => r.id);
+      if (grantableTemplateIds.length > 0) {
+        await revokeForTodo(id, grantableTemplateIds);
+      }
       for (const r of grantableTemplates) {
         try {
           const granted = await grantReward({
@@ -189,6 +193,12 @@ const TodoPage = () => {
     }
 
     const revokeGrantedRewards = async () => {
+      const grantableTemplateIds = grantableTemplates.map((r) => r.id);
+      if (grantableTemplateIds.length > 0) {
+        await revokeForTodo(id, grantableTemplateIds);
+        grantedRewards = [];
+        return;
+      }
       for (const g of grantedRewards) {
         try { await removeReward(g.id); } catch (e) { console.error(e); }
       }
@@ -291,7 +301,7 @@ const TodoPage = () => {
         },
       });
     }
-  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady, getBonusAmount, getRewardsForTodo, grantReward, removeReward]);
+  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady, getBonusAmount, getRewardsForTodo, grantReward, removeReward, revokeForTodo]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
