@@ -161,29 +161,54 @@ const TodoPage = () => {
 
     // Grant custom rewards (poukázky) for any completed Barča task
     const completing = !todo.completed;
+    let grantedRewards: EarnedReward[] = [];
+    let grantableTemplates: ReturnType<typeof getRewardsForTodo> = [];
     if (completing && todo.person === 'Barča') {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
-      const grantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
-      for (const r of grantable) {
+      grantableTemplates = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      for (const r of grantableTemplates) {
         try {
-          await grantReward({
+          const granted = await grantReward({
             source_reward_id: r.id,
             todo_id: id,
             todo_text: todo.text,
             label: r.label,
           });
+          if (granted) grantedRewards.push(granted);
         } catch (e) {
           console.error('Failed to grant reward', e);
         }
       }
-      if (grantable.length > 0) {
-        toast.success(`🎁 Získala jsi ${grantable.length} ${grantable.length === 1 ? 'poukázku' : grantable.length < 5 ? 'poukázky' : 'poukázek'}!`, {
+      if (grantableTemplates.length > 0) {
+        toast.success(`🎁 Získala jsi ${grantableTemplates.length} ${grantableTemplates.length === 1 ? 'poukázku' : grantableTemplates.length < 5 ? 'poukázky' : 'poukázek'}!`, {
           position: "top-center",
           duration: 3500,
         });
       }
     }
+
+    const revokeGrantedRewards = async () => {
+      for (const g of grantedRewards) {
+        try { await removeReward(g.id); } catch (e) { console.error(e); }
+      }
+      grantedRewards = [];
+    };
+
+    const regrantRewards = async () => {
+      grantedRewards = [];
+      for (const r of grantableTemplates) {
+        try {
+          const granted = await grantReward({
+            source_reward_id: r.id,
+            todo_id: id,
+            todo_text: todo.text,
+            label: r.label,
+          });
+          if (granted) grantedRewards.push(granted);
+        } catch (e) { console.error(e); }
+      }
+    };
 
     if (shouldRecordEarning) {
       const bonusPercent =
@@ -221,6 +246,7 @@ const TodoPage = () => {
             setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
             await removeEarning(earning.id);
             if (bonusEarning) await removeEarning(bonusEarning.id);
+            await revokeGrantedRewards();
           },
           redo: async () => {
             await supabase.from("todos").update({ completed: true }).eq("id", id);
@@ -245,6 +271,7 @@ const TodoPage = () => {
                 completed_at: new Date().toISOString(),
               });
             }
+            await regrantRewards();
           },
         });
       }
@@ -255,14 +282,16 @@ const TodoPage = () => {
         undo: async () => {
           await supabase.from("todos").update({ completed: wasCompleted }).eq("id", id);
           setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: wasCompleted } : t));
+          await revokeGrantedRewards();
         },
         redo: async () => {
           await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
           setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: newCompleted } : t));
+          if (newCompleted) await regrantRewards();
         },
       });
     }
-  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady, getBonusAmount, getRewardsForTodo, grantReward]);
+  }, [todos, rawToggleTodo, getTaskBonus, setTaskBonus, rewardsConfig, addEarning, removeEarning, pushAction, setTodos, isAdmin, isReady, getBonusAmount, getRewardsForTodo, grantReward, removeReward]);
 
   const addTodo = async () => {
     if (!newText.trim()) return;
