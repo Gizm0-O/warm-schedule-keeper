@@ -41,7 +41,7 @@ export function useCustomRewards() {
   useEffect(() => {
     refresh();
     const channel = supabase
-      .channel("task_custom_rewards_changes")
+      .channel(`task_custom_rewards_changes_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "task_custom_rewards" }, () => refresh())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -95,7 +95,7 @@ export function useEarnedRewards() {
   useEffect(() => {
     refresh();
     const channel = supabase
-      .channel("earned_rewards_changes")
+      .channel(`earned_rewards_changes_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "earned_rewards" }, () => refresh())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
