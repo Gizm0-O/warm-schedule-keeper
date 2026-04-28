@@ -123,17 +123,21 @@ export function useEarnedRewards() {
   }, []);
 
   const remove = useCallback(async (id: string) => {
+    setRewards((prev) => prev.filter((r) => r.id !== id));
     await supabase.from("earned_rewards").delete().eq("id", id);
   }, []);
 
   const activate = useCallback(async (id: string) => {
+    const now = new Date().toISOString();
+    setRewards((prev) => prev.map((r) => r.id === id ? { ...r, status: 'active', activated_at: now } : r));
     await supabase.from("earned_rewards").update({
       status: 'active',
-      activated_at: new Date().toISOString(),
+      activated_at: now,
     }).eq("id", id);
   }, []);
 
   const deactivate = useCallback(async (id: string) => {
+    setRewards((prev) => prev.map((r) => r.id === id ? { ...r, status: 'available', activated_at: null } : r));
     await supabase.from("earned_rewards").update({
       status: 'available',
       activated_at: null,
@@ -141,9 +145,11 @@ export function useEarnedRewards() {
   }, []);
 
   const complete = useCallback(async (id: string) => {
+    const now = new Date().toISOString();
+    setRewards((prev) => prev.map((r) => r.id === id ? { ...r, status: 'completed', completed_at: now } : r));
     await supabase.from("earned_rewards").update({
       status: 'completed',
-      completed_at: new Date().toISOString(),
+      completed_at: now,
     }).eq("id", id);
   }, []);
 
