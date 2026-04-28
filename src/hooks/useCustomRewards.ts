@@ -21,6 +21,18 @@ export interface EarnedReward {
   completed_at: string | null;
 }
 
+type EarnedRewardsSyncEvent =
+  | { type: "upsert"; reward: EarnedReward }
+  | { type: "remove"; id: string }
+  | { type: "remove_for_todo"; todoId: string; sourceRewardIds?: string[] }
+  | { type: "refresh" };
+
+const EARNED_REWARDS_SYNC_EVENT = "earned-rewards-sync";
+
+const emitEarnedRewardsSync = (detail: EarnedRewardsSyncEvent) => {
+  window.dispatchEvent(new CustomEvent<EarnedRewardsSyncEvent>(EARNED_REWARDS_SYNC_EVENT, { detail }));
+};
+
 /**
  * Templates of custom rewards attached to todos (admin-defined).
  * Loads ALL templates once and groups by todo_id for fast lookup.
@@ -94,11 +106,33 @@ export function useEarnedRewards() {
 
   useEffect(() => {
     refresh();
+    const handleSync = (event: Event) => {
+      const detail = (event as CustomEvent<EarnedRewardsSyncEvent>).detail;
+      if (!detail) return;
+      if (detail.type === "upsert") {
+        setRewards((prev) => [detail.reward, ...prev.filter((r) => r.id !== detail.reward.id)]);
+      }
+      if (detail.type === "remove") {
+        setRewards((prev) => prev.filter((r) => r.id !== detail.id));
+      }
+      if (detail.type === "remove_for_todo") {
+        setRewards((prev) => prev.filter((r) => {
+          if (r.todo_id !== detail.todoId) return true;
+          if (!detail.sourceRewardIds || detail.sourceRewardIds.length === 0) return false;
+          return !r.source_reward_id || !detail.sourceRewardIds.includes(r.source_reward_id);
+        }));
+      }
+      if (detail.type === "refresh") refresh();
+    };
+    window.addEventListener(EARNED_REWARDS_SYNC_EVENT, handleSync);
     const channel = supabase
       .channel(`earned_rewards_changes_${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "earned_rewards" }, () => refresh())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      window.removeEventListener(EARNED_REWARDS_SYNC_EVENT, handleSync);
+      supabase.removeChannel(channel);
+    };
   }, [refresh]);
 
   const grant = useCallback(async (input: {
@@ -119,13 +153,37 @@ export function useEarnedRewards() {
       .select()
       .single();
     if (error) throw error;
-    return data as EarnedReward;
+    const reward = data as EarnedReward;
+    setRewards((prev) => [reward, ...prev.filter((r) => r.id !== reward.id)]);
+    emitEarnedRewardsSync({ type: "upsert", reward });
+    return reward;
   }, []);
 
   const remove = useCallback(async (id: string) => {
     setRewards((prev) => prev.filter((r) => r.id !== id));
+    emitEarnedRewardsSync({ type: "remove", id });
     await supabase.from("earned_rewards").delete().eq("id", id);
   }, []);
+
+  const revokeForTodo = useCallback(async (todoId: string, sourceRewardIds?: string[]) => {
+    setRewards((prev) => prev.filter((r) => {
+      if (r.todo_id !== todoId) return true;
+      if (!sourceRewardIds || sourceRewardIds.length === 0) return false;
+      return !r.source_reward_id || !sourceRewardIds.includes(r.source_reward_id);
+    }));
+    emitEarnedRewardsSync({ type: "remove_for_todo", todoId, sourceRewardIds });
+
+    let query = supabase.from("earned_rewards").delete().eq("todo_id", todoId);
+    if (sourceRewardIds && sourceRewardIds.length > 0) {
+      query = query.in("source_reward_id", sourceRewardIds);
+    }
+    const { error } = await query;
+    if (error) {
+      await refresh();
+      emitEarnedRewardsSync({ type: "refresh" });
+      throw error;
+    }
+  }, [refresh]);
 
   const activate = useCallback(async (id: string) => {
     const now = new Date().toISOString();
@@ -153,5 +211,5 @@ export function useEarnedRewards() {
     }).eq("id", id);
   }, []);
 
-  return { rewards, loading, grant, remove, activate, deactivate, complete, refresh };
+  return { rewards, loading, grant, remove, revokeForTodo, activate, deactivate, complete, refresh };
 }
