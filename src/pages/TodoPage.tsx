@@ -1114,6 +1114,36 @@ const TodoPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Smazat úkol?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Opravdu chcete smazat „{deleteConfirm?.text}"? Akci lze vrátit přes Ctrl+Z.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Nechat</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const t = deleteConfirm;
+                if (!t) return;
+                setDeleteConfirm(null);
+                await removeTodo(t.id);
+                pushAction({
+                  undo: async () => { await restoreTodo(t); },
+                  redo: async () => { await removeTodo(t.id); },
+                });
+                toast.success(`Úkol "${t.text}" smazán. Ctrl+Z pro vrácení.`);
+              }}
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
