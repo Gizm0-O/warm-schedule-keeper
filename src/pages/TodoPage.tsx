@@ -42,7 +42,7 @@ import { useTaskEarnings } from "@/hooks/useTaskEarnings";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
-import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
+import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/useCustomRewards";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
