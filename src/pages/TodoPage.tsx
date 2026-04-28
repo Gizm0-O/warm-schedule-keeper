@@ -66,6 +66,7 @@ const TodoPage = () => {
   const [custPctId, setCustPctId] = useState<string | null>(null);
   const [custPctVal, setCustPctVal] = useState('');
   const [customBonuses, setCustomBonuses] = useState<Record<string, number>>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<Todo | null>(null);
 
   // New todo form state
   const [newText, setNewText] = useState("");
