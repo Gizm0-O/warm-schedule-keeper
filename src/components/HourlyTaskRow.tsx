@@ -40,6 +40,8 @@ import { useAdminMode } from "@/hooks/useAdminMode";
  */
 export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; compact?: boolean }) {
   const { adjustHours, deleteTask } = useHourlyTasks();
+  const isAdmin = useAdminMode();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const totalEarned = task.hours_worked * task.rate_per_hour;
   const milestonesReached = Math.floor(task.hours_worked / task.milestone_hours);
   const totalBonus = milestonesReached * task.milestone_bonus_percent;
