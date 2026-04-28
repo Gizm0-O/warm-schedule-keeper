@@ -18,6 +18,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
 import { cs } from "date-fns/locale";
@@ -41,7 +51,7 @@ const MAX_COMPLETED = 20;
 const TodoPage = () => {
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
   const isAdmin = useAdminMode();
-  const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
+  const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, restoreTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
   const { tasks: hourlyTasks } = useHourlyTasks();
@@ -56,6 +66,7 @@ const TodoPage = () => {
   const [custPctId, setCustPctId] = useState<string | null>(null);
   const [custPctVal, setCustPctVal] = useState('');
   const [customBonuses, setCustomBonuses] = useState<Record<string, number>>({});
+  const [deleteConfirm, setDeleteConfirm] = useState<Todo | null>(null);
 
   // New todo form state
   const [newText, setNewText] = useState("");
@@ -510,12 +521,15 @@ const TodoPage = () => {
             </>
           );
         })()}
-        <button
-          onClick={(e) => { e.stopPropagation(); removeTodo(todo.id); }}
-          className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
-        >
-          <Trash2 className="h-4 w-4" />
-        </button>
+        {isAdmin && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(todo); }}
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
+            title="Smazat úkol"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
     );
   };
@@ -1100,6 +1114,36 @@ const TodoPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Smazat úkol?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Opravdu chcete smazat „{deleteConfirm?.text}"? Akci lze vrátit přes Ctrl+Z.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Nechat</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                const t = deleteConfirm;
+                if (!t) return;
+                setDeleteConfirm(null);
+                await removeTodo(t.id);
+                pushAction({
+                  undo: async () => { await restoreTodo(t); },
+                  redo: async () => { await removeTodo(t.id); },
+                });
+                toast.success(`Úkol "${t.text}" smazán. Ctrl+Z pro vrácení.`);
+              }}
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
