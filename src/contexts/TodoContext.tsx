@@ -132,6 +132,23 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
     setTodos((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const restoreTodo = useCallback(async (todo: Todo) => {
+    const row = {
+      id: todo.id,
+      text: todo.text,
+      completed: todo.completed,
+      category: todo.category,
+      person: todo.person,
+      deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+      recurrence: todo.recurrence,
+      amount: todo.amount ?? null,
+      story_number: todo.storyNumber ?? null,
+      story_month: todo.storyMonth ?? null,
+    };
+    const { data } = await supabase.from("todos").insert(row).select().single();
+    if (data) setTodos((prev) => [...prev, rowToTodo(data)]);
+  }, []);
+
   return (
     <TodoContext.Provider value={{ todos, setTodos, toggleTodo, removeTodo, addTodo, updateTodo, loading }}>
       {children}
