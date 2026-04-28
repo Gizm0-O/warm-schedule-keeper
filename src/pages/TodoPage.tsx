@@ -521,15 +521,24 @@ const TodoPage = () => {
             </>
           );
         })()}
-        {isAdmin && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setDeleteConfirm(todo); }}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors shrink-0"
-            title="Smazat úkol"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        )}
+        {(() => {
+          const lockedForUser = !isAdmin && todo.person === 'Barča' && todo.category === 'work' && isReady(todo.id);
+          return (
+            <button
+              onClick={(e) => { e.stopPropagation(); if (!lockedForUser) setDeleteConfirm(todo); }}
+              disabled={lockedForUser}
+              className={cn(
+                "rounded-lg p-1.5 transition-colors shrink-0",
+                lockedForUser
+                  ? "text-muted-foreground/40 cursor-not-allowed"
+                  : "text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              )}
+              title={lockedForUser ? "Schválený úkol – nelze smazat" : "Smazat úkol"}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          );
+        })()}
       </div>
     );
   };
