@@ -959,7 +959,7 @@ const TodoPage = () => {
                   <div key={idx} className="space-y-1 rounded-md border border-border/40 bg-muted/20 p-2">
                     <div className="flex items-center gap-2">
                       <Input
-                        placeholder="Název poukázky (např. Kino)"
+                        placeholder={r.is_token ? "Token (např. Bonus)" : "Název poukázky (např. Kino)"}
                         value={r.label}
                         onChange={(e) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))}
                         className="flex-1 h-8 text-sm"
@@ -971,6 +971,16 @@ const TodoPage = () => {
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
+                    </div>
+                    <div className="flex items-center gap-2 pl-1">
+                      <Checkbox
+                        id={`token-reward-${idx}`}
+                        checked={r.is_token}
+                        onCheckedChange={(checked) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, is_token: !!checked, label: !!checked && !x.label.trim() ? "🪙 Token" : x.label } : x))}
+                      />
+                      <label htmlFor={`token-reward-${idx}`} className="text-[11px] cursor-pointer select-none flex items-center gap-1 text-amber-600 dark:text-amber-300">
+                        🪙 Udělit jako Token (místo poukázky)
+                      </label>
                     </div>
                     {editRecurrence !== 'none' && (
                       <div className="flex items-center gap-2 pl-1">
