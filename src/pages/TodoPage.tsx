@@ -43,6 +43,7 @@ import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/useCustomRewards";
+import { useTokens } from "@/hooks/useTokens";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -59,6 +60,7 @@ const TodoPage = () => {
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
   const { grant: grantReward, remove: removeReward, revokeForTodo } = useEarnedRewards();
+  const { grant: grantToken, spend: spendToken } = useTokens();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
