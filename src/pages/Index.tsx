@@ -863,6 +863,7 @@ const Index = () => {
             {headerLabel}
           </p>
         <div className="flex gap-1 items-center">
+          <TokensBadge className="mr-2" />
           <Button
             variant="default"
             size="sm"
