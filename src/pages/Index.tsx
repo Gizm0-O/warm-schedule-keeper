@@ -180,7 +180,7 @@ const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   ],
   2: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
   ],
   3: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
@@ -188,7 +188,7 @@ const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   ],
   4: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
   ],
   5: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
