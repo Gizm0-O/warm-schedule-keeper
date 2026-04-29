@@ -791,13 +791,13 @@ const Index = () => {
         location: isHome ? "Kancelář" : "Z domu",
         icon: isHome ? "office" as const : "home" as const,
         bgClass: result.person === "Tadeáš"
-          ? (isHome ? "bg-shift-office/35" : "bg-shift-home/35")
+          ? (isHome ? "bg-shift-office/35" : "bg-gradient-to-br from-amber-400/40 via-orange-400/35 to-amber-600/40")
           : result.bgClass,
         textClass: result.person === "Tadeáš"
-          ? (isHome ? "text-shift-office" : "text-shift-home")
+          ? (isHome ? "text-shift-office" : "text-amber-700 dark:text-amber-200")
           : result.textClass,
         borderClass: result.person === "Tadeáš"
-          ? (isHome ? "border-shift-office/60" : "border-shift-home/60")
+          ? (isHome ? "border-shift-office/60" : "border-amber-500/70")
           : result.borderClass,
       };
     }
