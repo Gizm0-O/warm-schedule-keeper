@@ -360,6 +360,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_token: boolean
           label: string
           position: number
           repeat_on_recurring: boolean
@@ -369,6 +370,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_token?: boolean
           label: string
           position?: number
           repeat_on_recurring?: boolean
@@ -378,6 +380,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_token?: boolean
           label?: string
           position?: number
           repeat_on_recurring?: boolean
@@ -479,6 +482,66 @@ export type Database = {
           story_month?: string | null
           story_number?: number | null
           text?: string
+        }
+        Relationships: []
+      }
+      token_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          owner: string
+          reason: string
+          shift_key: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          owner?: string
+          reason: string
+          shift_key?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          owner?: string
+          reason?: string
+          shift_key?: string | null
+        }
+        Relationships: []
+      }
+      tokens_balance: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          last_monthly_grant: string | null
+          last_weekly_grant: string | null
+          owner: string
+          updated_at: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          last_monthly_grant?: string | null
+          last_weekly_grant?: string | null
+          owner: string
+          updated_at?: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          last_monthly_grant?: string | null
+          last_weekly_grant?: string | null
+          owner?: string
+          updated_at?: string
         }
         Relationships: []
       }

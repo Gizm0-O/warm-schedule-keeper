@@ -43,6 +43,7 @@ import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/useCustomRewards";
+import { useTokens } from "@/hooks/useTokens";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
@@ -59,6 +60,7 @@ const TodoPage = () => {
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
   const { grant: grantReward, remove: removeReward, revokeForTodo } = useEarnedRewards();
+  const { grant: grantToken, spend: spendToken } = useTokens();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
   const [showDialog, setShowDialog] = useState(false);
   const [showCompleted, setShowCompleted] = useState(false);
@@ -86,7 +88,7 @@ const TodoPage = () => {
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
-  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean }[]>([]);
+  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
 
   // Story generator state
   const [showStoriesDialog, setShowStoriesDialog] = useState(false);
@@ -163,10 +165,13 @@ const TodoPage = () => {
     const completing = !todo.completed;
     let grantedRewards: EarnedReward[] = [];
     let grantableTemplates: ReturnType<typeof getRewardsForTodo> = [];
+    let grantedTokenCount = 0;
     if (completing && todo.person === 'Barča') {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
-      grantableTemplates = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const allGrantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const tokenTemplates = allGrantable.filter(r => r.is_token);
+      grantableTemplates = allGrantable.filter(r => !r.is_token);
       const grantableTemplateIds = grantableTemplates.map((r) => r.id);
       if (grantableTemplateIds.length > 0) {
         await revokeForTodo(id, grantableTemplateIds);
@@ -184,8 +189,19 @@ const TodoPage = () => {
           console.error('Failed to grant reward', e);
         }
       }
+      // Grant tokens
+      for (const _t of tokenTemplates) {
+        const ok = await grantToken("task_reward", { note: todo.text });
+        if (ok) grantedTokenCount++;
+      }
       if (grantableTemplates.length > 0) {
         toast.success(`🎁 Získala jsi ${grantableTemplates.length} ${grantableTemplates.length === 1 ? 'poukázku' : grantableTemplates.length < 5 ? 'poukázky' : 'poukázek'}!`, {
+          position: "top-center",
+          duration: 3500,
+        });
+      }
+      if (grantedTokenCount > 0) {
+        toast.success(`🪙 +${grantedTokenCount} Token${grantedTokenCount > 1 ? 'y' : ''}!`, {
           position: "top-center",
           duration: 3500,
         });
@@ -196,12 +212,17 @@ const TodoPage = () => {
       if (grantableTemplates.length > 0 || grantedRewards.length > 0) {
         await revokeForTodo(id);
         grantedRewards = [];
-        return;
+      } else {
+        for (const g of grantedRewards) {
+          try { await removeReward(g.id); } catch (e) { console.error(e); }
+        }
+        grantedRewards = [];
       }
-      for (const g of grantedRewards) {
-        try { await removeReward(g.id); } catch (e) { console.error(e); }
+      // Refund granted tokens
+      for (let i = 0; i < grantedTokenCount; i++) {
+        await spendToken("task_reward", { note: `revoke: ${todo.text}` });
       }
-      grantedRewards = [];
+      grantedTokenCount = 0;
     };
 
     const regrantRewards = async () => {
@@ -334,7 +355,7 @@ const TodoPage = () => {
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
     const existing = getRewardsForTodo(todo.id);
-    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring })));
+    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
   };
 
   const saveEdit = async () => {
@@ -947,7 +968,7 @@ const TodoPage = () => {
                     size="sm"
                     variant="outline"
                     className="h-7 text-xs gap-1"
-                    onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none' }])}
+                    onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none', is_token: false }])}
                   >
                     <Plus className="h-3 w-3" /> Přidat
                   </Button>
@@ -959,7 +980,7 @@ const TodoPage = () => {
                   <div key={idx} className="space-y-1 rounded-md border border-border/40 bg-muted/20 p-2">
                     <div className="flex items-center gap-2">
                       <Input
-                        placeholder="Název poukázky (např. Kino)"
+                        placeholder={r.is_token ? "Token (např. Bonus)" : "Název poukázky (např. Kino)"}
                         value={r.label}
                         onChange={(e) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, label: e.target.value } : x))}
                         className="flex-1 h-8 text-sm"
@@ -971,6 +992,16 @@ const TodoPage = () => {
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
+                    </div>
+                    <div className="flex items-center gap-2 pl-1">
+                      <Checkbox
+                        id={`token-reward-${idx}`}
+                        checked={r.is_token}
+                        onCheckedChange={(checked) => setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, is_token: !!checked, label: !!checked && !x.label.trim() ? "🪙 Token" : x.label } : x))}
+                      />
+                      <label htmlFor={`token-reward-${idx}`} className="text-[11px] cursor-pointer select-none flex items-center gap-1 text-amber-600 dark:text-amber-300">
+                        🪙 Udělit jako Token (místo poukázky)
+                      </label>
                     </div>
                     {editRecurrence !== 'none' && (
                       <div className="flex items-center gap-2 pl-1">

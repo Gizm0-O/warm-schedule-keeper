@@ -42,7 +42,9 @@ import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
 import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
-import { Gift } from "lucide-react";
+import TokensBadge from "@/components/TokensBadge";
+import { useTokens } from "@/hooks/useTokens";
+import { Gift, Coins } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -180,7 +182,7 @@ const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   ],
   2: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
   ],
   3: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
@@ -188,7 +190,7 @@ const SHIFT_SCHEDULE: Record<number, Shift[]> = {
   ],
   4: [
     { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-home/35", textClass: "text-shift-home", borderClass: "border-shift-home/60", icon: "home" },
+    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
   ],
   5: [
     { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
@@ -502,6 +504,13 @@ const Index = () => {
   }, [hourFromY, dayIdxFromX, currentWeekStart, updateEventInDb, pushAction]);
 
   const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
+    // Only admin can move/resize Tadeáš's shifts. Time-swap button still works for everyone.
+    if (shift.person === "Tadeáš" && !isAdmin) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.error("Tadeášovy směny může upravovat pouze admin.");
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     const id = `${sourceDayKey}:${shiftIndex}`;
@@ -789,13 +798,13 @@ const Index = () => {
         location: isHome ? "Kancelář" : "Z domu",
         icon: isHome ? "office" as const : "home" as const,
         bgClass: result.person === "Tadeáš"
-          ? (isHome ? "bg-shift-office/35" : "bg-shift-home/35")
+          ? (isHome ? "bg-shift-office/35" : "bg-gradient-to-br from-amber-400/40 via-orange-400/35 to-amber-600/40")
           : result.bgClass,
         textClass: result.person === "Tadeáš"
-          ? (isHome ? "text-shift-office" : "text-shift-home")
+          ? (isHome ? "text-shift-office" : "text-amber-700 dark:text-amber-200")
           : result.textClass,
         borderClass: result.person === "Tadeáš"
-          ? (isHome ? "border-shift-office/60" : "border-shift-home/60")
+          ? (isHome ? "border-shift-office/60" : "border-amber-500/70")
           : result.borderClass,
       };
     }
@@ -826,8 +835,56 @@ const Index = () => {
       .sort((a, b) => a.startHour - b.startHour || a.sourceDayKey.localeCompare(b.sourceDayKey) || a.sourceIndex - b.sourceIndex);
   };
 
-  const toggleShiftLocation = (shiftKey: string) => {
+  const { balance: tokensBalance, spend: spendToken, grant: grantToken } = useTokens();
+
+  /**
+   * Toggle Tadeáš's shift location between Kancelář <-> Z domu.
+   * Costs 1 token (returns it on revert). Admin bypass.
+   * Locked once shift has started.
+   */
+  const toggleShiftLocation = async (shiftKey: string, dayKey: string): Promise<{ ok: boolean; reason?: string }> => {
+    const shift = resolveShiftFromKey(shiftKey, dayKey);
+    if (!shift) return { ok: false, reason: "Směna nenalezena" };
+    if (shift.person !== "Tadeáš") {
+      // Non-Tadeáš shifts: keep old behavior, no token cost
+      toggleLocation(shiftKey);
+      return { ok: true };
+    }
+
+    // Lock check: shift already started
+    const [y, m, d] = dayKey.split("-").map(Number);
+    const shiftStart = new Date(y, m - 1, d, shift.startHour, 0, 0);
+    if (!isAdmin && new Date() >= shiftStart) {
+      toast.error("Směna už začala – nelze měnit místo.");
+      return { ok: false, reason: "locked" };
+    }
+
+    const isCurrentlyOverridden = !!locationOverrides[shiftKey];
+    // If currently toggled (= Tadeáš working from home), reverting refunds the token
+    if (isCurrentlyOverridden) {
+      toggleLocation(shiftKey);
+      if (!isAdmin) {
+        await grantToken("swap_refund", { shiftKey });
+        toast.success("🪙 Token vrácen");
+      }
+      return { ok: true };
+    }
+
+    // Switching to "Z domu" costs 1 token (admin bypass)
+    if (!isAdmin) {
+      if (tokensBalance <= 0) {
+        toast.error("Nemáš žádné tokeny.");
+        return { ok: false, reason: "no-tokens" };
+      }
+      const ok = await spendToken("swap_spend", { shiftKey });
+      if (!ok) {
+        toast.error("Nepodařilo se utratit token.");
+        return { ok: false };
+      }
+      toast.success("🏠 Tadeáš pracuje z domu (–1 🪙)");
+    }
     toggleLocation(shiftKey);
+    return { ok: true };
   };
 
   const handleSwapShift = () => {
@@ -861,6 +918,7 @@ const Index = () => {
             {headerLabel}
           </p>
         <div className="flex gap-1 items-center">
+          <TokensBadge className="mr-2" />
           <Button
             variant="default"
             size="sm"
@@ -1441,7 +1499,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toggleShiftLocation(shift.shiftKey)}
+                          onClick={() => toggleShiftLocation(shift.shiftKey, shift.dayKey)}
                         >
                           {shift.location === "Z domu" ? <Briefcase className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
                           {shift.location === "Z domu" ? "Kancelář" : "Z domu"}
@@ -1884,10 +1942,10 @@ const Index = () => {
                   size="icon"
                   className="h-8 w-8"
                   title={editingShift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
-                  onClick={() => {
+                  onClick={async () => {
                     if (!editingShift) return;
-                    toggleShiftLocation(editingShift.shiftKey);
-                    setEditingShift(null);
+                    const res = await toggleShiftLocation(editingShift.shiftKey, editingShift.dayKey);
+                    if (res.ok) setEditingShift(null);
                   }}
                 >
                   {editingShift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
@@ -1895,18 +1953,27 @@ const Index = () => {
               )}
             </div>
           </DialogHeader>
+          {(() => {
+            const lockTimes = !isAdmin && editingShift?.person === "Tadeáš";
+            return (
           <div className="space-y-4">
+            {lockTimes && (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200">
+                ⚠️ Čas Tadeášovy směny může měnit pouze admin. Místo směny lze přehodit za 🪙 token.
+              </div>
+            )}
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
                 <select
                   value={editShiftStart}
+                  disabled={lockTimes}
                   onChange={(e) => {
                     const v = Number(e.target.value);
                     setEditShiftStart(v);
                     if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 1, 23));
                   }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                 >
                   {HOURS.map((h) => (
                     <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
@@ -1917,8 +1984,9 @@ const Index = () => {
                 <label className="text-sm font-medium text-foreground">Do</label>
                 <select
                   value={editShiftEnd}
+                  disabled={lockTimes}
                   onChange={(e) => setEditShiftEnd(Number(e.target.value))}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                 >
                   {HOURS.filter((h) => h > editShiftStart).map((h) => (
                     <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
@@ -1927,10 +1995,13 @@ const Index = () => {
               </div>
             </div>
           </div>
+            );
+          })()}
           <DialogFooter className="flex justify-between sm:justify-between">
             <Button
               variant="destructive"
               size="sm"
+              disabled={!isAdmin && editingShift?.person === "Tadeáš"}
               onClick={async () => {
                 if (editingShift) {
                   const key = editingShift.shiftKey;
@@ -1948,7 +2019,12 @@ const Index = () => {
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
-              <Button onClick={saveEditShift}>Uložit</Button>
+              <Button
+                onClick={saveEditShift}
+                disabled={!isAdmin && editingShift?.person === "Tadeáš"}
+              >
+                Uložit
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>

@@ -7,6 +7,7 @@ export interface CustomRewardTemplate {
   label: string;
   repeat_on_recurring: boolean;
   position: number;
+  is_token: boolean;
 }
 
 export interface EarnedReward {
@@ -64,7 +65,7 @@ export function useCustomRewards() {
     [templates]
   );
 
-  const setRewardsForTodo = useCallback(async (todoId: string, rewards: { label: string; repeat_on_recurring: boolean }[]) => {
+  const setRewardsForTodo = useCallback(async (todoId: string, rewards: { label: string; repeat_on_recurring: boolean; is_token?: boolean }[]) => {
     // Replace strategy: delete existing + insert new
     await supabase.from("task_custom_rewards").delete().eq("todo_id", todoId);
     if (rewards.length === 0) {
@@ -78,6 +79,7 @@ export function useCustomRewards() {
         label: r.label.trim(),
         repeat_on_recurring: r.repeat_on_recurring,
         position: idx,
+        is_token: !!r.is_token,
       }));
     if (rows.length > 0) {
       await supabase.from("task_custom_rewards").insert(rows);
