@@ -1492,7 +1492,7 @@ const Index = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 px-2 text-xs gap-1"
-                          onClick={() => toggleShiftLocation(shift.shiftKey)}
+                          onClick={() => toggleShiftLocation(shift.shiftKey, shift.dayKey)}
                         >
                           {shift.location === "Z domu" ? <Briefcase className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
                           {shift.location === "Z domu" ? "Kancelář" : "Z domu"}
@@ -1935,10 +1935,10 @@ const Index = () => {
                   size="icon"
                   className="h-8 w-8"
                   title={editingShift.icon === "office" ? "Změnit na Z domu" : "Změnit na Kancelář"}
-                  onClick={() => {
+                  onClick={async () => {
                     if (!editingShift) return;
-                    toggleShiftLocation(editingShift.shiftKey);
-                    setEditingShift(null);
+                    const res = await toggleShiftLocation(editingShift.shiftKey, editingShift.dayKey);
+                    if (res.ok) setEditingShift(null);
                   }}
                 >
                   {editingShift.icon === "office" ? <Home className="h-4 w-4" /> : <Briefcase className="h-4 w-4" />}
