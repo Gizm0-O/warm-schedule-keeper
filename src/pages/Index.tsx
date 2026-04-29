@@ -504,6 +504,13 @@ const Index = () => {
   }, [hourFromY, dayIdxFromX, currentWeekStart, updateEventInDb, pushAction]);
 
   const onShiftDragStart = useCallback((e: React.MouseEvent, sourceDayKey: string, shiftIndex: number, shift: Shift, mode: "resize-top" | "resize-bottom" | "move", dayIdx: number) => {
+    // Only admin can move/resize Tadeáš's shifts. Time-swap button still works for everyone.
+    if (shift.person === "Tadeáš" && !isAdmin) {
+      e.preventDefault();
+      e.stopPropagation();
+      toast.error("Tadeášovy směny může upravovat pouze admin.");
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     const id = `${sourceDayKey}:${shiftIndex}`;
