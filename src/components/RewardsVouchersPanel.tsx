@@ -22,12 +22,12 @@ export const RewardsVouchersPanel = () => {
     return (
       <div
         className={cn(
-          "relative rounded-xl border-2 px-3 py-2.5 transition-all",
+          "relative rounded-xl border-2 px-3 py-2.5 transition-all overflow-hidden",
           isDone && "border-muted bg-muted/30 opacity-70",
           isActive &&
-            "border-warning/60 bg-gradient-to-br from-warning/25 via-warning/10 to-warning/20 shadow-md ring-2 ring-warning/30 animate-pulse-slow",
+            "border-amber-400/70 bg-gradient-to-br from-amber-200 via-orange-300 to-yellow-400 shadow-[0_8px_24px_-8px_rgba(234,140,40,0.65)] ring-2 ring-amber-300/60 animate-pulse-slow",
           !isActive && !isDone &&
-            "border-warning/35 bg-gradient-to-br from-warning/15 to-warning/5 hover:border-warning/60 hover:shadow-sm"
+            "border-amber-400/50 bg-gradient-to-br from-amber-100 via-orange-200 to-yellow-200 hover:border-amber-500/70 hover:shadow-[0_6px_20px_-6px_rgba(234,140,40,0.55)] hover:from-amber-200 hover:to-yellow-300"
         )}
       >
         <div className="flex items-start gap-2">
