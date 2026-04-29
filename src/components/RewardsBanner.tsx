@@ -333,7 +333,7 @@ export function RewardsBanner() {
               </div>
               <div className="text-center rounded-xl bg-primary/10 border border-primary/20 p-2">
                 <div className="text-base font-bold text-primary">{noEarnings ? '—' : `${toHandOver.toLocaleString('cs')} Kč`}</div>
-                <div className="text-9px text-muted-foreground">K odevzdání</div>
+                <div className="text-9px text-muted-foreground">Do rozpočtu</div>
               </div>
             </div>
             <div className="text-center text-[11px] text-muted-foreground">
