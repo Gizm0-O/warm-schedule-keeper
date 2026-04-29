@@ -42,7 +42,9 @@ import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
 import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
-import { Gift } from "lucide-react";
+import TokensBadge from "@/components/TokensBadge";
+import { useTokens } from "@/hooks/useTokens";
+import { Gift, Coins } from "lucide-react";
 import { toast } from "sonner";
 
 
