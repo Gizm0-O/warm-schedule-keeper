@@ -221,7 +221,7 @@ const Index = () => {
   const { isReady } = useTaskReady();
   const { getBonusAmount, hasBonus } = useTaskBonus();
   const { getRewardsForTodo } = useCustomRewards();
-  const { grant: grantReward } = useEarnedRewards();
+  const { grant: grantReward, revokeForTodo } = useEarnedRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
   useEffect(() => { toggleTodoRef.current = toggleTodo; }, [toggleTodo]);
@@ -301,11 +301,13 @@ const Index = () => {
       }
     }
 
-    // Grant custom rewards (poukázky) for any completed Barča task
-    if (completing && todo.person === 'Barča') {
-      const customRewards = getRewardsForTodo(id);
-      const isRecurring = todo.recurrence !== 'none';
-      const grantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+    const customRewards = todo.person === 'Barča' ? getRewardsForTodo(id) : [];
+    const isRecurring = todo.recurrence !== 'none';
+    const grantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+
+    const grantCustomRewards = async () => {
+      if (grantable.length === 0) return;
+      await revokeForTodo(id);
       for (const r of grantable) {
         try {
           await grantReward({
@@ -318,6 +320,11 @@ const Index = () => {
           console.error('Failed to grant reward', e);
         }
       }
+    };
+
+    // Grant custom rewards (poukázky) for any completed Barča task
+    if (completing && todo.person === 'Barča') {
+      await grantCustomRewards();
       if (grantable.length > 0) {
         toast.success(`🎁 Získala jsi ${grantable.length} ${grantable.length === 1 ? 'poukázku' : grantable.length < 5 ? 'poukázky' : 'poukázek'}!`, {
           position: "top-center",
@@ -331,8 +338,12 @@ const Index = () => {
         await toggleTodoRef.current(id);
         if (createdEarningId) await removeEarning(createdEarningId);
         if (createdBonusEarningId) await removeEarning(createdBonusEarningId);
+        if (completing && todo.person === 'Barča') await revokeForTodo(id);
       },
-      redo: async () => { await toggleTodoRef.current(id); },
+      redo: async () => {
+        await toggleTodoRef.current(id);
+        if (completing && todo.person === 'Barča') await grantCustomRewards();
+      },
     });
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
