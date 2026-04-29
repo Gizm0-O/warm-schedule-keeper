@@ -25,9 +25,9 @@ export const RewardsVouchersPanel = () => {
           "relative rounded-xl border-2 px-3 py-2.5 transition-all",
           isDone && "border-muted bg-muted/30 opacity-70",
           isActive &&
-            "border-amber-400 bg-gradient-to-br from-amber-100 via-yellow-50 to-amber-100 dark:from-amber-950/60 dark:via-yellow-950/30 dark:to-amber-950/60 shadow-md ring-2 ring-amber-300/60 animate-pulse-slow",
+            "border-warning/60 bg-gradient-to-br from-warning/25 via-warning/10 to-warning/20 shadow-md ring-2 ring-warning/30 animate-pulse-slow",
           !isActive && !isDone &&
-            "border-primary/40 bg-gradient-to-br from-primary/5 to-accent/10 hover:border-primary/70 hover:shadow-sm"
+            "border-warning/35 bg-gradient-to-br from-warning/15 to-warning/5 hover:border-warning/60 hover:shadow-sm"
         )}
       >
         <div className="flex items-start gap-2">
@@ -52,7 +52,7 @@ export const RewardsVouchersPanel = () => {
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {isActive && !isAdmin && (
                   <>
-                    <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+                    <span className="text-[10px] font-medium text-warning">
                       aktivní – čeká na potvrzení
                     </span>
                     <button
@@ -92,7 +92,7 @@ export const RewardsVouchersPanel = () => {
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-[11px] px-2 gap-1 border-primary/40 text-primary hover:bg-primary/10 shrink-0"
+              className="h-7 text-[11px] px-2 gap-1 border-warning/40 text-warning hover:bg-warning/10 shrink-0"
               onClick={() => activate(r.id)}
             >
               <Sparkles className="h-3 w-3" /> Aktivovat
@@ -128,8 +128,8 @@ export const RewardsVouchersPanel = () => {
       {active.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-amber-600" />
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+            <Sparkles className="h-4 w-4 text-warning" />
+            <span className="text-xs font-semibold text-warning uppercase tracking-wider">
               Aktivní ({active.length})
             </span>
           </div>
@@ -142,8 +142,8 @@ export const RewardsVouchersPanel = () => {
       {available.length > 0 && (
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <Gift className="h-4 w-4 text-primary" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <Gift className="h-4 w-4 text-warning" />
+            <span className="text-xs font-semibold text-warning uppercase tracking-wider">
               K vyzvednutí ({available.length})
             </span>
           </div>
