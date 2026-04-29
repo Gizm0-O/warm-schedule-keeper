@@ -1566,7 +1566,7 @@ const Index = () => {
                   className={cn(
                     "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     sidePanelTab === "todos"
-                      ? "text-foreground shadow-sm bg-purple-200"
+                      ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -1577,7 +1577,7 @@ const Index = () => {
                   className={cn(
                     "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     sidePanelTab === "vouchers"
-                      ? "text-foreground shadow-sm bg-purple-200"
+                      ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
