@@ -1953,18 +1953,27 @@ const Index = () => {
               )}
             </div>
           </DialogHeader>
+          {(() => {
+            const lockTimes = !isAdmin && editingShift?.person === "Tadeáš";
+            return (
           <div className="space-y-4">
+            {lockTimes && (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-200">
+                ⚠️ Čas Tadeášovy směny může měnit pouze admin. Místo směny lze přehodit za 🪙 token.
+              </div>
+            )}
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
                 <select
                   value={editShiftStart}
+                  disabled={lockTimes}
                   onChange={(e) => {
                     const v = Number(e.target.value);
                     setEditShiftStart(v);
                     if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 1, 23));
                   }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                 >
                   {HOURS.map((h) => (
                     <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
@@ -1975,8 +1984,9 @@ const Index = () => {
                 <label className="text-sm font-medium text-foreground">Do</label>
                 <select
                   value={editShiftEnd}
+                  disabled={lockTimes}
                   onChange={(e) => setEditShiftEnd(Number(e.target.value))}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
                 >
                   {HOURS.filter((h) => h > editShiftStart).map((h) => (
                     <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
@@ -1985,6 +1995,8 @@ const Index = () => {
               </div>
             </div>
           </div>
+            );
+          })()}
           <DialogFooter className="flex justify-between sm:justify-between">
             <Button
               variant="destructive"
