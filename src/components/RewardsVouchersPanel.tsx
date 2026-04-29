@@ -53,7 +53,7 @@ export const RewardsVouchersPanel = () => {
                 {isActive && !isAdmin && (
                   <>
                     <span className="text-[10px] font-medium text-orange-800">
-                      aktivní – čeká na potvrzení
+                      aktivní – čeká na splnění
                     </span>
                     <button
                       onClick={() => deactivate(r.id)}
