@@ -828,8 +828,56 @@ const Index = () => {
       .sort((a, b) => a.startHour - b.startHour || a.sourceDayKey.localeCompare(b.sourceDayKey) || a.sourceIndex - b.sourceIndex);
   };
 
-  const toggleShiftLocation = (shiftKey: string) => {
+  const { balance: tokensBalance, spend: spendToken, grant: grantToken } = useTokens();
+
+  /**
+   * Toggle Tadeáš's shift location between Kancelář <-> Z domu.
+   * Costs 1 token (returns it on revert). Admin bypass.
+   * Locked once shift has started.
+   */
+  const toggleShiftLocation = async (shiftKey: string, dayKey: string): Promise<{ ok: boolean; reason?: string }> => {
+    const shift = resolveShiftFromKey(shiftKey, dayKey);
+    if (!shift) return { ok: false, reason: "Směna nenalezena" };
+    if (shift.person !== "Tadeáš") {
+      // Non-Tadeáš shifts: keep old behavior, no token cost
+      toggleLocation(shiftKey);
+      return { ok: true };
+    }
+
+    // Lock check: shift already started
+    const [y, m, d] = dayKey.split("-").map(Number);
+    const shiftStart = new Date(y, m - 1, d, shift.startHour, 0, 0);
+    if (!isAdmin && new Date() >= shiftStart) {
+      toast.error("Směna už začala – nelze měnit místo.");
+      return { ok: false, reason: "locked" };
+    }
+
+    const isCurrentlyOverridden = !!locationOverrides[shiftKey];
+    // If currently toggled (= Tadeáš working from home), reverting refunds the token
+    if (isCurrentlyOverridden) {
+      toggleLocation(shiftKey);
+      if (!isAdmin) {
+        await grantToken("swap_refund", { shiftKey });
+        toast.success("🪙 Token vrácen");
+      }
+      return { ok: true };
+    }
+
+    // Switching to "Z domu" costs 1 token (admin bypass)
+    if (!isAdmin) {
+      if (tokensBalance <= 0) {
+        toast.error("Nemáš žádné tokeny.");
+        return { ok: false, reason: "no-tokens" };
+      }
+      const ok = await spendToken("swap_spend", { shiftKey });
+      if (!ok) {
+        toast.error("Nepodařilo se utratit token.");
+        return { ok: false };
+      }
+      toast.success("🏠 Tadeáš pracuje z domu (–1 🪙)");
+    }
     toggleLocation(shiftKey);
+    return { ok: true };
   };
 
   const handleSwapShift = () => {
