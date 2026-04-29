@@ -1695,7 +1695,7 @@ const Index = () => {
                             {customRewards.map((r) => (
                               <span
                                 key={r.id}
-                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-warning/15 text-warning border-warning/35 whitespace-nowrap shrink-0"
+                                className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border-warning/35 whitespace-nowrap shrink-0 shadow-none border bg-[#ffcf9e] text-orange-800"
                                 title="Custom poukázka za splnění"
                               >
                                 🎟️ {r.label}
