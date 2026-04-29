@@ -193,9 +193,8 @@ const TodoPage = () => {
     }
 
     const revokeGrantedRewards = async () => {
-      const grantableTemplateIds = grantableTemplates.map((r) => r.id);
-      if (grantableTemplateIds.length > 0) {
-        await revokeForTodo(id, grantableTemplateIds);
+      if (grantableTemplates.length > 0 || grantedRewards.length > 0) {
+        await revokeForTodo(id);
         grantedRewards = [];
         return;
       }
@@ -207,6 +206,9 @@ const TodoPage = () => {
 
     const regrantRewards = async () => {
       grantedRewards = [];
+      if (grantableTemplates.length > 0) {
+        await revokeForTodo(id);
+      }
       for (const r of grantableTemplates) {
         try {
           const granted = await grantReward({
