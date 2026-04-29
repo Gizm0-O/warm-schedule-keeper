@@ -947,7 +947,7 @@ const TodoPage = () => {
                     size="sm"
                     variant="outline"
                     className="h-7 text-xs gap-1"
-                    onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none' }])}
+                    onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none', is_token: false }])}
                   >
                     <Plus className="h-3 w-3" /> Přidat
                   </Button>
