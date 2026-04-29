@@ -2001,6 +2001,7 @@ const Index = () => {
             <Button
               variant="destructive"
               size="sm"
+              disabled={!isAdmin && editingShift?.person === "Tadeáš"}
               onClick={async () => {
                 if (editingShift) {
                   const key = editingShift.shiftKey;
@@ -2018,7 +2019,12 @@ const Index = () => {
             </Button>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingShift(null)}>Zrušit</Button>
-              <Button onClick={saveEditShift}>Uložit</Button>
+              <Button
+                onClick={saveEditShift}
+                disabled={!isAdmin && editingShift?.person === "Tadeáš"}
+              >
+                Uložit
+              </Button>
             </div>
           </DialogFooter>
         </DialogContent>
