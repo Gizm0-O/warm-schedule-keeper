@@ -86,7 +86,7 @@ const TodoPage = () => {
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
-  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean }[]>([]);
+  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
 
   // Story generator state
   const [showStoriesDialog, setShowStoriesDialog] = useState(false);
@@ -334,7 +334,7 @@ const TodoPage = () => {
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
     const existing = getRewardsForTodo(todo.id);
-    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring })));
+    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
   };
 
   const saveEdit = async () => {
