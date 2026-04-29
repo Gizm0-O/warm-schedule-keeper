@@ -52,7 +52,7 @@ export const RewardsVouchersPanel = () => {
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                 {isActive && !isAdmin && (
                   <>
-                    <span className="text-[10px] font-medium text-warning">
+                    <span className="text-[10px] font-medium text-orange-800">
                       aktivní – čeká na potvrzení
                     </span>
                     <button
