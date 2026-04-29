@@ -165,10 +165,13 @@ const TodoPage = () => {
     const completing = !todo.completed;
     let grantedRewards: EarnedReward[] = [];
     let grantableTemplates: ReturnType<typeof getRewardsForTodo> = [];
+    let grantedTokenCount = 0;
     if (completing && todo.person === 'Barča') {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
-      grantableTemplates = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const allGrantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const tokenTemplates = allGrantable.filter(r => r.is_token);
+      grantableTemplates = allGrantable.filter(r => !r.is_token);
       const grantableTemplateIds = grantableTemplates.map((r) => r.id);
       if (grantableTemplateIds.length > 0) {
         await revokeForTodo(id, grantableTemplateIds);
@@ -186,8 +189,19 @@ const TodoPage = () => {
           console.error('Failed to grant reward', e);
         }
       }
+      // Grant tokens
+      for (const _t of tokenTemplates) {
+        const ok = await grantToken("task_reward", { note: todo.text });
+        if (ok) grantedTokenCount++;
+      }
       if (grantableTemplates.length > 0) {
         toast.success(`🎁 Získala jsi ${grantableTemplates.length} ${grantableTemplates.length === 1 ? 'poukázku' : grantableTemplates.length < 5 ? 'poukázky' : 'poukázek'}!`, {
+          position: "top-center",
+          duration: 3500,
+        });
+      }
+      if (grantedTokenCount > 0) {
+        toast.success(`🪙 +${grantedTokenCount} Token${grantedTokenCount > 1 ? 'y' : ''}!`, {
           position: "top-center",
           duration: 3500,
         });
@@ -198,12 +212,17 @@ const TodoPage = () => {
       if (grantableTemplates.length > 0 || grantedRewards.length > 0) {
         await revokeForTodo(id);
         grantedRewards = [];
-        return;
+      } else {
+        for (const g of grantedRewards) {
+          try { await removeReward(g.id); } catch (e) { console.error(e); }
+        }
+        grantedRewards = [];
       }
-      for (const g of grantedRewards) {
-        try { await removeReward(g.id); } catch (e) { console.error(e); }
+      // Refund granted tokens
+      for (let i = 0; i < grantedTokenCount; i++) {
+        await spendToken("task_reward", { note: `revoke: ${todo.text}` });
       }
-      grantedRewards = [];
+      grantedTokenCount = 0;
     };
 
     const regrantRewards = async () => {
