@@ -2130,6 +2130,9 @@ const Index = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Todo Dialog (sdílený s TodoPage) */}
+      <TodoEditDialog todo={editingTodo} onClose={() => setEditingTodo(null)} />
     </div>
   );
 };
