@@ -46,6 +46,7 @@ import TokensBadge from "@/components/TokensBadge";
 import { useTokens } from "@/hooks/useTokens";
 import { Gift, Coins } from "lucide-react";
 import { toast } from "sonner";
+import { TodoEditDialog } from "@/components/TodoEditDialog";
 
 
 const FAMILY_NAMES = new Set([
