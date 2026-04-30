@@ -46,6 +46,7 @@ import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/u
 import { useTokens } from "@/hooks/useTokens";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { TodoEditDialog } from "@/components/TodoEditDialog";
 
 const MAX_COMPLETED = 20;
 
