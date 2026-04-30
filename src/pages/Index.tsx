@@ -1664,16 +1664,18 @@ const Index = () => {
                 const isTodayTask = isSameDay(target, today);
                 const daysLate = isOverdue ? differenceInDays(today, target) : 0;
                 return (
-                  <div className={cn(
-                    "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border",
-                    todo.person === "Tadeáš"
-                      ? "border-shift-office/30"
-                      : "border-shift-partner/30",
-                    isOverdue && "bg-destructive/5",
-                    isTodayTask && !isOverdue && "bg-warning/10"
-                  )}>
+                  <div
+                    onClick={() => !todo.completed && setEditingTodo(todo)}
+                    className={cn(
+                      "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border cursor-pointer hover:bg-muted/30 transition-colors",
+                      todo.person === "Tadeáš"
+                        ? "border-shift-office/30"
+                        : "border-shift-partner/30",
+                      isOverdue && "bg-destructive/5",
+                      isTodayTask && !isOverdue && "bg-warning/10"
+                    )}>
                     <button
-                      onClick={() => handleToggleTodo(todo.id)}
+                      onClick={(e) => { e.stopPropagation(); handleToggleTodo(todo.id); }}
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
                         todo.person === "Tadeáš"
