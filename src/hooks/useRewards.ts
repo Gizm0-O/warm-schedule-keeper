@@ -17,7 +17,7 @@ export interface TaskBonus {
 
 const defaultConfig: RewardsConfig = {
   monthlyEarnings: 0,
-  basePercent: 10,
+  basePercent: 5,
   bonusPerTask: 1,
   bonusLate: 0.5,
   maxTasks: 10,
