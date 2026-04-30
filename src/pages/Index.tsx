@@ -46,6 +46,7 @@ import TokensBadge from "@/components/TokensBadge";
 import { useTokens } from "@/hooks/useTokens";
 import { Gift, Coins } from "lucide-react";
 import { toast } from "sonner";
+import { TodoEditDialog } from "@/components/TodoEditDialog";
 
 
 const FAMILY_NAMES = new Set([
@@ -350,6 +351,7 @@ const Index = () => {
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [sidePanelTab, setSidePanelTab] = useState<"todos" | "vouchers">("todos");
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -1662,16 +1664,18 @@ const Index = () => {
                 const isTodayTask = isSameDay(target, today);
                 const daysLate = isOverdue ? differenceInDays(today, target) : 0;
                 return (
-                  <div className={cn(
-                    "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border",
-                    todo.person === "Tadeáš"
-                      ? "border-shift-office/30"
-                      : "border-shift-partner/30",
-                    isOverdue && "bg-destructive/5",
-                    isTodayTask && !isOverdue && "bg-warning/10"
-                  )}>
+                  <div
+                    onClick={() => !todo.completed && setEditingTodo(todo)}
+                    className={cn(
+                      "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border cursor-pointer hover:bg-muted/30 transition-colors",
+                      todo.person === "Tadeáš"
+                        ? "border-shift-office/30"
+                        : "border-shift-partner/30",
+                      isOverdue && "bg-destructive/5",
+                      isTodayTask && !isOverdue && "bg-warning/10"
+                    )}>
                     <button
-                      onClick={() => handleToggleTodo(todo.id)}
+                      onClick={(e) => { e.stopPropagation(); handleToggleTodo(todo.id); }}
                       className={cn(
                         "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors mt-0.5",
                         todo.person === "Tadeáš"
@@ -2126,6 +2130,9 @@ const Index = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Todo Dialog (sdílený s TodoPage) */}
+      <TodoEditDialog todo={editingTodo} onClose={() => setEditingTodo(null)} />
     </div>
   );
 };
