@@ -351,6 +351,7 @@ const Index = () => {
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [sidePanelTab, setSidePanelTab] = useState<"todos" | "vouchers">("todos");
+  const [editingTodo, setEditingTodo] = useState<Todo | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
