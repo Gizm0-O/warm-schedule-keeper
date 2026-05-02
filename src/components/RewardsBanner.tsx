@@ -52,7 +52,7 @@ export function RewardsBanner() {
   const { months: archivedMonths } = useArchivedMonths();
   const [viewMonth, setViewMonth] = useState<string>(CURRENT_MONTH());
   const isArchiveView = viewMonth !== CURRENT_MONTH();
-  const { archive, updateEarning: updateArchiveEarning, removeEarning: removeArchiveEarning, updateConfig: updateArchiveConfig } = useMonthlyArchive(isArchiveView ? viewMonth : null);
+  const { archive, updateEarning: updateArchiveEarning, removeEarning: removeArchiveEarning, updateConfig: updateArchiveConfig, addEarning: addArchiveEarning } = useMonthlyArchive(isArchiveView ? viewMonth : null);
 
   // Sestav timeline měsíců: aktuální + všechny archivované, sestupně
   const monthTimeline = useMemo(() => {
