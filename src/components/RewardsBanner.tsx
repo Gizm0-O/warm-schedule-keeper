@@ -154,6 +154,8 @@ export function RewardsBanner() {
     setNewEarningDate('');
     setShowAddArchiveEarning(false);
   };
+
+  const { config: liveConfig, saveConfig } = rewards;
   const config = isArchiveView && archive ? archive.config_snapshot as RewardsConfig : liveConfig;
 
   // Synchronizuj adminConfig s aktuálně zobrazeným měsícem
