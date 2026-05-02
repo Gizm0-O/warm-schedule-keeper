@@ -127,7 +127,33 @@ export function RewardsBanner() {
     setEditingEarningId(null);
   };
 
-  const { config: liveConfig, saveConfig } = rewards;
+  const saveNewArchiveEarning = async () => {
+    if (!isArchiveView || !addArchiveEarning) return;
+    const amount = parseInt(newEarningAmount) || 0;
+    const text = newEarningText.trim();
+    if (!text) return;
+    let completedAt = '';
+    if (newEarningDate) {
+      // Local datetime input → ISO
+      const d = new Date(newEarningDate);
+      if (!isNaN(d.getTime())) completedAt = d.toISOString();
+    }
+    await addArchiveEarning({
+      todo_id: `manual-${Date.now()}`,
+      todo_text: text,
+      amount,
+      bonus_type: newEarningBonusType || null,
+      bonus_percent: newEarningBonusPercent ? parseFloat(newEarningBonusPercent) : null,
+      deadline: null,
+      completed_at: completedAt,
+    });
+    setNewEarningText('');
+    setNewEarningAmount('');
+    setNewEarningBonusType('');
+    setNewEarningBonusPercent('');
+    setNewEarningDate('');
+    setShowAddArchiveEarning(false);
+  };
   const config = isArchiveView && archive ? archive.config_snapshot as RewardsConfig : liveConfig;
 
   // Synchronizuj adminConfig s aktuálně zobrazeným měsícem
