@@ -75,6 +75,12 @@ export function RewardsBanner() {
   const [editEarningText, setEditEarningText] = useState('');
   const [editEarningBonusType, setEditEarningBonusType] = useState<string>('');
   const [editEarningBonusPercent, setEditEarningBonusPercent] = useState('');
+  const [showAddArchiveEarning, setShowAddArchiveEarning] = useState(false);
+  const [newEarningText, setNewEarningText] = useState('');
+  const [newEarningAmount, setNewEarningAmount] = useState('');
+  const [newEarningBonusType, setNewEarningBonusType] = useState<string>('');
+  const [newEarningBonusPercent, setNewEarningBonusPercent] = useState('');
+  const [newEarningDate, setNewEarningDate] = useState('');
 
   useEffect(() => {
     const handler = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
