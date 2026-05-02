@@ -182,7 +182,34 @@ export function useMonthlyArchive(month: string | null) {
     await recalcAndSave(next);
   }, [archive, recalcAndSave]);
 
-  return { archive, loading, refetch: fetchArchive, updateEarning, removeEarning, updateConfig };
+  const addEarning = useCallback(async (earning: Omit<ArchivedEarning, 'id' | 'created_at'>) => {
+    if (!archive) return;
+    // Default completed_at to last day of the archived month at noon if not provided
+    let completedAt = earning.completed_at;
+    if (!completedAt) {
+      const [y, m] = archive.month.split('-').map(Number);
+      const lastDay = new Date(y, m, 0).getDate();
+      completedAt = new Date(y, m - 1, lastDay, 12, 0, 0).toISOString();
+    }
+    const newEarning: ArchivedEarning = {
+      id: (crypto as any).randomUUID ? crypto.randomUUID() : `manual-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+      todo_id: earning.todo_id || `manual-${Date.now()}`,
+      todo_text: earning.todo_text,
+      amount: earning.amount,
+      bonus_type: earning.bonus_type ?? null,
+      bonus_percent: earning.bonus_percent ?? null,
+      deadline: earning.deadline ?? null,
+      completed_at: completedAt,
+      created_at: new Date().toISOString(),
+    };
+    const next = {
+      ...archive,
+      earnings_snapshot: [newEarning, ...(archive.earnings_snapshot || [])],
+    };
+    await recalcAndSave(next);
+  }, [archive, recalcAndSave]);
+
+  return { archive, loading, refetch: fetchArchive, updateEarning, removeEarning, updateConfig, addEarning };
 }
 
 /**

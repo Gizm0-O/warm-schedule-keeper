@@ -52,7 +52,7 @@ export function RewardsBanner() {
   const { months: archivedMonths } = useArchivedMonths();
   const [viewMonth, setViewMonth] = useState<string>(CURRENT_MONTH());
   const isArchiveView = viewMonth !== CURRENT_MONTH();
-  const { archive, updateEarning: updateArchiveEarning, removeEarning: removeArchiveEarning, updateConfig: updateArchiveConfig } = useMonthlyArchive(isArchiveView ? viewMonth : null);
+  const { archive, updateEarning: updateArchiveEarning, removeEarning: removeArchiveEarning, updateConfig: updateArchiveConfig, addEarning: addArchiveEarning } = useMonthlyArchive(isArchiveView ? viewMonth : null);
 
   // Sestav timeline měsíců: aktuální + všechny archivované, sestupně
   const monthTimeline = useMemo(() => {
@@ -75,6 +75,12 @@ export function RewardsBanner() {
   const [editEarningText, setEditEarningText] = useState('');
   const [editEarningBonusType, setEditEarningBonusType] = useState<string>('');
   const [editEarningBonusPercent, setEditEarningBonusPercent] = useState('');
+  const [showAddArchiveEarning, setShowAddArchiveEarning] = useState(false);
+  const [newEarningText, setNewEarningText] = useState('');
+  const [newEarningAmount, setNewEarningAmount] = useState('');
+  const [newEarningBonusType, setNewEarningBonusType] = useState<string>('');
+  const [newEarningBonusPercent, setNewEarningBonusPercent] = useState('');
+  const [newEarningDate, setNewEarningDate] = useState('');
 
   useEffect(() => {
     const handler = () => setAdminMode(sessionStorage.getItem('adminMode') === '1');
@@ -119,6 +125,34 @@ export function RewardsBanner() {
       bonus_percent: editEarningBonusPercent ? parseFloat(editEarningBonusPercent) : null,
     });
     setEditingEarningId(null);
+  };
+
+  const saveNewArchiveEarning = async () => {
+    if (!isArchiveView || !addArchiveEarning) return;
+    const amount = parseInt(newEarningAmount) || 0;
+    const text = newEarningText.trim();
+    if (!text) return;
+    let completedAt = '';
+    if (newEarningDate) {
+      // Local datetime input → ISO
+      const d = new Date(newEarningDate);
+      if (!isNaN(d.getTime())) completedAt = d.toISOString();
+    }
+    await addArchiveEarning({
+      todo_id: `manual-${Date.now()}`,
+      todo_text: text,
+      amount,
+      bonus_type: newEarningBonusType || null,
+      bonus_percent: newEarningBonusPercent ? parseFloat(newEarningBonusPercent) : null,
+      deadline: null,
+      completed_at: completedAt,
+    });
+    setNewEarningText('');
+    setNewEarningAmount('');
+    setNewEarningBonusType('');
+    setNewEarningBonusPercent('');
+    setNewEarningDate('');
+    setShowAddArchiveEarning(false);
   };
 
   const { config: liveConfig, saveConfig } = rewards;
@@ -428,7 +462,66 @@ export function RewardsBanner() {
 
           {/* Earnings section - only completed tasks with recorded earnings */}
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-muted-foreground mb-1">Odevzdané úkoly ({earnings.length})</div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-xs font-semibold text-muted-foreground">Odevzdané úkoly ({earnings.length})</div>
+              {adminMode && isArchiveView && !showAddArchiveEarning && (
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => setShowAddArchiveEarning(true)}>
+                  + Přidat úkol
+                </Button>
+              )}
+            </div>
+
+            {adminMode && isArchiveView && showAddArchiveEarning && (
+              <div className="space-y-1.5 p-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 mb-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase">Nový záznam do archivu</div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newEarningText}
+                    onChange={ev => setNewEarningText(ev.target.value)}
+                    className="text-sm h-8"
+                    placeholder="Text úkolu"
+                  />
+                  <Input
+                    type="number"
+                    value={newEarningAmount}
+                    onChange={ev => setNewEarningAmount(ev.target.value)}
+                    className="text-sm h-8 w-24"
+                    placeholder="Kč"
+                  />
+                </div>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <select
+                    value={newEarningBonusType}
+                    onChange={ev => setNewEarningBonusType(ev.target.value)}
+                    className="text-xs h-7 rounded border border-input bg-background px-2"
+                  >
+                    <option value="">Bez bonusu</option>
+                    <option value="on_time">⭐ Včas</option>
+                    <option value="late">⏳ Pozdě</option>
+                    <option value="missed">❌ Zmeškáno</option>
+                  </select>
+                  <Input
+                    type="number"
+                    value={newEarningBonusPercent}
+                    onChange={ev => setNewEarningBonusPercent(ev.target.value)}
+                    className="text-sm h-7 w-20"
+                    placeholder="% bonus"
+                    step="0.5"
+                  />
+                  <Input
+                    type="datetime-local"
+                    value={newEarningDate}
+                    onChange={ev => setNewEarningDate(ev.target.value)}
+                    className="text-sm h-7 w-44"
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button size="sm" variant="outline" onClick={() => { setShowAddArchiveEarning(false); }} className="h-7">Zrušit</Button>
+                  <Button size="sm" onClick={saveNewArchiveEarning} className="h-7">Přidat</Button>
+                </div>
+              </div>
+            )}
+
             {earnings.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné odevzdané úkoly</p>
             )}
