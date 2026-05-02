@@ -249,7 +249,7 @@ export function useMonthlyAutoArchive() {
           bonusLate: Number(cfgRow.bonus_late) || 0,
           maxTasks: Number(cfgRow.max_tasks) || 10,
           month,
-        } : { monthlyEarnings: 0, basePercent: 10, bonusPerTask: 1, bonusLate: 0.5, maxTasks: 10, month };
+        } : { monthlyEarnings: 0, basePercent: 5, bonusPerTask: 1, bonusLate: 0.5, maxTasks: 10, month };
 
         // Načti všechny task_bonuses (nejsou per month, ale aspoň snapshot)
         const { data: bonusRows } = await supabase.from('task_bonuses').select('*');

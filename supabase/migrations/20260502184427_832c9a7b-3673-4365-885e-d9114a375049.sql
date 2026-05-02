@@ -1,0 +1,1 @@
+ALTER TABLE public.rewards_config ALTER COLUMN base_percent SET DEFAULT 5;
