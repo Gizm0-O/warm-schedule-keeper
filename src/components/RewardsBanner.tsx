@@ -462,7 +462,66 @@ export function RewardsBanner() {
 
           {/* Earnings section - only completed tasks with recorded earnings */}
           <div className="space-y-1">
-            <div className="text-xs font-semibold text-muted-foreground mb-1">Odevzdané úkoly ({earnings.length})</div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="text-xs font-semibold text-muted-foreground">Odevzdané úkoly ({earnings.length})</div>
+              {adminMode && isArchiveView && !showAddArchiveEarning && (
+                <Button size="sm" variant="outline" className="h-6 text-xs px-2" onClick={() => setShowAddArchiveEarning(true)}>
+                  + Přidat úkol
+                </Button>
+              )}
+            </div>
+
+            {adminMode && isArchiveView && showAddArchiveEarning && (
+              <div className="space-y-1.5 p-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 mb-2">
+                <div className="text-[10px] font-semibold text-muted-foreground uppercase">Nový záznam do archivu</div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newEarningText}
+                    onChange={ev => setNewEarningText(ev.target.value)}
+                    className="text-sm h-8"
+                    placeholder="Text úkolu"
+                  />
+                  <Input
+                    type="number"
+                    value={newEarningAmount}
+                    onChange={ev => setNewEarningAmount(ev.target.value)}
+                    className="text-sm h-8 w-24"
+                    placeholder="Kč"
+                  />
+                </div>
+                <div className="flex gap-2 items-center flex-wrap">
+                  <select
+                    value={newEarningBonusType}
+                    onChange={ev => setNewEarningBonusType(ev.target.value)}
+                    className="text-xs h-7 rounded border border-input bg-background px-2"
+                  >
+                    <option value="">Bez bonusu</option>
+                    <option value="on_time">⭐ Včas</option>
+                    <option value="late">⏳ Pozdě</option>
+                    <option value="missed">❌ Zmeškáno</option>
+                  </select>
+                  <Input
+                    type="number"
+                    value={newEarningBonusPercent}
+                    onChange={ev => setNewEarningBonusPercent(ev.target.value)}
+                    className="text-sm h-7 w-20"
+                    placeholder="% bonus"
+                    step="0.5"
+                  />
+                  <Input
+                    type="datetime-local"
+                    value={newEarningDate}
+                    onChange={ev => setNewEarningDate(ev.target.value)}
+                    className="text-sm h-7 w-44"
+                  />
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <Button size="sm" variant="outline" onClick={() => { setShowAddArchiveEarning(false); }} className="h-7">Zrušit</Button>
+                  <Button size="sm" onClick={saveNewArchiveEarning} className="h-7">Přidat</Button>
+                </div>
+              </div>
+            )}
+
             {earnings.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">Zatím žádné odevzdané úkoly</p>
             )}
