@@ -287,7 +287,8 @@ export function useMonthlyAutoArchive() {
 
         // Spočítej souhrny
         const taskEarnings = earnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
-        const totalEarned = taskEarnings.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+        // Vyděláno zahrnuje i bonusové odměny (__bonus)
+        const totalEarned = earnings.reduce((s, e) => s + (Number(e.amount) || 0), 0);
         const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
         const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
         const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
