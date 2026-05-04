@@ -26,14 +26,46 @@ export function useHourlyTasks() {
 
   const fetchTasks = useCallback(async () => {
     const month = currentMonth();
-    const { data } = await supabase
+    let { data } = await supabase
       .from('hourly_tasks')
       .select('*')
       .eq('month', month)
       .order('created_at', { ascending: true });
+
+    // Pokud v aktuálním měsíci nejsou žádné hodinové úkoly,
+    // zkus je obnovit (resetované) z posledního archivu.
+    if (!data || data.length === 0) {
+      const { data: lastArchive } = await supabase
+        .from('monthly_archives')
+        .select('month, hourly_tasks_snapshot')
+        .lt('month', month)
+        .order('month', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const snapshot = (lastArchive?.hourly_tasks_snapshot as any[]) || [];
+      if (snapshot.length > 0) {
+        const rows = snapshot.map((t: any) => ({
+          name: t.name,
+          rate_per_hour: t.rate_per_hour ?? 250,
+          milestone_hours: t.milestone_hours ?? 5,
+          milestone_bonus_percent: t.milestone_bonus_percent ?? 0.5,
+          color: t.color ?? 'hsl(var(--primary))',
+          person: t.person ?? 'Tadeáš',
+          month,
+          hours_worked: 0,
+        }));
+        const { data: inserted } = await supabase
+          .from('hourly_tasks')
+          .insert(rows)
+          .select();
+        data = inserted || [];
+      }
+    }
+
     if (data) setTasks(data as HourlyTask[]);
     setLoading(false);
   }, []);
+
 
   useEffect(() => {
     fetchTasks();
