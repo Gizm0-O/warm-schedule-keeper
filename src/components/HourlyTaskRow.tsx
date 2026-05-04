@@ -56,8 +56,8 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
   return (
     <div
       className={cn(
-        "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border",
-        borderClass
+        "relative flex items-start gap-3 px-3 py-2 rounded-lg text-sm border-shift-partner/30 bg-blue-50 border-2 border-blue-800",
+        task.person === "Tadeáš" && "border-shift-office/30"
       )}
       style={task.color && !task.color.startsWith("hsl(var") ? { borderColor: task.color } : undefined}
     >
