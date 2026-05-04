@@ -116,19 +116,12 @@ export default function ItalySavingsBanner() {
       >
         {/* Title row */}
         <div className="flex items-center gap-2 mb-2">
-          <span
-            className="text-2xl cursor-default select-none hidden md:inline"
-            onClick={handleTitleClick}
-          >
+          <span className="text-2xl select-none hidden md:inline">
             🇮🇹
           </span>
           <h3
             className="text-lg sm:text-xl font-bold select-none"
             style={{ color: "hsl(25 40% 30%)" }}
-            onClick={handleTitleClick}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-            onTouchCancel={onTouchEnd}
           >
             Itálie
           </h3>
