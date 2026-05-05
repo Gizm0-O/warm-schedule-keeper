@@ -41,6 +41,7 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
+import { useTaskXp } from "@/hooks/useTaskXp";
 import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
 import TokensBadge from "@/components/TokensBadge";
 import { useTokens } from "@/hooks/useTokens";
