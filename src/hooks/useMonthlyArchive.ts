@@ -52,6 +52,7 @@ export interface MonthlyArchive {
   completed_on_time: number;
   completed_late: number;
   completed_missed: number;
+  total_xp: number;
   earnings_snapshot: ArchivedEarning[];
   bonuses_snapshot: ArchivedBonus[];
   config_snapshot: ArchivedConfig;
