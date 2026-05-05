@@ -301,6 +301,13 @@ export function RewardsBanner() {
         )}
         onClick={() => setExpanded(!expanded)}
       >
+        {levelUpFlash && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-10">
+            <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-amber-900 font-bold text-sm shadow-lg animate-bounce">
+              🎉 Level UP! {effectiveLevelLabel} 🎉
+            </div>
+          </div>
+        )}
         {/* Hlavní řádek */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
