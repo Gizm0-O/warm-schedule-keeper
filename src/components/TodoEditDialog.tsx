@@ -193,6 +193,10 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
               />
             </div>
           )}
+          {isAdmin && todo && todo.person === 'Barča' && todo.category === 'work' && (
+            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+              <Checkbox
+                id="ready-checkbox"
                 checked={isReady(todo.id)}
                 onCheckedChange={(checked) => setReady(todo.id, !!checked)}
               />
