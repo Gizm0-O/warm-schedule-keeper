@@ -98,6 +98,11 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
               ⭐ +{totalBonus}%
             </span>
           )}
+          {task.hours_worked > 0 && (task.xp_per_hour ?? 10) > 0 && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-800/50 whitespace-nowrap" title="Vydělané XP">
+              ⚡ {Math.round(Number(task.hours_worked) * (task.xp_per_hour ?? 10))} XP
+            </span>
+          )}
           {isOnMilestone ? (
             <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium whitespace-nowrap">
               <Sparkles className="h-3 w-3" /> Milník!
