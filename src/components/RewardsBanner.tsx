@@ -280,7 +280,7 @@ export function RewardsBanner() {
         className={cn(
           'rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none',
           'dark:bg-opacity-10',
-          LEVEL_BG[effectiveLevel],
+          effectiveLevelBg,
           isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10'
         )}
         onClick={() => setExpanded(!expanded)}
