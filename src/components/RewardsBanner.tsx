@@ -290,9 +290,9 @@ export function RewardsBanner() {
           <div className="flex items-center gap-3">
             <div className={cn(
               'flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl shadow-inner',
-              LEVEL_COLORS[effectiveLevel]
+              effectiveLevelColor
             )}>
-              {LEVEL_ICONS[effectiveLevel]}
+              {effectiveLevelIcon}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -300,14 +300,14 @@ export function RewardsBanner() {
                 <span className="text-xs text-muted-foreground">Lv.{effectiveLevel}</span>
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <div className="h-2 w-24 rounded-full bg-muted overflow-hidden">
+                <div className="h-2 w-32 rounded-full bg-muted overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', LEVEL_COLORS[effectiveLevel])}
-                    style={{ width: `${Math.max(effectiveProgressToNext, effectiveLevel >= 4 ? 100 : 5)}%` }}
+                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', effectiveLevelColor)}
+                    style={{ width: `${Math.max(effectiveProgressPct, effectiveIsMax ? 100 : 5)}%` }}
                   />
                 </div>
-                <span className="text-10px text-muted-foreground">
-                  {effectiveLevel >= 4 ? 'MAX' : `${effectiveActiveTasks}/${effectiveNextLevelAt} úkolů`}
+                <span className="text-10px text-muted-foreground tabular-nums">
+                  {effectiveIsMax ? `${totalXp} XP · MAX` : `${totalXp}/${effectiveNextAt} XP`}
                 </span>
               </div>
             </div>
