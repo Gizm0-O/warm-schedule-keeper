@@ -19,21 +19,9 @@ const formatMonthLabel = (month: string) => {
   return format(new Date(y, m - 1, 1), 'LLLL yyyy', { locale: cs }).replace(/^./, c => c.toUpperCase());
 };
 
-const LEVEL_ICONS = ['🌱', '⭐', '💪', '💎', '👑'];
-const LEVEL_COLORS = [
-  'from-slate-400 to-slate-500',
-  'from-emerald-400 to-teal-500',
-  'from-blue-400 to-indigo-500',
-  'from-violet-400 to-purple-500',
-  'from-amber-400 to-orange-500',
-];
-const LEVEL_BG = [
-  'bg-slate-50 border-slate-200',
-  'bg-emerald-50 border-emerald-200',
-  'bg-blue-50 border-blue-200',
-  'bg-violet-50 border-violet-200',
-  'bg-amber-50 border-amber-200',
-];
+import { LEVEL_ICONS, LEVEL_COLORS, LEVEL_BG, computeLevel, defaultXpFor } from '@/lib/xp';
+import { useMonthlyXp } from '@/hooks/useMonthlyXp';
+import { useTaskXp } from '@/hooks/useTaskXp';
 
 export function RewardsBanner() {
   const { todos } = useTodos();
