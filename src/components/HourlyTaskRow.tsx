@@ -168,6 +168,7 @@ export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }
   const [bonus, setBonus] = useState(0.5);
   const [color, setColor] = useState("#10b981");
   const [person, setPerson] = useState<"Tadeáš" | "Barča">("Tadeáš");
+  const [xpPerHour, setXpPerHour] = useState(10);
 
   if (!isAdmin) return null;
 
@@ -180,11 +181,13 @@ export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }
       milestone_bonus_percent: bonus,
       color,
       person,
+      xp_per_hour: xpPerHour,
     });
     setName("");
     setRate(250);
     setMilestone(5);
     setBonus(0.5);
+    setXpPerHour(10);
     setOpen(false);
   };
 
