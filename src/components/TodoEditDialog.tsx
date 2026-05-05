@@ -38,6 +38,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
+  const { getXpOverride, setXp } = useTaskXp();
 
   const [editText, setEditText] = useState("");
   const [editCategory, setEditCategory] = useState<Category>("work");
@@ -47,6 +48,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
+  const [editXp, setEditXp] = useState("");
   const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
 
   // Hydrate state when a todo is opened
