@@ -176,10 +176,23 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
               />
             </div>
           )}
-          {isAdmin && todo && todo.person === 'Barča' && todo.category === 'work' && (
-            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
-              <Checkbox
-                id="ready-checkbox"
+          {isAdmin && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                ⚡ XP za splnění
+                <span className="text-[10px] text-muted-foreground/70">
+                  (default: {defaultXpFor(editText) || 0} XP)
+                </span>
+              </label>
+              <Input
+                type="number"
+                placeholder={`např. ${defaultXpFor(editText) || 50}`}
+                value={editXp}
+                onChange={(e) => setEditXp(e.target.value)}
+                min={0}
+              />
+            </div>
+          )}
                 checked={isReady(todo.id)}
                 onCheckedChange={(checked) => setReady(todo.id, !!checked)}
               />
