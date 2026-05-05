@@ -293,10 +293,11 @@ export function RewardsBanner() {
 
       <div
         className={cn(
-          'rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none',
+          'relative rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none overflow-hidden',
           'dark:bg-opacity-10',
           effectiveLevelBg,
-          isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10'
+          isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10',
+          levelUpFlash && 'ring-4 ring-amber-300 shadow-lg shadow-amber-200/60 animate-pulse'
         )}
         onClick={() => setExpanded(!expanded)}
       >
