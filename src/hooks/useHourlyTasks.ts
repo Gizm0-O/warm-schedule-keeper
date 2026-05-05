@@ -52,6 +52,7 @@ export function useHourlyTasks() {
           milestone_bonus_percent: t.milestone_bonus_percent ?? 0.5,
           color: t.color ?? 'hsl(var(--primary))',
           person: t.person ?? 'Tadeáš',
+          xp_per_hour: t.xp_per_hour ?? 10,
           month,
           hours_worked: 0,
         }));
