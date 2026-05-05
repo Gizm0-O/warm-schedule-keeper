@@ -1738,7 +1738,9 @@ const Index = () => {
                         const showAmount = !isAdmin && todo.amount != null && todo.amount > 0;
                         const showBonus = hasBonus(todo.id);
                         const customRewards = todo.person === 'Barča' ? getRewardsForTodo(todo.id) : [];
-                        if (!bonusPct && !showAmount && !showBonus && customRewards.length === 0) return null;
+                        const xp = todo.person === 'Barča' && todo.category === 'work' ? getXpFor(todo.id, todo.text) : 0;
+                        const showXp = xp > 0;
+                        if (!bonusPct && !showAmount && !showBonus && !showXp && customRewards.length === 0) return null;
                         return (
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {bonusPct && (
