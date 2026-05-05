@@ -242,8 +242,12 @@ export function NewHourlyTaskButton({ size = "sm" }: { size?: "sm" | "default" }
               <Input id="ht-bonus" type="number" step="0.1" value={bonus} onChange={(e) => setBonus(Number(e.target.value))} />
             </div>
           </div>
+          <div>
+            <Label htmlFor="ht-xp">⚡ XP za hodinu</Label>
+            <Input id="ht-xp" type="number" value={xpPerHour} onChange={(e) => setXpPerHour(Number(e.target.value))} min={0} />
+          </div>
           <p className="text-xs text-muted-foreground">
-            Příklad: Sazba 250 Kč/h, milník 5h, bonus 0.5% → každá hodina přidá 250 Kč k Vyděláno, každých 5h přidá +0.5% k bonusu.
+            Příklad: Sazba 250 Kč/h, milník 5h, bonus 0.5%, 10 XP/h → každá hodina přidá 250 Kč + 10 XP.
           </p>
         </div>
         <DialogFooter>
