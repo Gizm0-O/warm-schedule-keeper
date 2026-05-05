@@ -62,9 +62,11 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     setEditAmount(todo.amount ? todo.amount.toString() : "");
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
+    const xpOv = getXpOverride(todo.id);
+    setEditXp(xpOv != null ? String(xpOv) : (defaultXpFor(todo.text) > 0 ? String(defaultXpFor(todo.text)) : ""));
     const existing = getRewardsForTodo(todo.id);
     setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
-  }, [todo, hasBonus, getBonusAmount, getRewardsForTodo]);
+  }, [todo, hasBonus, getBonusAmount, getRewardsForTodo, getXpOverride]);
 
   const saveEdit = async () => {
     if (!todo || !editText.trim()) return;
