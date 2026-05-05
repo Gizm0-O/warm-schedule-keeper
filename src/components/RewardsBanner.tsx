@@ -228,16 +228,17 @@ export function RewardsBanner() {
 
   // Animace level-upu (jen pro live view)
   const [levelUpFlash, setLevelUpFlash] = useState(false);
-  const prevLevelRef = (useState<number | null>(null) as any);
+  const prevLevelRef = useRef<number | null>(null);
   useEffect(() => {
     if (isArchiveView) return;
-    if (prevLevelRef[0] == null) { prevLevelRef[1](effectiveLevel); return; }
-    if (effectiveLevel > prevLevelRef[0]) {
+    if (prevLevelRef.current == null) { prevLevelRef.current = effectiveLevel; return; }
+    if (effectiveLevel > prevLevelRef.current) {
       setLevelUpFlash(true);
-      setTimeout(() => setLevelUpFlash(false), 2500);
+      const t = setTimeout(() => setLevelUpFlash(false), 2500);
+      prevLevelRef.current = effectiveLevel;
+      return () => clearTimeout(t);
     }
-    prevLevelRef[1](effectiveLevel);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    prevLevelRef.current = effectiveLevel;
   }, [effectiveLevel, isArchiveView]);
 
   // Vyděláno + odvozená čísla
