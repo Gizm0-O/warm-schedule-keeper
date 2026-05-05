@@ -305,6 +305,22 @@ export function useMonthlyAutoArchive() {
         const bonusAmount = allowanceAmount - baseAmount;
         const toHandOver = totalEarned - allowanceAmount;
 
+        // XP snapshot
+        const { data: xpRows } = await supabase.from('task_xp').select('todo_id, xp');
+        const xpMap: Record<string, number> = {};
+        (xpRows || []).forEach((r: any) => { xpMap[r.todo_id] = r.xp; });
+        const { defaultXpFor } = await import('@/lib/xp');
+        let totalXp = 0;
+        taskEarnings.forEach((e: any) => {
+          const tid = String(e.todo_id);
+          if (tid.startsWith('hourly:')) return;
+          if (xpMap[tid] != null) totalXp += xpMap[tid];
+          else totalXp += defaultXpFor(e.todo_text);
+        });
+        hourlyTasks.forEach((t: any) => {
+          totalXp += Math.round(Number(t.hours_worked || 0) * (t.xp_per_hour ?? 10));
+        });
+
         // Vytvoř archive řádek
         const { error: insertErr } = await supabase.from('monthly_archives').insert({
           month,
@@ -318,6 +334,7 @@ export function useMonthlyAutoArchive() {
           completed_on_time: completedOnTime,
           completed_late: completedLate,
           completed_missed: completedMissed,
+          total_xp: totalXp,
           earnings_snapshot: earnings as any,
           bonuses_snapshot: (bonusRows || []) as any,
           config_snapshot: cfg as any,
