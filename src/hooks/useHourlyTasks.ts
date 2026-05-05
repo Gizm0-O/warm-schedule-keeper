@@ -11,6 +11,7 @@ export interface HourlyTask {
   month: string;
   color: string;
   person: string;
+  xp_per_hour: number;
   created_at: string;
   updated_at: string;
 }
