@@ -102,6 +102,7 @@ export type Database = {
           person: string
           rate_per_hour: number
           updated_at: string
+          xp_per_hour: number
         }
         Insert: {
           color?: string
@@ -115,6 +116,7 @@ export type Database = {
           person?: string
           rate_per_hour?: number
           updated_at?: string
+          xp_per_hour?: number
         }
         Update: {
           color?: string
@@ -128,6 +130,7 @@ export type Database = {
           person?: string
           rate_per_hour?: number
           updated_at?: string
+          xp_per_hour?: number
         }
         Relationships: []
       }
@@ -175,6 +178,7 @@ export type Database = {
           total_bonus_percent: number
           total_earned: number
           total_percent: number
+          total_xp: number
           updated_at: string
         }
         Insert: {
@@ -196,6 +200,7 @@ export type Database = {
           total_bonus_percent?: number
           total_earned?: number
           total_percent?: number
+          total_xp?: number
           updated_at?: string
         }
         Update: {
@@ -217,6 +222,7 @@ export type Database = {
           total_bonus_percent?: number
           total_earned?: number
           total_percent?: number
+          total_xp?: number
           updated_at?: string
         }
         Relationships: []
@@ -440,6 +446,30 @@ export type Database = {
           created_at?: string
           id?: string
           todo_id?: string
+        }
+        Relationships: []
+      }
+      task_xp: {
+        Row: {
+          created_at: string
+          id: string
+          todo_id: string
+          updated_at: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          todo_id: string
+          updated_at?: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          todo_id?: string
+          updated_at?: string
+          xp?: number
         }
         Relationships: []
       }
