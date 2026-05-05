@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
 import { useTodos } from '../contexts/TodoContext';
