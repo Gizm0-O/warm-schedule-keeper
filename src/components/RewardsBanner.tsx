@@ -226,6 +226,20 @@ export function RewardsBanner() {
   const effectiveIsMax = xpInfo?.isMax ?? false;
   const effectiveActiveTasks = bonusSummary.activeTasks;
 
+  // Animace level-upu (jen pro live view)
+  const [levelUpFlash, setLevelUpFlash] = useState(false);
+  const prevLevelRef = (useState<number | null>(null) as any);
+  useEffect(() => {
+    if (isArchiveView) return;
+    if (prevLevelRef[0] == null) { prevLevelRef[1](effectiveLevel); return; }
+    if (effectiveLevel > prevLevelRef[0]) {
+      setLevelUpFlash(true);
+      setTimeout(() => setLevelUpFlash(false), 2500);
+    }
+    prevLevelRef[1](effectiveLevel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveLevel, isArchiveView]);
+
   // Vyděláno + odvozená čísla
   const totalEarned = isArchiveView && archive ? archive.total_earned : liveTotalEarned;
   const effectiveTotalPercent = isArchiveView && archive ? Number(archive.total_percent) : config.basePercent + totalBonusPercent;
