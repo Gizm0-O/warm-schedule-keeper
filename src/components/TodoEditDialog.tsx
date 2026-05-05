@@ -24,6 +24,8 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards } from "@/hooks/useCustomRewards";
+import { useTaskXp } from "@/hooks/useTaskXp";
+import { defaultXpFor } from "@/lib/xp";
 
 interface TodoEditDialogProps {
   todo: Todo | null;
