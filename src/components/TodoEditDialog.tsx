@@ -82,6 +82,10 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     await setBonusAmount(todo.id, bonusVal);
     if (isAdmin) {
       await setRewardsForTodo(todo.id, editCustomRewards);
+      const xpVal = editXp.trim() === "" ? 0 : parseInt(editXp) || 0;
+      const dft = defaultXpFor(editText);
+      // Pokud je hodnota stejná jako default, smažeme override (uloží 0)
+      await setXp(todo.id, xpVal === dft ? 0 : xpVal);
     }
     onClose();
   };
