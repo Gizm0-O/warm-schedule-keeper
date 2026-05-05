@@ -162,13 +162,7 @@ export function RewardsBanner() {
 
   const bonusSummary = useMemo(() => {
     if (archiveSummary) {
-      const activeTasks = archiveSummary.activeTasks;
-      const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
-      const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
-      const nextLevelAt = [1, 4, 7, 10, 10][level];
-      const progressBase = [0, 0, 4, 7, 10][level];
-      const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
-      return { ...archiveSummary, level, levelLabel, nextLevelAt, progressToNext };
+      return { ...archiveSummary };
     }
     const taskEarnings = liveEarnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
     const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
@@ -185,11 +179,6 @@ export function RewardsBanner() {
     }, 0);
     const totalBonusPercent = Math.min(rawBonusPercent, liveConfig.maxTasks * liveConfig.bonusPerTask);
     const activeTasks = completedOnTime + completedLate + completedMissed;
-    const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
-    const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
-    const nextLevelAt = [1, 4, 7, 10, 10][level];
-    const progressBase = [0, 0, 4, 7, 10][level];
-    const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
 
     return {
       completedOnTime,
@@ -197,19 +186,45 @@ export function RewardsBanner() {
       completedMissed,
       totalBonusPercent,
       activeTasks,
-      level,
-      levelLabel,
-      nextLevelAt,
-      progressToNext,
     };
   }, [liveEarnings, liveConfig, archiveSummary]);
 
   const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
-  const effectiveLevel = bonusSummary.level;
-  const effectiveLevelLabel = bonusSummary.levelLabel;
+
+  // ===== XP & Level systém =====
+  const liveXp = useMonthlyXp();
+  const { map: xpOverrides } = useTaskXp();
+
+  // XP pro archivní měsíc - spočítá se ze snapshotu
+  const archiveXp = useMemo(() => {
+    if (!isArchiveView || !archive) return null;
+    let sum = 0;
+    (archive.earnings_snapshot || []).forEach((e: any) => {
+      const tid = String(e.todo_id);
+      if (tid.startsWith('hourly:')) return;
+      if (tid.endsWith('__bonus')) return;
+      if (xpOverrides[tid] != null) sum += xpOverrides[tid];
+      else sum += defaultXpFor(e.todo_text);
+    });
+    (archive.hourly_tasks_snapshot || []).forEach((t: any) => {
+      const xpPerHour = t.xp_per_hour ?? 10;
+      sum += Math.round(Number(t.hours_worked || 0) * xpPerHour);
+    });
+    return { totalXp: sum, ...computeLevel(sum) };
+  }, [isArchiveView, archive, xpOverrides]);
+
+  const xpInfo = isArchiveView ? archiveXp : liveXp;
+  const totalXp = xpInfo?.totalXp ?? 0;
+  const effectiveLevel = xpInfo?.level ?? 0;
+  const effectiveLevelLabel = xpInfo?.label ?? 'Newbie Bambul';
+  const effectiveLevelIcon = xpInfo?.icon ?? '🌱';
+  const effectiveLevelColor = xpInfo?.color ?? LEVEL_COLORS[0];
+  const effectiveLevelBg = xpInfo?.bg ?? LEVEL_BG[0];
+  const effectiveProgressPct = xpInfo?.progressPct ?? 0;
+  const effectiveNextAt = xpInfo?.nextAt ?? 50;
+  const effectiveCurrentBase = xpInfo?.currentBase ?? 0;
+  const effectiveIsMax = xpInfo?.isMax ?? false;
   const effectiveActiveTasks = bonusSummary.activeTasks;
-  const effectiveNextLevelAt = bonusSummary.nextLevelAt;
-  const effectiveProgressToNext = bonusSummary.progressToNext;
 
   // Vyděláno + odvozená čísla
   const totalEarned = isArchiveView && archive ? archive.total_earned : liveTotalEarned;
