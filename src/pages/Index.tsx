@@ -41,6 +41,7 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards } from "@/hooks/useCustomRewards";
+import { useTaskXp } from "@/hooks/useTaskXp";
 import { RewardsVouchersPanel } from "@/components/RewardsVouchersPanel";
 import TokensBadge from "@/components/TokensBadge";
 import { useTokens } from "@/hooks/useTokens";
@@ -224,6 +225,7 @@ const Index = () => {
   const { isReady } = useTaskReady();
   const { getBonusAmount, hasBonus } = useTaskBonus();
   const { getRewardsForTodo } = useCustomRewards();
+  const { getXpFor } = useTaskXp();
   const { grant: grantReward, revokeForTodo } = useEarnedRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
@@ -1736,7 +1738,9 @@ const Index = () => {
                         const showAmount = !isAdmin && todo.amount != null && todo.amount > 0;
                         const showBonus = hasBonus(todo.id);
                         const customRewards = todo.person === 'Barča' ? getRewardsForTodo(todo.id) : [];
-                        if (!bonusPct && !showAmount && !showBonus && customRewards.length === 0) return null;
+                        const xp = todo.person === 'Barča' && todo.category === 'work' ? getXpFor(todo.id, todo.text) : 0;
+                        const showXp = xp > 0;
+                        if (!bonusPct && !showAmount && !showBonus && !showXp && customRewards.length === 0) return null;
                         return (
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             {bonusPct && (
@@ -1752,6 +1756,11 @@ const Index = () => {
                             {showBonus && (
                               <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap shrink-0" title="Bonusová částka">
                                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
+                              </span>
+                            )}
+                            {showXp && (
+                              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-800/50 whitespace-nowrap shrink-0" title="XP za splnění">
+                                ⚡ {xp} XP
                               </span>
                             )}
                             {customRewards.map((r) => (

@@ -11,6 +11,7 @@ export interface HourlyTask {
   month: string;
   color: string;
   person: string;
+  xp_per_hour: number;
   created_at: string;
   updated_at: string;
 }
@@ -51,6 +52,7 @@ export function useHourlyTasks() {
           milestone_bonus_percent: t.milestone_bonus_percent ?? 0.5,
           color: t.color ?? 'hsl(var(--primary))',
           person: t.person ?? 'Tadeáš',
+          xp_per_hour: t.xp_per_hour ?? 10,
           month,
           hours_worked: 0,
         }));
@@ -96,6 +98,7 @@ export function useHourlyTasks() {
     milestone_bonus_percent?: number;
     color?: string;
     person?: string;
+    xp_per_hour?: number;
   }) => {
     const { data } = await supabase
       .from('hourly_tasks')
@@ -106,6 +109,7 @@ export function useHourlyTasks() {
         milestone_bonus_percent: input.milestone_bonus_percent ?? 0.5,
         color: input.color ?? 'hsl(var(--primary))',
         person: input.person ?? 'Tadeáš',
+        xp_per_hour: input.xp_per_hour ?? 10,
         month: currentMonth(),
       })
       .select()

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRewards } from '../hooks/useRewards';
 import { useTaskEarnings } from '../hooks/useTaskEarnings';
 import { useTodos } from '../contexts/TodoContext';
@@ -19,21 +19,9 @@ const formatMonthLabel = (month: string) => {
   return format(new Date(y, m - 1, 1), 'LLLL yyyy', { locale: cs }).replace(/^./, c => c.toUpperCase());
 };
 
-const LEVEL_ICONS = ['🌱', '⭐', '💪', '💎', '👑'];
-const LEVEL_COLORS = [
-  'from-slate-400 to-slate-500',
-  'from-emerald-400 to-teal-500',
-  'from-blue-400 to-indigo-500',
-  'from-violet-400 to-purple-500',
-  'from-amber-400 to-orange-500',
-];
-const LEVEL_BG = [
-  'bg-slate-50 border-slate-200',
-  'bg-emerald-50 border-emerald-200',
-  'bg-blue-50 border-blue-200',
-  'bg-violet-50 border-violet-200',
-  'bg-amber-50 border-amber-200',
-];
+import { LEVEL_ICONS, LEVEL_COLORS, LEVEL_BG, computeLevel, defaultXpFor } from '@/lib/xp';
+import { useMonthlyXp } from '@/hooks/useMonthlyXp';
+import { useTaskXp } from '@/hooks/useTaskXp';
 
 export function RewardsBanner() {
   const { todos } = useTodos();
@@ -174,13 +162,7 @@ export function RewardsBanner() {
 
   const bonusSummary = useMemo(() => {
     if (archiveSummary) {
-      const activeTasks = archiveSummary.activeTasks;
-      const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
-      const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
-      const nextLevelAt = [1, 4, 7, 10, 10][level];
-      const progressBase = [0, 0, 4, 7, 10][level];
-      const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
-      return { ...archiveSummary, level, levelLabel, nextLevelAt, progressToNext };
+      return { ...archiveSummary };
     }
     const taskEarnings = liveEarnings.filter(e => !String(e.todo_id).endsWith('__bonus'));
     const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
@@ -197,11 +179,6 @@ export function RewardsBanner() {
     }, 0);
     const totalBonusPercent = Math.min(rawBonusPercent, liveConfig.maxTasks * liveConfig.bonusPerTask);
     const activeTasks = completedOnTime + completedLate + completedMissed;
-    const level = activeTasks <= 0 ? 0 : activeTasks <= 3 ? 1 : activeTasks <= 6 ? 2 : activeTasks <= 9 ? 3 : 4;
-    const levelLabel = ['Začínám 🌱', 'Na cestě ⭐', 'Makám 💪', 'Boss level 💎', 'Legenda 👑'][level];
-    const nextLevelAt = [1, 4, 7, 10, 10][level];
-    const progressBase = [0, 0, 4, 7, 10][level];
-    const progressToNext = level >= 4 ? 100 : Math.round((activeTasks - progressBase) / (nextLevelAt - progressBase) * 100);
 
     return {
       completedOnTime,
@@ -209,19 +186,60 @@ export function RewardsBanner() {
       completedMissed,
       totalBonusPercent,
       activeTasks,
-      level,
-      levelLabel,
-      nextLevelAt,
-      progressToNext,
     };
   }, [liveEarnings, liveConfig, archiveSummary]);
 
   const { completedOnTime, completedLate, completedMissed, totalBonusPercent } = bonusSummary;
-  const effectiveLevel = bonusSummary.level;
-  const effectiveLevelLabel = bonusSummary.levelLabel;
+
+  // ===== XP & Level systém =====
+  const liveXp = useMonthlyXp();
+  const { map: xpOverrides } = useTaskXp();
+
+  // XP pro archivní měsíc - spočítá se ze snapshotu
+  const archiveXp = useMemo(() => {
+    if (!isArchiveView || !archive) return null;
+    let sum = 0;
+    (archive.earnings_snapshot || []).forEach((e: any) => {
+      const tid = String(e.todo_id);
+      if (tid.startsWith('hourly:')) return;
+      if (tid.endsWith('__bonus')) return;
+      if (xpOverrides[tid] != null) sum += xpOverrides[tid];
+      else sum += defaultXpFor(e.todo_text);
+    });
+    (archive.hourly_tasks_snapshot || []).forEach((t: any) => {
+      const xpPerHour = t.xp_per_hour ?? 10;
+      sum += Math.round(Number(t.hours_worked || 0) * xpPerHour);
+    });
+    return { totalXp: sum, ...computeLevel(sum) };
+  }, [isArchiveView, archive, xpOverrides]);
+
+  const xpInfo = isArchiveView ? archiveXp : liveXp;
+  const totalXp = xpInfo?.totalXp ?? 0;
+  const effectiveLevel = xpInfo?.level ?? 0;
+  const effectiveLevelLabel = xpInfo?.label ?? 'Newbie Bambul';
+  const effectiveLevelIcon = xpInfo?.icon ?? '🌱';
+  const effectiveLevelColor = xpInfo?.color ?? LEVEL_COLORS[0];
+  const effectiveLevelBg = xpInfo?.bg ?? LEVEL_BG[0];
+  const effectiveProgressPct = xpInfo?.progressPct ?? 0;
+  const effectiveNextAt = xpInfo?.nextAt ?? 50;
+  const effectiveCurrentBase = xpInfo?.currentBase ?? 0;
+  const effectiveIsMax = xpInfo?.isMax ?? false;
   const effectiveActiveTasks = bonusSummary.activeTasks;
-  const effectiveNextLevelAt = bonusSummary.nextLevelAt;
-  const effectiveProgressToNext = bonusSummary.progressToNext;
+
+  // Animace level-upu (jen pro live view)
+  const [levelUpFlash, setLevelUpFlash] = useState(false);
+  const prevLevelRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (isArchiveView) return;
+    if (prevLevelRef.current == null) { prevLevelRef.current = effectiveLevel; return; }
+    if (effectiveLevel > prevLevelRef.current) {
+      setLevelUpFlash(true);
+      const t = setTimeout(() => setLevelUpFlash(false), 2500);
+      prevLevelRef.current = effectiveLevel;
+      return () => clearTimeout(t);
+    }
+    prevLevelRef.current = effectiveLevel;
+  }, [effectiveLevel, isArchiveView]);
 
   // Vyděláno + odvozená čísla
   const totalEarned = isArchiveView && archive ? archive.total_earned : liveTotalEarned;
@@ -275,21 +293,29 @@ export function RewardsBanner() {
 
       <div
         className={cn(
-          'rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none',
+          'relative rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none overflow-hidden',
           'dark:bg-opacity-10',
-          LEVEL_BG[effectiveLevel],
-          isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10'
+          effectiveLevelBg,
+          isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10',
+          levelUpFlash && 'ring-4 ring-amber-300 shadow-lg shadow-amber-200/60 animate-pulse'
         )}
         onClick={() => setExpanded(!expanded)}
       >
+        {levelUpFlash && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-10">
+            <div className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-amber-900 font-bold text-sm shadow-lg animate-bounce">
+              🎉 Level UP! {effectiveLevelLabel} 🎉
+            </div>
+          </div>
+        )}
         {/* Hlavní řádek */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn(
               'flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl shadow-inner',
-              LEVEL_COLORS[effectiveLevel]
+              effectiveLevelColor
             )}>
-              {LEVEL_ICONS[effectiveLevel]}
+              {effectiveLevelIcon}
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -297,14 +323,14 @@ export function RewardsBanner() {
                 <span className="text-xs text-muted-foreground">Lv.{effectiveLevel}</span>
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <div className="h-2 w-24 rounded-full bg-muted overflow-hidden">
+                <div className="h-2 w-32 rounded-full bg-muted overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', LEVEL_COLORS[effectiveLevel])}
-                    style={{ width: `${Math.max(effectiveProgressToNext, effectiveLevel >= 4 ? 100 : 5)}%` }}
+                    className={cn('h-full rounded-full bg-gradient-to-r transition-all duration-700', effectiveLevelColor)}
+                    style={{ width: `${Math.max(effectiveProgressPct, effectiveIsMax ? 100 : 5)}%` }}
                   />
                 </div>
-                <span className="text-10px text-muted-foreground">
-                  {effectiveLevel >= 4 ? 'MAX' : `${effectiveActiveTasks}/${effectiveNextLevelAt} úkolů`}
+                <span className="text-10px text-muted-foreground tabular-nums">
+                  {effectiveIsMax ? `${totalXp} XP · MAX` : `${totalXp}/${effectiveNextAt} XP`}
                 </span>
               </div>
             </div>

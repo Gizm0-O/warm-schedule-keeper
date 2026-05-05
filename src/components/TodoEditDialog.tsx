@@ -24,6 +24,8 @@ import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards } from "@/hooks/useCustomRewards";
+import { useTaskXp } from "@/hooks/useTaskXp";
+import { defaultXpFor } from "@/lib/xp";
 
 interface TodoEditDialogProps {
   todo: Todo | null;
@@ -36,6 +38,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
+  const { getXpOverride, setXp } = useTaskXp();
 
   const [editText, setEditText] = useState("");
   const [editCategory, setEditCategory] = useState<Category>("work");
@@ -45,6 +48,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
+  const [editXp, setEditXp] = useState("");
   const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
 
   // Hydrate state when a todo is opened
@@ -58,9 +62,11 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     setEditAmount(todo.amount ? todo.amount.toString() : "");
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
+    const xpOv = getXpOverride(todo.id);
+    setEditXp(xpOv != null ? String(xpOv) : (defaultXpFor(todo.text) > 0 ? String(defaultXpFor(todo.text)) : ""));
     const existing = getRewardsForTodo(todo.id);
     setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
-  }, [todo, hasBonus, getBonusAmount, getRewardsForTodo]);
+  }, [todo, hasBonus, getBonusAmount, getRewardsForTodo, getXpOverride]);
 
   const saveEdit = async () => {
     if (!todo || !editText.trim()) return;
@@ -76,6 +82,10 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     await setBonusAmount(todo.id, bonusVal);
     if (isAdmin) {
       await setRewardsForTodo(todo.id, editCustomRewards);
+      const xpVal = editXp.trim() === "" ? 0 : parseInt(editXp) || 0;
+      const dft = defaultXpFor(editText);
+      // Pokud je hodnota stejná jako default, smažeme override (uloží 0)
+      await setXp(todo.id, xpVal === dft ? 0 : xpVal);
     }
     onClose();
   };
@@ -162,6 +172,23 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
                 placeholder="např. 6000"
                 value={editAmount}
                 onChange={(e) => setEditAmount(e.target.value)}
+                min={0}
+              />
+            </div>
+          )}
+          {isAdmin && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                ⚡ XP za splnění
+                <span className="text-[10px] text-muted-foreground/70">
+                  (default: {defaultXpFor(editText) || 0} XP)
+                </span>
+              </label>
+              <Input
+                type="number"
+                placeholder={`např. ${defaultXpFor(editText) || 50}`}
+                value={editXp}
+                onChange={(e) => setEditXp(e.target.value)}
                 min={0}
               />
             </div>
