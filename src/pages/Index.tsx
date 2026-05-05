@@ -1758,6 +1758,11 @@ const Index = () => {
                                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
                               </span>
                             )}
+                            {showXp && (
+                              <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-800/50 whitespace-nowrap shrink-0" title="XP za splnění">
+                                ⚡ {xp} XP
+                              </span>
+                            )}
                             {customRewards.map((r) => (
                               <span
                                 key={r.id}
