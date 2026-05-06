@@ -262,9 +262,10 @@ const Index = () => {
     const wasCompleted = todo.completed;
     const completing = !wasCompleted;
 
-    // Auto-determine bonus from deadline if not set
+    // Auto-determine bonus from deadline (always recompute on completion so že
+    // pozdě odevzdaný úkol dostane správné %, i když byl předem nastaven on 'on_time')
     let bonus = getTaskBonus(id);
-    if (completing && isBarCaWork && hasAmount && bonus === 'pending') {
+    if (completing && isBarCaWork && hasAmount) {
       const today = startOfDay(new Date());
       const deadline = todo.deadline ? startOfDay(todo.deadline) : today;
       const daysLate = differenceInDays(today, deadline);
