@@ -1383,10 +1383,10 @@ const Index = () => {
                   });
                 })}
 
-                {/* SWITCH BREAK bar 14:00–15:00 across the work week (Mon–Fri) */}
+                {/* SWITCH BREAK bar 12:00–13:00 across the work week (Mon–Fri) */}
                 {(() => {
-                  const top = getHourTop(14);
-                  const height = getHourHeight(14);
+                  const top = getHourTop(12);
+                  const height = getHourHeight(12);
                   const colWidth = `calc((100% - 60px) / 7)`;
                   const left = `calc(60px + 0 * ${colWidth})`;
                   return (
