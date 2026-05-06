@@ -1716,19 +1716,24 @@ const Index = () => {
                       {(() => {
                         const bonusPct = (() => {
                           if (isAdmin || todo.person !== "Barča" || todo.category !== "work" || todo.completed) return null;
-                          const currentBonus = getTaskBonus(todo.id);
+                          // Dynamicky podle deadline – přebíjí uložený stav, dokud není úkol dokončen.
+                          const today = startOfDay(new Date());
+                          const dl = todo.deadline ? startOfDay(todo.deadline) : today;
+                          const daysLate = differenceInDays(today, dl);
+                          const dynamicBonus: 'on_time' | 'late' | 'missed' =
+                            daysLate > 7 ? 'missed' : daysLate > 0 ? 'late' : 'on_time';
                           let pct: number | null = null;
                           let cls = "";
                           let icon = "";
-                          if (currentBonus === 'on_time') {
+                          if (dynamicBonus === 'on_time') {
                             pct = rewardsConfig.bonusPerTask;
                             cls = "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400";
                             icon = "⭐";
-                          } else if (currentBonus === 'late') {
+                          } else if (dynamicBonus === 'late') {
                             pct = rewardsConfig.bonusLate;
                             cls = "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/40 dark:text-amber-400";
                             icon = "⏳";
-                          } else if (currentBonus === 'missed') {
+                          } else {
                             pct = 0;
                             cls = "bg-red-100 text-red-600 border-red-300 dark:bg-red-900/40 dark:text-red-400";
                             icon = "✕";
