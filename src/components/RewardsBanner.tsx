@@ -400,6 +400,29 @@ export function RewardsBanner() {
               Splněno {completedOnTime + completedLate + completedMissed}/{config.maxTasks} úkolů · bonus +{totalBonusPercent.toFixed(1)}%
             </div>
 
+            {/* Rozdělení výdělků: Příběhy vs Vyhraj */}
+            {(() => {
+              const stories = earnings
+                .filter(e => /příběh/i.test(e.todo_text))
+                .reduce((s, e) => s + e.amount, 0);
+              const vyhraj = earnings
+                .filter(e => String(e.todo_id).startsWith('hourly:') || /vyhraj/i.test(e.todo_text))
+                .reduce((s, e) => s + e.amount, 0);
+              if (stories === 0 && vyhraj === 0) return null;
+              return (
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center rounded-lg bg-card/50 border border-current/10 p-1.5">
+                    <div className="text-xs font-semibold text-foreground">📖 {stories.toLocaleString('cs')} Kč</div>
+                    <div className="text-9px text-muted-foreground">Příběhy</div>
+                  </div>
+                  <div className="text-center rounded-lg bg-card/50 border border-current/10 p-1.5">
+                    <div className="text-xs font-semibold text-foreground">⏱️ {vyhraj.toLocaleString('cs')} Kč</div>
+                    <div className="text-9px text-muted-foreground">Vyhraj</div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Recent earnings preview */}
             {earnings.length > 0 && (
               <div className="mt-2 pt-2 border-t border-current/10">
