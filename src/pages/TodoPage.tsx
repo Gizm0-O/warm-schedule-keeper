@@ -150,9 +150,9 @@ const TodoPage = () => {
     const shouldRecordEarning = !todo.completed && isBarCaWork && hasAmount;
     const wasCompleted = todo.completed;
 
-    // Auto-determine bonus from deadline if not set
+    // Auto-determine bonus from deadline (vždy přepočítej při dokončení)
     let bonus = getTaskBonus(id);
-    if (shouldRecordEarning && bonus === 'pending') {
+    if (shouldRecordEarning) {
       const today = startOfDay(new Date());
       const deadline = todo.deadline ? startOfDay(todo.deadline) : today;
       const daysLate = differenceInDays(today, deadline);
