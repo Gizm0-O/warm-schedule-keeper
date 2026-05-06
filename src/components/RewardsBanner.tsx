@@ -381,7 +381,7 @@ export function RewardsBanner() {
                 <div className="text-9px text-muted-foreground">Bonus +{totalBonusPercent.toFixed(1)}%</div>
               </div>
               <div className="text-center rounded-xl bg-card/70 p-2">
-                <div className="text-lg font-bold text-foreground">{completedOnTime + completedLate + completedMissed}/{config.maxTasks}</div>
+                <div className="text-lg font-bold text-foreground">{completedOnTime + completedLate + completedMissed}</div>
                 <div className="text-9px text-muted-foreground">Splněné úkoly</div>
               </div>
             </div>
