@@ -177,27 +177,15 @@ interface DisplayShift extends Shift {
 }
 
 // day of week (1=Mon..5=Fri) -> shifts
+const MORNING_SHIFT: Shift = { person: "Barča", location: "Z domu", startHour: 6, endHour: 12, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" };
+const AFTERNOON_SHIFT: Shift = { person: "Tadeáš", location: "Kancelář", startHour: 13, endHour: 21, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" };
+
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
-  1: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-  ],
-  2: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-  ],
-  3: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-  ],
-  4: [
-    { person: "Barča", location: "Z domu", startHour: 7, endHour: 14, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-    { person: "Tadeáš", location: "Kancelář", startHour: 15, endHour: 22, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-  ],
-  5: [
-    { person: "Tadeáš", location: "Kancelář", startHour: 7, endHour: 14, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" },
-    { person: "Barča", location: "Z domu", startHour: 15, endHour: 22, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" },
-  ],
+  1: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
+  2: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
+  3: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
+  4: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
+  5: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
 };
 
 const getDefaultShiftsForDay = (day: Date): Shift[] => {
@@ -210,8 +198,8 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
   if (shifts.length !== 2) return shifts;
   const [morning, afternoon] = shifts;
   return [
-    { ...afternoon, startHour: 7, endHour: 14 },
-    { ...morning, startHour: 15, endHour: 22 },
+    { ...afternoon, startHour: 6, endHour: 12 },
+    { ...morning, startHour: 13, endHour: 21 },
   ];
 };
 
