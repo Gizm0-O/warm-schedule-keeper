@@ -443,7 +443,16 @@ const TodoPage = () => {
 
   const TodoItem = ({ todo }: { todo: Todo }) => {
     const info = getDeadlineInfo(todo.deadline);
-    const currentBonus = getTaskBonus(todo.id);
+    // Pro nedokončený úkol vyhodnocujeme bonus dynamicky podle deadline,
+    // aby procenta odpovídala aktuálnímu stavu (i když admin změní deadline).
+    const storedBonus = getTaskBonus(todo.id);
+    const currentBonus = (() => {
+      if (todo.completed) return storedBonus;
+      const today = startOfDay(new Date());
+      const dl = todo.deadline ? startOfDay(todo.deadline) : today;
+      const daysLate = differenceInDays(today, dl);
+      return daysLate > 7 ? 'missed' : daysLate > 0 ? 'late' : 'on_time';
+    })();
     // Only show bonus buttons for Barča work tasks (not Tadeáš)
     const showBonusBtns = todo.person === 'Barča' && todo.category === 'work' && !todo.completed;
     const btnBase = 'text-[11px] px-1.5 py-0.5 rounded border transition-all';
