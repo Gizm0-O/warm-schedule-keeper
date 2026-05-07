@@ -1083,9 +1083,11 @@ const Index = () => {
                     {format(day, "EEEEEE", { locale: cs })}
                   </span>
                   <span
+                    key={isToday(day) ? `today-w-${todayPulseKey}` : undefined}
                     className={cn(
                       "mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
-                      isToday(day) && "bg-primary text-primary-foreground"
+                      isToday(day) && "bg-primary text-primary-foreground",
+                      isToday(day) && todayPulseKey > 0 && "animate-today-pulse"
                     )}
                   >
                     {format(day, "d")}
