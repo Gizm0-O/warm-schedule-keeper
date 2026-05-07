@@ -10,9 +10,10 @@ import { defaultXpFor, computeLevel } from '@/lib/xp';
  * - z hodinových úkolů: hours_worked * xp_per_hour
  */
 export function useMonthlyXp() {
-  const { earnings } = useTaskEarnings();
-  const { tasks: hourlyTasks } = useHourlyTasks();
+  const { earnings, loading: earningsLoading } = useTaskEarnings();
+  const { tasks: hourlyTasks, loading: hourlyLoading } = useHourlyTasks();
   const [xpMap, setXpMap] = useState<Record<string, number>>({});
+  const [xpLoaded, setXpLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -22,6 +23,7 @@ export function useMonthlyXp() {
       const next: Record<string, number> = {};
       data.forEach((r: any) => { next[r.todo_id] = r.xp; });
       setXpMap(next);
+      setXpLoaded(true);
     };
     load();
     const channel = supabase
@@ -33,7 +35,6 @@ export function useMonthlyXp() {
 
   const totalXp = useMemo(() => {
     let sum = 0;
-    // 1) task_earnings (vyhneme se hourly:* a __bonus, které řešíme zvlášť)
     earnings.forEach(e => {
       const tid = String(e.todo_id);
       if (tid.startsWith('hourly:')) return;
@@ -44,7 +45,6 @@ export function useMonthlyXp() {
         sum += defaultXpFor(e.todo_text);
       }
     });
-    // 2) hodinové úkoly
     hourlyTasks.forEach(t => {
       const xpPerHour = (t as any).xp_per_hour ?? 10;
       sum += Math.round(Number(t.hours_worked) * xpPerHour);
@@ -53,6 +53,7 @@ export function useMonthlyXp() {
   }, [earnings, hourlyTasks, xpMap]);
 
   const levelInfo = useMemo(() => computeLevel(totalXp), [totalXp]);
+  const loaded = xpLoaded && !earningsLoading && !hourlyLoading;
 
-  return { totalXp, ...levelInfo };
+  return { totalXp, loaded, ...levelInfo };
 }
