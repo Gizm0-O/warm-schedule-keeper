@@ -498,9 +498,9 @@ const TodoPage = () => {
               <span
                 key={r.id}
                 className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-4 rounded border bg-warning/15 text-warning border-warning/40 dark:bg-warning/20 dark:text-warning dark:border-warning/50 whitespace-nowrap"
-                title={r.repeat_on_recurring ? "Poukázka (opakovaná)" : "Poukázka"}
+                title={r.is_token ? "Token" : r.repeat_on_recurring ? "Poukázka (opakovaná)" : "Poukázka"}
               >
-                🎟️ {r.label}
+                {r.is_token ? '🪙' : '🎟️'} {r.label}
               </span>
             ))}
           </div>
