@@ -654,12 +654,11 @@ const Index = () => {
     else setCurrentWeekStart(addWeeks(currentWeekStart, 1));
   };
 
-  const [todayHighlight, setTodayHighlight] = useState(0);
+  const [todayPulseKey, setTodayPulseKey] = useState(0);
   const goToday = () => {
     setCurrentMonth(new Date());
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
-    setTodayHighlight((n) => n + 1);
-    window.setTimeout(() => setTodayHighlight((n) => n), 3500);
+    setTodayPulseKey((n) => n + 1);
   };
 
   const todayButtonLabel = useMemo(() => {
