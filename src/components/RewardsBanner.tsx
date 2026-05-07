@@ -231,8 +231,8 @@ export function RewardsBanner() {
   const [levelUpFlash, setLevelUpFlash] = useState(false);
   useEffect(() => {
     if (isArchiveView) return;
-    // Počkat až se XP/level skutečně načte z DB - jinak by initial 0 → real level vyvolal falešný level-up
-    if (!xpInfo) return;
+    // Počkat až se data skutečně načtou - jinak by initial 0 → real level vyvolal falešný level-up
+    if (!liveXp.loaded) return;
     const month = new Date().toISOString().slice(0, 7);
     const key = `lvlSeen:${month}`;
     const raw = localStorage.getItem(key);
@@ -252,7 +252,7 @@ export function RewardsBanner() {
       // Reset (např. nový měsíc/úprava XP) - sesynchronizuj bez animace
       localStorage.setItem(key, String(effectiveLevel));
     }
-  }, [effectiveLevel, isArchiveView, xpInfo]);
+  }, [effectiveLevel, isArchiveView, liveXp.loaded]);
 
   // Vyděláno + odvozená čísla
   const totalEarned = isArchiveView && archive ? archive.total_earned : liveTotalEarned;
