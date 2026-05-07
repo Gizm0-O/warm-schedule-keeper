@@ -654,9 +654,11 @@ const Index = () => {
     else setCurrentWeekStart(addWeeks(currentWeekStart, 1));
   };
 
+  const [todayPulseKey, setTodayPulseKey] = useState(0);
   const goToday = () => {
     setCurrentMonth(new Date());
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    setTodayPulseKey((n) => n + 1);
   };
 
   const todayButtonLabel = useMemo(() => {
@@ -905,7 +907,11 @@ const Index = () => {
         <RewardsBanner />
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
+        <h2
+          className="text-2xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors select-none w-fit"
+          onClick={(e) => { e.stopPropagation(); goToday(); }}
+          title="Skočit na aktuální týden"
+        >{todayLabel}</h2>
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground capitalize">
             {headerLabel}
@@ -984,9 +990,11 @@ const Index = () => {
                     )}
                   >
                     <span
+                      key={isToday(day) ? `today-${todayPulseKey}` : undefined}
                       className={cn(
                         "mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium",
-                        isToday(day) && "bg-primary text-primary-foreground"
+                        isToday(day) && "bg-primary text-primary-foreground",
+                        isToday(day) && todayPulseKey > 0 && "animate-today-pulse"
                       )}
                     >
                       {format(day, "d")}
@@ -1075,9 +1083,11 @@ const Index = () => {
                     {format(day, "EEEEEE", { locale: cs })}
                   </span>
                   <span
+                    key={isToday(day) ? `today-w-${todayPulseKey}` : undefined}
                     className={cn(
                       "mt-1 flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold",
-                      isToday(day) && "bg-primary text-primary-foreground"
+                      isToday(day) && "bg-primary text-primary-foreground",
+                      isToday(day) && todayPulseKey > 0 && "animate-today-pulse"
                     )}
                   >
                     {format(day, "d")}
