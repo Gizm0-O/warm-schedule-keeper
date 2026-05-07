@@ -226,19 +226,29 @@ export function RewardsBanner() {
   const effectiveIsMax = xpInfo?.isMax ?? false;
   const effectiveActiveTasks = bonusSummary.activeTasks;
 
-  // Animace level-upu (jen pro live view)
+  // Animace level-upu (jen pro live view) - perzistentní přes localStorage,
+  // takže se ukáže jen když opravdu dojde k level-upu (ne při refresh/přepnutí záložky).
   const [levelUpFlash, setLevelUpFlash] = useState(false);
-  const prevLevelRef = useRef<number | null>(null);
   useEffect(() => {
     if (isArchiveView) return;
-    if (prevLevelRef.current == null) { prevLevelRef.current = effectiveLevel; return; }
-    if (effectiveLevel > prevLevelRef.current) {
+    const month = new Date().toISOString().slice(0, 7);
+    const key = `lvlSeen:${month}`;
+    const stored = Number(localStorage.getItem(key) ?? '-1');
+    if (stored < 0) {
+      // První návštěva tento měsíc - jen ulož, neanimuj
+      localStorage.setItem(key, String(effectiveLevel));
+      return;
+    }
+    if (effectiveLevel > stored) {
       setLevelUpFlash(true);
+      localStorage.setItem(key, String(effectiveLevel));
       const t = setTimeout(() => setLevelUpFlash(false), 2500);
-      prevLevelRef.current = effectiveLevel;
       return () => clearTimeout(t);
     }
-    prevLevelRef.current = effectiveLevel;
+    if (effectiveLevel < stored) {
+      // Reset (např. nový měsíc/úprava XP) - sesynchronizuj bez animace
+      localStorage.setItem(key, String(effectiveLevel));
+    }
   }, [effectiveLevel, isArchiveView]);
 
   // Vyděláno + odvozená čísla
