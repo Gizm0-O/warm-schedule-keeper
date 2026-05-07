@@ -907,7 +907,11 @@ const Index = () => {
         <RewardsBanner />
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">{todayLabel}</h2>
+        <h2
+          className="text-2xl font-bold text-foreground cursor-pointer hover:text-primary transition-colors select-none w-fit"
+          onClick={(e) => { e.stopPropagation(); goToday(); }}
+          title="Skočit na aktuální týden"
+        >{todayLabel}</h2>
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground capitalize">
             {headerLabel}
