@@ -60,6 +60,7 @@ const TodoPage = () => {
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
+  const { getXpFor } = useTaskXp();
   const { grant: grantReward, remove: removeReward, revokeForTodo } = useEarnedRewards();
   const { grant: grantToken, spend: spendToken } = useTokens();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
