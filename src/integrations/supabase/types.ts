@@ -365,6 +365,7 @@ export type Database = {
       task_custom_rewards: {
         Row: {
           created_at: string
+          expires_at: string | null
           id: string
           is_token: boolean
           label: string
@@ -375,6 +376,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_token?: boolean
           label: string
@@ -385,6 +387,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_token?: boolean
           label?: string

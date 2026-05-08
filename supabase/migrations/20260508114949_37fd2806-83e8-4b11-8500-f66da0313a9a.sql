@@ -1,0 +1,1 @@
+ALTER TABLE public.task_custom_rewards ADD COLUMN expires_at timestamptz NULL;
