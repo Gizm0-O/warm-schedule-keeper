@@ -44,6 +44,7 @@ import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/useCustomRewards";
 import { useTokens } from "@/hooks/useTokens";
+import { useTaskXp } from "@/hooks/useTaskXp";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { TodoEditDialog } from "@/components/TodoEditDialog";
