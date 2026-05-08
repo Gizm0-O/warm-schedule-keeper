@@ -170,7 +170,9 @@ const TodoPage = () => {
     if (completing && todo.person === 'Barča') {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
-      const allGrantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const nowMs = Date.now();
+      const notExpired = customRewards.filter(r => !r.expires_at || new Date(r.expires_at).getTime() > nowMs);
+      const allGrantable = notExpired.filter(r => !isRecurring || r.repeat_on_recurring);
       const tokenTemplates = allGrantable.filter(r => r.is_token);
       grantableTemplates = allGrantable.filter(r => !r.is_token);
       const grantableTemplateIds = grantableTemplates.map((r) => r.id);
