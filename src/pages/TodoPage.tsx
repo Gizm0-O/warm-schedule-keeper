@@ -490,14 +490,24 @@ const TodoPage = () => {
             <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
               {todo.text}
             </span>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {personBadge(todo.person)}
+            {todo.recurrence !== "none" && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Repeat className="h-3 w-3" />
+                {RECURRENCE_LABELS[todo.recurrence]}
+              </span>
+            )}
+            {deadlineLabel(todo.deadline)}
             {todo.person === 'Barča' && todo.amount && todo.amount > 0 && isAdmin && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 font-medium">
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 font-medium whitespace-nowrap">
                 <Coins className="h-3 w-3" />
                 {todo.amount.toLocaleString('cs')} Kč
               </span>
             )}
             {todo.person === 'Barča' && hasBonus(todo.id) && isAdmin && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-medium">
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-medium whitespace-nowrap">
                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
               </span>
             )}
@@ -540,16 +550,6 @@ const TodoPage = () => {
                 </span>
               );
             })}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            {personBadge(todo.person)}
-            {todo.recurrence !== "none" && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                <Repeat className="h-3 w-3" />
-                {RECURRENCE_LABELS[todo.recurrence]}
-              </span>
-            )}
-            {deadlineLabel(todo.deadline)}
           </div>
         </div>
         {showBonusBtns && isAdmin && (
