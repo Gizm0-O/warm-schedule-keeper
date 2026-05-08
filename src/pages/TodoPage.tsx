@@ -44,6 +44,7 @@ import { useTaskReady } from "@/hooks/useTaskReady";
 import { useTaskBonus } from "@/hooks/useTaskBonus";
 import { useCustomRewards, useEarnedRewards, type EarnedReward } from "@/hooks/useCustomRewards";
 import { useTokens } from "@/hooks/useTokens";
+import { useTaskXp } from "@/hooks/useTaskXp";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { TodoEditDialog } from "@/components/TodoEditDialog";
@@ -60,6 +61,7 @@ const TodoPage = () => {
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
+  const { getXpFor } = useTaskXp();
   const { grant: grantReward, remove: removeReward, revokeForTodo } = useEarnedRewards();
   const { grant: grantToken, spend: spendToken } = useTokens();
   const [activeTab, setActiveTab] = useState<"all" | Person>("all");
@@ -486,20 +488,10 @@ const TodoPage = () => {
           {todo.completed && <Check className="h-3.5 w-3.5" />}
         </button>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={cn("text-sm text-foreground", todo.completed && "line-through")}>
               {todo.text}
             </span>
-          </div>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-            {personBadge(todo.person)}
-            {todo.recurrence !== "none" && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
-                <Repeat className="h-3 w-3" />
-                {RECURRENCE_LABELS[todo.recurrence]}
-              </span>
-            )}
-            {deadlineLabel(todo.deadline)}
             {todo.person === 'Barča' && todo.amount && todo.amount > 0 && isAdmin && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-amber-600 font-medium whitespace-nowrap">
                 <Coins className="h-3 w-3" />
@@ -511,6 +503,25 @@ const TodoPage = () => {
                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
               </span>
             )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {personBadge(todo.person)}
+            {todo.recurrence !== "none" && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                <Repeat className="h-3 w-3" />
+                {RECURRENCE_LABELS[todo.recurrence]}
+              </span>
+            )}
+            {deadlineLabel(todo.deadline)}
+            {(() => {
+              const xp = getXpFor(todo.id, todo.text);
+              if (xp <= 0) return null;
+              return (
+                <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-4 rounded border bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-700/50 whitespace-nowrap font-medium" title={`${xp} XP za splnění`}>
+                  ⚡ {xp} XP
+                </span>
+              );
+            })()}
             {todo.person === 'Barča' && getRewardsForTodo(todo.id).map((r) => {
               const expMs = r.expires_at ? new Date(r.expires_at).getTime() : null;
               const expired = expMs !== null && expMs <= nowTick;
