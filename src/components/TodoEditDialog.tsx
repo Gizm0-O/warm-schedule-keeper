@@ -49,7 +49,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
   const [editXp, setEditXp] = useState("");
-  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
+  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean; expires_at: string | null }[]>([]);
 
   // Hydrate state when a todo is opened
   useEffect(() => {
@@ -65,7 +65,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     const xpOv = getXpOverride(todo.id);
     setEditXp(xpOv != null ? String(xpOv) : (defaultXpFor(todo.text) > 0 ? String(defaultXpFor(todo.text)) : ""));
     const existing = getRewardsForTodo(todo.id);
-    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
+    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token, expires_at: r.expires_at ?? null })));
   }, [todo, hasBonus, getBonusAmount, getRewardsForTodo, getXpOverride]);
 
   const saveEdit = async () => {
