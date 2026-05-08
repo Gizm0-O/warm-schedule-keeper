@@ -49,7 +49,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
   const [editXp, setEditXp] = useState("");
-  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean }[]>([]);
+  const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean; expires_at: string | null }[]>([]);
 
   // Hydrate state when a todo is opened
   useEffect(() => {
@@ -65,7 +65,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     const xpOv = getXpOverride(todo.id);
     setEditXp(xpOv != null ? String(xpOv) : (defaultXpFor(todo.text) > 0 ? String(defaultXpFor(todo.text)) : ""));
     const existing = getRewardsForTodo(todo.id);
-    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token })));
+    setEditCustomRewards(existing.map(r => ({ label: r.label, repeat_on_recurring: r.repeat_on_recurring, is_token: r.is_token, expires_at: r.expires_at ?? null })));
   }, [todo, hasBonus, getBonusAmount, getRewardsForTodo, getXpOverride]);
 
   const saveEdit = async () => {
@@ -244,7 +244,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
                   size="sm"
                   variant="outline"
                   className="h-7 text-xs gap-1"
-                  onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none', is_token: false }])}
+                  onClick={() => setEditCustomRewards(prev => [...prev, { label: "", repeat_on_recurring: editRecurrence !== 'none', is_token: false, expires_at: null }])}
                 >
                   <Plus className="h-3 w-3" /> Přidat
                 </Button>
@@ -291,6 +291,40 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
                       </label>
                     </div>
                   )}
+                  <div className="flex items-center gap-2 pl-1 flex-wrap">
+                    <Checkbox
+                      id={`timed-reward-${idx}`}
+                      checked={r.expires_at !== null}
+                      onCheckedChange={(checked) => setEditCustomRewards(prev => prev.map((x, i) => {
+                        if (i !== idx) return x;
+                        if (!checked) return { ...x, expires_at: null };
+                        // default: tomorrow 20:00
+                        const d = new Date();
+                        d.setDate(d.getDate() + 1);
+                        d.setHours(20, 0, 0, 0);
+                        return { ...x, expires_at: d.toISOString() };
+                      }))}
+                    />
+                    <label htmlFor={`timed-reward-${idx}`} className="text-[11px] cursor-pointer select-none flex items-center gap-1 text-rose-600 dark:text-rose-300">
+                      ⏰ Časovaná – platí jen do
+                    </label>
+                    {r.expires_at !== null && (
+                      <Input
+                        type="datetime-local"
+                        value={(() => {
+                          const d = new Date(r.expires_at!);
+                          const pad = (n: number) => String(n).padStart(2, '0');
+                          return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                        })()}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const iso = v ? new Date(v).toISOString() : null;
+                          setEditCustomRewards(prev => prev.map((x, i) => i === idx ? { ...x, expires_at: iso } : x));
+                        }}
+                        className="h-7 text-xs w-auto"
+                      />
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

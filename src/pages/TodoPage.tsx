@@ -70,6 +70,11 @@ const TodoPage = () => {
   const [custPctVal, setCustPctVal] = useState('');
   const [customBonuses, setCustomBonuses] = useState<Record<string, number>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<Todo | null>(null);
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowTick(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   // New todo form state
   const [newText, setNewText] = useState("");
@@ -170,7 +175,9 @@ const TodoPage = () => {
     if (completing && todo.person === 'Barča') {
       const customRewards = getRewardsForTodo(id);
       const isRecurring = todo.recurrence !== 'none';
-      const allGrantable = customRewards.filter(r => !isRecurring || r.repeat_on_recurring);
+      const nowMs = Date.now();
+      const notExpired = customRewards.filter(r => !r.expires_at || new Date(r.expires_at).getTime() > nowMs);
+      const allGrantable = notExpired.filter(r => !isRecurring || r.repeat_on_recurring);
       const tokenTemplates = allGrantable.filter(r => r.is_token);
       grantableTemplates = allGrantable.filter(r => !r.is_token);
       const grantableTemplateIds = grantableTemplates.map((r) => r.id);
@@ -494,15 +501,45 @@ const TodoPage = () => {
                 🎁 {getBonusAmount(todo.id).toLocaleString('cs')} Kč
               </span>
             )}
-            {todo.person === 'Barča' && getRewardsForTodo(todo.id).map((r) => (
-              <span
-                key={r.id}
-                className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-4 rounded border bg-warning/15 text-warning border-warning/40 dark:bg-warning/20 dark:text-warning dark:border-warning/50 whitespace-nowrap"
-                title={r.is_token ? "Token" : r.repeat_on_recurring ? "Poukázka (opakovaná)" : "Poukázka"}
-              >
-                {r.is_token ? '🪙' : '🎟️'} {r.label}
-              </span>
-            ))}
+            {todo.person === 'Barča' && getRewardsForTodo(todo.id).map((r) => {
+              const expMs = r.expires_at ? new Date(r.expires_at).getTime() : null;
+              const expired = expMs !== null && expMs <= nowTick;
+              if (expired) return null;
+              const remaining = expMs !== null ? expMs - nowTick : null;
+              const fmtRemaining = (ms: number) => {
+                const s = Math.max(0, Math.floor(ms / 1000));
+                const d = Math.floor(s / 86400);
+                const h = Math.floor((s % 86400) / 3600);
+                const m = Math.floor((s % 3600) / 60);
+                if (d > 0) return `${d}d ${h}h`;
+                if (h > 0) return `${h}h ${m}m`;
+                return `${m}m`;
+              };
+              const urgent = remaining !== null && remaining < 60 * 60 * 1000;
+              return (
+                <span
+                  key={r.id}
+                  className={cn(
+                    "inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 h-4 rounded border whitespace-nowrap",
+                    expMs !== null
+                      ? urgent
+                        ? "bg-rose-100 text-rose-700 border-rose-300 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-700/50 animate-pulse"
+                        : "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-300 dark:border-rose-800/50"
+                      : "bg-warning/15 text-warning border-warning/40 dark:bg-warning/20 dark:text-warning dark:border-warning/50"
+                  )}
+                  title={
+                    expMs !== null
+                      ? `Časovaná poukázka – platí do ${format(new Date(expMs), 'd.M. HH:mm', { locale: cs })}`
+                      : r.is_token ? "Token" : r.repeat_on_recurring ? "Poukázka (opakovaná)" : "Poukázka"
+                  }
+                >
+                  {r.is_token ? '🪙' : '🎟️'} {r.label}
+                  {remaining !== null && (
+                    <span className="ml-1 font-mono opacity-80">⏰ {fmtRemaining(remaining)}</span>
+                  )}
+                </span>
+              );
+            })}
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {personBadge(todo.person)}
