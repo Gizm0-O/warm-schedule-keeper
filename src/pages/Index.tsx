@@ -1354,7 +1354,7 @@ const Index = () => {
                         <div className="text-xs font-bold truncate mt-0.5 text-foreground">{ev.title}</div>
                         {height > 24 && (
                           <div className="text-[9px] font-semibold text-foreground/80">
-                            {startH.toString().padStart(2, "0")}:00–{endH.toString().padStart(2, "0")}:00
+                            {floatToTime(startH)}–{floatToTime(endH)}
                           </div>
                         )}
                         {/* Bottom drag handle */}
