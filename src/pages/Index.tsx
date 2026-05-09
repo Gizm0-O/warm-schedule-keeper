@@ -1555,28 +1555,24 @@ const Index = () => {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nová událost</h4>
                 {viewMode === "week" && !newEventAllDay && (
                   <div className="flex gap-2">
-                    <select
-                      value={newEventHour}
+                    <input
+                      type="time"
+                      step={900}
+                      value={floatToTime(newEventHour)}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const v = timeToFloat(e.target.value);
                         setNewEventHour(v);
-                        if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 23));
+                        if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
                       }}
                       className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>Od {h.toString().padStart(2, "0")}:00</option>
-                      ))}
-                    </select>
-                    <select
-                      value={newEventEndHour}
-                      onChange={(e) => setNewEventEndHour(Number(e.target.value))}
+                    />
+                    <input
+                      type="time"
+                      step={900}
+                      value={floatToTime(newEventEndHour)}
+                      onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
                       className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {HOURS.filter((h) => h > newEventHour).map((h) => (
-                        <option key={h} value={h}>Do {h.toString().padStart(2, "0")}:00</option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 )}
                 {/* Color picker */}
