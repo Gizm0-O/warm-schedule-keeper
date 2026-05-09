@@ -1322,8 +1322,8 @@ const Index = () => {
                   return dayEvents.map((ev) => {
                     const startH = ev.hour!;
                     const endH = ev.endHour ?? startH + 1;
-                    const top = getHourTop(startH);
-                    const height = HOURS.slice(startH, endH).reduce((s, h) => s + getHourHeight(h), 0);
+                    const top = timeToY(startH);
+                    const height = timeToY(endH) - top;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
                       <div
