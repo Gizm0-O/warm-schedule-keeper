@@ -780,6 +780,14 @@ const Index = () => {
 
   const getHourTop = (hour: number) =>
     HOURS.slice(0, hour).reduce((sum, h) => sum + getHourHeight(h), 0);
+  const timeToY = (t: number) => {
+    const fullH = Math.floor(t);
+    const frac = t - fullH;
+    let acc = 0;
+    for (let i = 0; i < fullH && i < 24; i++) acc += getHourHeight(i);
+    if (fullH < 24) acc += frac * getHourHeight(fullH);
+    return acc;
+  };
   const totalGridHeight = HOURS.reduce((sum, h) => sum + getHourHeight(h), 0);
 
   const currentHour = now.getHours();
