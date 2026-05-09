@@ -17,6 +17,7 @@ import {
   startOfDay,
   differenceInDays,
   getDay,
+  addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock } from "lucide-react";
