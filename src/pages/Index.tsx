@@ -17,6 +17,7 @@ import {
   startOfDay,
   differenceInDays,
   getDay,
+  addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock } from "lucide-react";
@@ -1651,13 +1652,27 @@ const Index = () => {
               ) : (
             (() => {
               const today = startOfDay(new Date());
+              const tomorrow = addDays(today, 1);
               const urgentTodos = todos.filter((t) => {
                 if (t.completed || !t.deadline) return false;
                 const target = startOfDay(t.deadline);
-                return isBefore(target, today) || isSameDay(target, today);
+                return isBefore(target, today) || isSameDay(target, today) || isSameDay(target, tomorrow);
               });
-              const workTodos = urgentTodos.filter((t) => t.category === "work").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
-              const homeTodos = urgentTodos.filter((t) => t.category === "home").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
+              // Per-person fallback: if a person has no overdue/today/tomorrow tasks,
+              // show their single next upcoming task (regardless of date).
+              const persons = ["Tadeáš", "Barča"] as const;
+              const fallbackTodos: Todo[] = [];
+              persons.forEach((p) => {
+                const hasUrgent = urgentTodos.some((t) => t.person === p);
+                if (hasUrgent) return;
+                const next = todos
+                  .filter((t) => !t.completed && t.deadline && t.person === p && startOfDay(t.deadline).getTime() > tomorrow.getTime())
+                  .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())[0];
+                if (next) fallbackTodos.push(next);
+              });
+              const combined = [...urgentTodos, ...fallbackTodos];
+              const workTodos = combined.filter((t) => t.category === "work").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
+              const homeTodos = combined.filter((t) => t.category === "home").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
 
               const TodoItem = ({ todo }: { todo: Todo }) => {
                 const target = startOfDay(todo.deadline!);
