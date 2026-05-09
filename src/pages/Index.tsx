@@ -1658,17 +1658,20 @@ const Index = () => {
                 const target = startOfDay(t.deadline);
                 return isBefore(target, today) || isSameDay(target, today) || isSameDay(target, tomorrow);
               });
-              // Per-person fallback: if a person has no overdue/today/tomorrow tasks,
-              // show their single next upcoming task (regardless of date).
+              // Per-person + per-category fallback: if a person has no overdue/today/tomorrow
+              // tasks in a given category, show their single next upcoming task in that category.
               const persons = ["Tadeáš", "Barča"] as const;
+              const categories = ["work", "home"] as const;
               const fallbackTodos: Todo[] = [];
               persons.forEach((p) => {
-                const hasUrgent = urgentTodos.some((t) => t.person === p);
-                if (hasUrgent) return;
-                const next = todos
-                  .filter((t) => !t.completed && t.deadline && t.person === p && startOfDay(t.deadline).getTime() > tomorrow.getTime())
-                  .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())[0];
-                if (next) fallbackTodos.push(next);
+                categories.forEach((c) => {
+                  const hasUrgent = urgentTodos.some((t) => t.person === p && t.category === c);
+                  if (hasUrgent) return;
+                  const next = todos
+                    .filter((t) => !t.completed && t.deadline && t.person === p && t.category === c && startOfDay(t.deadline).getTime() > tomorrow.getTime())
+                    .sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime())[0];
+                  if (next) fallbackTodos.push(next);
+                });
               });
               const combined = [...urgentTodos, ...fallbackTodos];
               const workTodos = combined.filter((t) => t.category === "work").sort((a, b) => a.deadline!.getTime() - b.deadline!.getTime());
