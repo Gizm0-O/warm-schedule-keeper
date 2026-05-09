@@ -1,0 +1,2 @@
+ALTER TABLE public.calendar_events ALTER COLUMN hour TYPE double precision USING hour::double precision;
+ALTER TABLE public.calendar_events ALTER COLUMN end_hour TYPE double precision USING end_hour::double precision;

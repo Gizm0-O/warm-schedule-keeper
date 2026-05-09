@@ -157,6 +157,19 @@ const BIRTHDAY_NAMES: Record<string, string> = {
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
+const QUARTER = 0.25;
+const snapQuarter = (t: number) => Math.round(t / QUARTER) * QUARTER;
+const floatToTime = (t: number) => {
+  const total = Math.round(t * 60);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+const timeToFloat = (s: string) => {
+  if (!s) return 0;
+  const [h, m] = s.split(":").map(Number);
+  return (h || 0) + (m || 0) / 60;
+};
 
 // Shift definitions
 interface Shift {
@@ -403,10 +416,13 @@ const Index = () => {
     let acc = 0;
     for (const h of HOURS) {
       const hh = getHourHeight(h);
-      if (y < acc + hh) return h;
+      if (y < acc + hh) {
+        const frac = Math.max(0, Math.min(1, (y - acc) / hh));
+        return Math.min(24, h + snapQuarter(frac));
+      }
       acc += hh;
     }
-    return 23;
+    return 24;
   }, []);
 
   const dayIdxFromX = useCallback((clientX: number) => {
@@ -444,10 +460,10 @@ const Index = () => {
         prev.map((e) => {
           if (!dragRef.current || e.id !== dragRef.current.id) return e;
           if (dragRef.current.mode === "resize-bottom") {
-            const end = Math.max(newHour + 1, (e.hour ?? 0) + 1);
+            const end = Math.max(newHour, (e.hour ?? 0) + QUARTER);
             return { ...e, endHour: Math.min(end, 24) };
           } else if (dragRef.current.mode === "resize-top") {
-            const start = Math.min(newHour, (e.endHour ?? 1) - 1);
+            const start = Math.min(newHour, (e.endHour ?? QUARTER) - QUARTER);
             return { ...e, hour: Math.max(start, 0) };
           } else {
             const duration = dragRef.current.origEndHour - dragRef.current.origHour;
@@ -508,7 +524,7 @@ const Index = () => {
     e.preventDefault();
     e.stopPropagation();
     const id = `${sourceDayKey}:${shiftIndex}`;
-    const cursorHour = hourFromY(e.clientY);
+    const cursorHour = Math.round(hourFromY(e.clientY));
     const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
@@ -526,7 +542,7 @@ const Index = () => {
         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
       }
       wasDragging.current = true;
-      const newHour = hourFromY(me.clientY);
+      const newHour = Math.round(hourFromY(me.clientY));
       const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
 
@@ -764,6 +780,14 @@ const Index = () => {
 
   const getHourTop = (hour: number) =>
     HOURS.slice(0, hour).reduce((sum, h) => sum + getHourHeight(h), 0);
+  const timeToY = (t: number) => {
+    const fullH = Math.floor(t);
+    const frac = t - fullH;
+    let acc = 0;
+    for (let i = 0; i < fullH && i < 24; i++) acc += getHourHeight(i);
+    if (fullH < 24) acc += frac * getHourHeight(fullH);
+    return acc;
+  };
   const totalGridHeight = HOURS.reduce((sum, h) => sum + getHourHeight(h), 0);
 
   const currentHour = now.getHours();
@@ -1267,13 +1291,25 @@ const Index = () => {
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const frac = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+                          const startT = hour + snapQuarter(frac);
+                          const startSnap = Math.min(23.75, startT);
                           setSelectedDate(day);
-                          setNewEventHour(hour);
-                          setNewEventEndHour(Math.min(hour + 1, 23));
+                          setNewEventHour(startSnap);
+                          setNewEventEndHour(Math.min(24, startSnap + 1));
                           setNewEventDate(format(day, "yyyy-MM-dd"));
                           setShowNewEventDialog(true);
                         }}
-                      />
+                      >
+                        {!isNight && (
+                          <>
+                            <div className="absolute left-0 right-0 border-t border-border/15 pointer-events-none" style={{ top: "25%" }} />
+                            <div className="absolute left-0 right-0 border-t border-border/30 pointer-events-none" style={{ top: "50%" }} />
+                            <div className="absolute left-0 right-0 border-t border-border/15 pointer-events-none" style={{ top: "75%" }} />
+                          </>
+                        )}
+                      </div>
                     ))}
                   </div>
                   );
@@ -1286,8 +1322,8 @@ const Index = () => {
                   return dayEvents.map((ev) => {
                     const startH = ev.hour!;
                     const endH = ev.endHour ?? startH + 1;
-                    const top = getHourTop(startH);
-                    const height = HOURS.slice(startH, endH).reduce((s, h) => s + getHourHeight(h), 0);
+                    const top = timeToY(startH);
+                    const height = timeToY(endH) - top;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
                       <div
@@ -1318,7 +1354,7 @@ const Index = () => {
                         <div className="text-xs font-bold truncate mt-0.5 text-foreground">{ev.title}</div>
                         {height > 24 && (
                           <div className="text-[9px] font-semibold text-foreground/80">
-                            {startH.toString().padStart(2, "0")}:00–{endH.toString().padStart(2, "0")}:00
+                            {floatToTime(startH)}–{floatToTime(endH)}
                           </div>
                         )}
                         {/* Bottom drag handle */}
@@ -1519,28 +1555,24 @@ const Index = () => {
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nová událost</h4>
                 {viewMode === "week" && !newEventAllDay && (
                   <div className="flex gap-2">
-                    <select
-                      value={newEventHour}
+                    <input
+                      type="time"
+                      step={900}
+                      value={floatToTime(newEventHour)}
                       onChange={(e) => {
-                        const v = Number(e.target.value);
+                        const v = timeToFloat(e.target.value);
                         setNewEventHour(v);
-                        if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 23));
+                        if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
                       }}
                       className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {HOURS.map((h) => (
-                        <option key={h} value={h}>Od {h.toString().padStart(2, "0")}:00</option>
-                      ))}
-                    </select>
-                    <select
-                      value={newEventEndHour}
-                      onChange={(e) => setNewEventEndHour(Number(e.target.value))}
+                    />
+                    <input
+                      type="time"
+                      step={900}
+                      value={floatToTime(newEventEndHour)}
+                      onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
                       className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {HOURS.filter((h) => h > newEventHour).map((h) => (
-                        <option key={h} value={h}>Do {h.toString().padStart(2, "0")}:00</option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 )}
                 {/* Color picker */}
@@ -1601,8 +1633,8 @@ const Index = () => {
                         <span className="text-sm font-medium">{ev.title}</span>
                         {ev.hour !== undefined && (
                           <span className="text-[10px] opacity-70">
-                            {ev.hour.toString().padStart(2, "0")}:00
-                            {ev.endHour !== undefined && `–${ev.endHour.toString().padStart(2, "0")}:00`}
+                            {floatToTime(ev.hour)}
+                            {ev.endHour !== undefined && `–${floatToTime(ev.endHour)}`}
                           </span>
                         )}
                       </div>
@@ -1885,31 +1917,27 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={editHour}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editHour)}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = timeToFloat(e.target.value);
                     setEditHour(v);
-                    if (editEndHour <= v) setEditEndHour(Math.min(v + 1, 23));
+                    if (editEndHour <= v) setEditEndHour(Math.min(v + 1, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={editEndHour}
-                  onChange={(e) => setEditEndHour(Number(e.target.value))}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editEndHour)}
+                  onChange={(e) => setEditEndHour(timeToFloat(e.target.value))}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.filter((h) => h > editHour).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
             <div>
@@ -2109,31 +2137,27 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={newEventHour}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(newEventHour)}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = timeToFloat(e.target.value);
                     setNewEventHour(v);
-                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 23));
+                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={newEventEndHour}
-                  onChange={(e) => setNewEventEndHour(Number(e.target.value))}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(newEventEndHour)}
+                  onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.filter((h) => h > newEventHour).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
             )}
