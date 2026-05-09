@@ -416,10 +416,13 @@ const Index = () => {
     let acc = 0;
     for (const h of HOURS) {
       const hh = getHourHeight(h);
-      if (y < acc + hh) return h;
+      if (y < acc + hh) {
+        const frac = Math.max(0, Math.min(1, (y - acc) / hh));
+        return Math.min(24, h + snapQuarter(frac));
+      }
       acc += hh;
     }
-    return 23;
+    return 24;
   }, []);
 
   const dayIdxFromX = useCallback((clientX: number) => {
