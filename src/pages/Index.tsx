@@ -524,7 +524,7 @@ const Index = () => {
     e.preventDefault();
     e.stopPropagation();
     const id = `${sourceDayKey}:${shiftIndex}`;
-    const cursorHour = hourFromY(e.clientY);
+    const cursorHour = Math.round(hourFromY(e.clientY));
     const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
