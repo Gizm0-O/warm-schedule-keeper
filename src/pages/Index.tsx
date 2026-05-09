@@ -157,6 +157,19 @@ const BIRTHDAY_NAMES: Record<string, string> = {
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const NIGHT_HOURS = new Set([0, 1, 2, 3, 4, 5]);
 const getHourHeight = (hour: number) => NIGHT_HOURS.has(hour) ? 14 : 36;
+const QUARTER = 0.25;
+const snapQuarter = (t: number) => Math.round(t / QUARTER) * QUARTER;
+const floatToTime = (t: number) => {
+  const total = Math.round(t * 60);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+};
+const timeToFloat = (s: string) => {
+  if (!s) return 0;
+  const [h, m] = s.split(":").map(Number);
+  return (h || 0) + (m || 0) / 60;
+};
 
 // Shift definitions
 interface Shift {
