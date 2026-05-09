@@ -1283,13 +1283,25 @@ const Index = () => {
                         )}
                         onClick={(e) => {
                           e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const frac = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+                          const startT = hour + snapQuarter(frac);
+                          const startSnap = Math.min(23.75, startT);
                           setSelectedDate(day);
-                          setNewEventHour(hour);
-                          setNewEventEndHour(Math.min(hour + 1, 23));
+                          setNewEventHour(startSnap);
+                          setNewEventEndHour(Math.min(24, startSnap + 1));
                           setNewEventDate(format(day, "yyyy-MM-dd"));
                           setShowNewEventDialog(true);
                         }}
-                      />
+                      >
+                        {!isNight && (
+                          <>
+                            <div className="absolute left-0 right-0 border-t border-border/15 pointer-events-none" style={{ top: "25%" }} />
+                            <div className="absolute left-0 right-0 border-t border-border/30 pointer-events-none" style={{ top: "50%" }} />
+                            <div className="absolute left-0 right-0 border-t border-border/15 pointer-events-none" style={{ top: "75%" }} />
+                          </>
+                        )}
+                      </div>
                     ))}
                   </div>
                   );
