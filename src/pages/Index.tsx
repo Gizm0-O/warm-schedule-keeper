@@ -1660,7 +1660,7 @@ const Index = () => {
               });
               // Per-person fallback: if a person has no overdue/today/tomorrow tasks,
               // show their single next upcoming task (regardless of date).
-              const persons: Person[] = ["Tadeáš", "Barča"];
+              const persons = ["Tadeáš", "Barča"] as const;
               const fallbackTodos: Todo[] = [];
               persons.forEach((p) => {
                 const hasUrgent = urgentTodos.some((t) => t.person === p);
