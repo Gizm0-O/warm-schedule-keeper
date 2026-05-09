@@ -460,10 +460,10 @@ const Index = () => {
         prev.map((e) => {
           if (!dragRef.current || e.id !== dragRef.current.id) return e;
           if (dragRef.current.mode === "resize-bottom") {
-            const end = Math.max(newHour + 1, (e.hour ?? 0) + 1);
+            const end = Math.max(newHour, (e.hour ?? 0) + QUARTER);
             return { ...e, endHour: Math.min(end, 24) };
           } else if (dragRef.current.mode === "resize-top") {
-            const start = Math.min(newHour, (e.endHour ?? 1) - 1);
+            const start = Math.min(newHour, (e.endHour ?? QUARTER) - QUARTER);
             return { ...e, hour: Math.max(start, 0) };
           } else {
             const duration = dragRef.current.origEndHour - dragRef.current.origHour;
