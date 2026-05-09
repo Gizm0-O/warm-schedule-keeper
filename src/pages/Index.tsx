@@ -2137,31 +2137,27 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={newEventHour}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(newEventHour)}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = timeToFloat(e.target.value);
                     setNewEventHour(v);
-                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 23));
+                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={newEventEndHour}
-                  onChange={(e) => setNewEventEndHour(Number(e.target.value))}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(newEventEndHour)}
+                  onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.filter((h) => h > newEventHour).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
             )}
