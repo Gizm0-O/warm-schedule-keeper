@@ -1917,31 +1917,27 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={editHour}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editHour)}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = timeToFloat(e.target.value);
                     setEditHour(v);
-                    if (editEndHour <= v) setEditEndHour(Math.min(v + 1, 23));
+                    if (editEndHour <= v) setEditEndHour(Math.min(v + 1, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={editEndHour}
-                  onChange={(e) => setEditEndHour(Number(e.target.value))}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editEndHour)}
+                  onChange={(e) => setEditEndHour(timeToFloat(e.target.value))}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                >
-                  {HOURS.filter((h) => h > editHour).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
             <div>
