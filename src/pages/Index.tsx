@@ -542,7 +542,7 @@ const Index = () => {
         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
       }
       wasDragging.current = true;
-      const newHour = hourFromY(me.clientY);
+      const newHour = Math.round(hourFromY(me.clientY));
       const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
 
