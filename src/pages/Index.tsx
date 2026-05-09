@@ -1633,8 +1633,8 @@ const Index = () => {
                         <span className="text-sm font-medium">{ev.title}</span>
                         {ev.hour !== undefined && (
                           <span className="text-[10px] opacity-70">
-                            {ev.hour.toString().padStart(2, "0")}:00
-                            {ev.endHour !== undefined && `–${ev.endHour.toString().padStart(2, "0")}:00`}
+                            {floatToTime(ev.hour)}
+                            {ev.endHour !== undefined && `–${floatToTime(ev.endHour)}`}
                           </span>
                         )}
                       </div>
