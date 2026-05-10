@@ -2028,33 +2028,32 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={editShiftStart}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editShiftStart)}
                   disabled={lockTimes}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = snapQuarter(timeToFloat(e.target.value));
                     setEditShiftStart(v);
-                    if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 1, 23));
+                    if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 0.25, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={editShiftEnd}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editShiftEnd)}
                   disabled={lockTimes}
-                  onChange={(e) => setEditShiftEnd(Number(e.target.value))}
+                  onChange={(e) => {
+                    const v = snapQuarter(timeToFloat(e.target.value));
+                    setEditShiftEnd(Math.max(v, editShiftStart + 0.25));
+                  }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                >
-                  {HOURS.filter((h) => h > editShiftStart).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
           </div>
