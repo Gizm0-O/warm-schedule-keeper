@@ -1154,8 +1154,9 @@ const Index = () => {
                   const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
                   if (allDayEvs.length === 0) return null;
                   return allDayEvs.map((ev, evIdx) => {
-                    const borderColor = ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
-                    const textColor = ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
+                    const isHex = isHexColor(ev.color);
+                    const borderColor = !isHex ? (ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary") : "";
+                    const textColor = !isHex ? (ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground") : "";
                     return (
                       <div
                         key={ev.id}
@@ -1172,9 +1173,10 @@ const Index = () => {
                             "bg-card/90 backdrop-blur-sm border-l-[3px] shadow-sm",
                             borderColor
                           )}
+                          style={isHex ? { borderLeftColor: ev.color } : undefined}
                           onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
                         >
-                          <span className={cn("text-[10px] font-semibold truncate", textColor)}>
+                          <span className={cn("text-[10px] font-semibold truncate", textColor)} style={isHex ? { color: ev.color } : undefined}>
                             {ev.title}
                           </span>
                         </div>
