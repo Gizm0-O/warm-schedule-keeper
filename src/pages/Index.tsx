@@ -1611,7 +1611,7 @@ const Index = () => {
                   </button>
                   <span className="text-xs text-muted-foreground">Celodenní</span>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap items-center">
                   {EVENT_COLORS.map((c) => (
                     <button
                       key={c.value}
@@ -1624,6 +1624,21 @@ const Index = () => {
                       title={c.label}
                     />
                   ))}
+                  <label
+                    className={cn(
+                      "h-6 w-6 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
+                      isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                    )}
+                    style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                    title="Vlastní barva"
+                  >
+                    <input
+                      type="color"
+                      value={isHexColor(newEventColor) ? newEventColor : "#8b5cf6"}
+                      onChange={(e) => setNewEventColor(e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </label>
                 </div>
                 <div className="flex gap-2">
                   <Input
