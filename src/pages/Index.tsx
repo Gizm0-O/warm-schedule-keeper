@@ -2212,7 +2212,7 @@ const Index = () => {
             )}
             <div>
               <label className="text-sm font-medium text-foreground">Barva</label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 flex-wrap items-center">
                 {EVENT_COLORS.map((c) => (
                   <button
                     key={c.value}
@@ -2225,6 +2225,21 @@ const Index = () => {
                     title={c.label}
                   />
                 ))}
+                <label
+                  className={cn(
+                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
+                    isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                  )}
+                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  title="Vlastní barva"
+                >
+                  <input
+                    type="color"
+                    value={isHexColor(newEventColor) ? newEventColor : "#8b5cf6"}
+                    onChange={(e) => setNewEventColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </label>
               </div>
             </div>
           </div>
