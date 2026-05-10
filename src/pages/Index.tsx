@@ -1067,7 +1067,7 @@ const Index = () => {
                               ? <Briefcase className={cn("h-2.5 w-2.5", shift.textClass)} />
                               : <Home className={cn("h-2.5 w-2.5", shift.textClass)} />}
                             <span className={cn("text-[9px] opacity-60 leading-none", shift.textClass)}>
-                              {shift.startHour}–{shift.endHour}
+                              {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
                             </span>
                           </div>
                         ))}
