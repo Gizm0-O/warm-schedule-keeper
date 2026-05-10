@@ -1091,7 +1091,7 @@ const Index = () => {
                     )}
                     <div className="flex w-full flex-col gap-0.5 mt-0.5">
                       {dayEvents.slice(0, 2).map((ev) => (
-                        <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium", ev.color)}>
+                        <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                           {ev.title}
                         </div>
                       ))}
