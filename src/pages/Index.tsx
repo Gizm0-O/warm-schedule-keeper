@@ -574,11 +574,11 @@ const Index = () => {
         if (!dragRef.current) return prev;
         const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
         if (dragRef.current.mode === "resize-bottom") {
-          const end = Math.max(newHour + 1, existing.startHour + 1);
+          const end = Math.max(newHour + QUARTER, existing.startHour + QUARTER);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
 
-        const start = Math.min(newHour, existing.endHour - 1);
+        const start = Math.min(newHour, existing.endHour - QUARTER);
         return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
       });
     };
