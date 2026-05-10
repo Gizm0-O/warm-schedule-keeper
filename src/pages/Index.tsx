@@ -524,7 +524,7 @@ const Index = () => {
     e.preventDefault();
     e.stopPropagation();
     const id = `${sourceDayKey}:${shiftIndex}`;
-    const cursorHour = Math.round(hourFromY(e.clientY));
+    const cursorHour = snapQuarter(hourFromY(e.clientY));
     const offsetHour = cursorHour - shift.startHour;
     wasDragging.current = false;
     dragStartPos.current = { x: e.clientX, y: e.clientY };
@@ -542,7 +542,7 @@ const Index = () => {
         if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
       }
       wasDragging.current = true;
-      const newHour = Math.round(hourFromY(me.clientY));
+      const newHour = snapQuarter(hourFromY(me.clientY));
       const newDayIdx = dayIdxFromX(me.clientX);
       const key = dragRef.current.id;
 
@@ -574,11 +574,11 @@ const Index = () => {
         if (!dragRef.current) return prev;
         const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
         if (dragRef.current.mode === "resize-bottom") {
-          const end = Math.max(newHour + 1, existing.startHour + 1);
+          const end = Math.max(newHour + QUARTER, existing.startHour + QUARTER);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
 
-        const start = Math.min(newHour, existing.endHour - 1);
+        const start = Math.min(newHour, existing.endHour - QUARTER);
         return { ...prev, [key]: { ...existing, startHour: Math.max(start, 0) } };
       });
     };
@@ -2028,33 +2028,32 @@ const Index = () => {
             <div className="flex gap-3">
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Od</label>
-                <select
-                  value={editShiftStart}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editShiftStart)}
                   disabled={lockTimes}
                   onChange={(e) => {
-                    const v = Number(e.target.value);
+                    const v = snapQuarter(timeToFloat(e.target.value));
                     setEditShiftStart(v);
-                    if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 1, 23));
+                    if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 0.25, 24));
                   }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                >
-                  {HOURS.map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
               <div className="flex-1">
                 <label className="text-sm font-medium text-foreground">Do</label>
-                <select
-                  value={editShiftEnd}
+                <input
+                  type="time"
+                  step={900}
+                  value={floatToTime(editShiftEnd)}
                   disabled={lockTimes}
-                  onChange={(e) => setEditShiftEnd(Number(e.target.value))}
+                  onChange={(e) => {
+                    const v = snapQuarter(timeToFloat(e.target.value));
+                    setEditShiftEnd(Math.max(v, editShiftStart + 0.25));
+                  }}
                   className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                >
-                  {HOURS.filter((h) => h > editShiftStart).map((h) => (
-                    <option key={h} value={h}>{h.toString().padStart(2, "0")}:00</option>
-                  ))}
-                </select>
+                />
               </div>
             </div>
           </div>
