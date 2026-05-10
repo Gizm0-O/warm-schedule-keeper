@@ -138,11 +138,27 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
+  { label: "Fialová", value: "bg-primary/20 text-primary border-primary/30" },
   { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30" },
-  { label: "Zelená tmavá", value: "bg-success/20 text-success border-success/30" },
+  { label: "Zelená", value: "bg-success/20 text-success border-success/30" },
   { label: "Oranžová", value: "bg-warning/20 text-warning border-warning/30" },
+  { label: "Modrá", value: "bg-blue-500/20 text-blue-700 border-blue-500/30" },
+  { label: "Tyrkysová", value: "bg-cyan-500/20 text-cyan-700 border-cyan-500/30" },
+  { label: "Smaragdová", value: "bg-emerald-500/20 text-emerald-700 border-emerald-500/30" },
+  { label: "Limetková", value: "bg-lime-500/20 text-lime-700 border-lime-500/30" },
+  { label: "Žlutá", value: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" },
+  { label: "Růžová", value: "bg-pink-500/20 text-pink-700 border-pink-500/30" },
+  { label: "Indigo", value: "bg-indigo-500/20 text-indigo-700 border-indigo-500/30" },
+  { label: "Šedá", value: "bg-slate-500/20 text-slate-700 border-slate-500/30" },
 ];
+
+// Helpers for custom hex colors stored directly as "#RRGGBB"
+const isHexColor = (v: string) => typeof v === "string" && v.startsWith("#");
+const hexEventStyle = (hex: string): React.CSSProperties => ({
+  backgroundColor: `${hex}33`,
+  color: hex,
+  borderColor: `${hex}66`,
+});
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 
