@@ -1376,8 +1376,8 @@ const Index = () => {
                 {weekDays.map((day, dayIdx) => {
                   const shifts = getShiftsForDay(day);
                   return shifts.map((shift) => {
-                    const top = getHourTop(shift.startHour);
-                    const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
+                    const top = timeToY(shift.startHour);
+                    const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
@@ -1416,7 +1416,7 @@ const Index = () => {
                           </span>
                         )}
                         <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
-                          {shift.startHour}:00–{shift.endHour}:00
+                          {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
                         </span>
 
                         {/* Bottom drag handle */}
@@ -1533,7 +1533,7 @@ const Index = () => {
                           <div className="flex flex-col">
                             <span className={cn("text-sm font-semibold", shift.textClass)}>{shift.person}</span>
                             <span className={cn("text-xs opacity-70", shift.textClass)}>
-                              {shift.startHour}:00–{shift.endHour}:00 · {shift.location}
+                              {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)} · {shift.location}
                             </span>
                           </div>
                         </div>
