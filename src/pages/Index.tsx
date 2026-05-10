@@ -574,7 +574,7 @@ const Index = () => {
         if (!dragRef.current) return prev;
         const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
         if (dragRef.current.mode === "resize-bottom") {
-          const end = Math.max(newHour + QUARTER, existing.startHour + QUARTER);
+          const end = Math.max(newHour, existing.startHour + QUARTER);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
 
@@ -768,7 +768,9 @@ const Index = () => {
 
   const saveEditShift = async () => {
     if (!editingShift) return;
-    await setShiftTime(editingShift.shiftKey, editShiftStart, editShiftEnd);
+    const start = snapQuarter(editShiftStart);
+    const end = Math.max(snapQuarter(editShiftEnd), start + QUARTER);
+    await setShiftTime(editingShift.shiftKey, start, Math.min(end, 24));
     setEditingShift(null);
   };
 
