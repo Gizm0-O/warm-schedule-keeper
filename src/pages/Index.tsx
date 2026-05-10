@@ -574,7 +574,7 @@ const Index = () => {
         if (!dragRef.current) return prev;
         const existing = prev[key] ?? { startHour: dragRef.current.origHour, endHour: dragRef.current.origEndHour };
         if (dragRef.current.mode === "resize-bottom") {
-          const end = Math.max(newHour + QUARTER, existing.startHour + QUARTER);
+          const end = Math.max(newHour, existing.startHour + QUARTER);
           return { ...prev, [key]: { ...existing, endHour: Math.min(end, 24) } };
         }
 
@@ -768,7 +768,9 @@ const Index = () => {
 
   const saveEditShift = async () => {
     if (!editingShift) return;
-    await setShiftTime(editingShift.shiftKey, editShiftStart, editShiftEnd);
+    const start = snapQuarter(editShiftStart);
+    const end = Math.max(snapQuarter(editShiftEnd), start + QUARTER);
+    await setShiftTime(editingShift.shiftKey, start, Math.min(end, 24));
     setEditingShift(null);
   };
 
@@ -1065,7 +1067,7 @@ const Index = () => {
                               ? <Briefcase className={cn("h-2.5 w-2.5", shift.textClass)} />
                               : <Home className={cn("h-2.5 w-2.5", shift.textClass)} />}
                             <span className={cn("text-[9px] opacity-60 leading-none", shift.textClass)}>
-                              {shift.startHour}–{shift.endHour}
+                              {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
                             </span>
                           </div>
                         ))}
@@ -1374,8 +1376,8 @@ const Index = () => {
                 {weekDays.map((day, dayIdx) => {
                   const shifts = getShiftsForDay(day);
                   return shifts.map((shift) => {
-                    const top = getHourTop(shift.startHour);
-                    const height = HOURS.slice(shift.startHour, shift.endHour).reduce((s, h) => s + getHourHeight(h), 0);
+                    const top = timeToY(shift.startHour);
+                    const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
@@ -1414,7 +1416,7 @@ const Index = () => {
                           </span>
                         )}
                         <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
-                          {shift.startHour}:00–{shift.endHour}:00
+                          {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
                         </span>
 
                         {/* Bottom drag handle */}
@@ -1531,7 +1533,7 @@ const Index = () => {
                           <div className="flex flex-col">
                             <span className={cn("text-sm font-semibold", shift.textClass)}>{shift.person}</span>
                             <span className={cn("text-xs opacity-70", shift.textClass)}>
-                              {shift.startHour}:00–{shift.endHour}:00 · {shift.location}
+                              {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)} · {shift.location}
                             </span>
                           </div>
                         </div>
