@@ -1645,7 +1645,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Žádné události</p>
                 ) : (
                   getEventsForDate(selectedDate).map((ev) => (
-                    <div key={ev.id} className={cn("flex items-center justify-between rounded-lg px-3 py-2", ev.color)}>
+                    <div key={ev.id} className={cn("flex items-center justify-between rounded-lg px-3 py-2 border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                       <div
                         className="flex flex-col cursor-pointer flex-1"
                         onClick={() => openEditEvent(ev)}
