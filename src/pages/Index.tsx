@@ -138,11 +138,27 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Zelená", value: "bg-primary/20 text-primary border-primary/30" },
+  { label: "Fialová", value: "bg-primary/20 text-primary border-primary/30" },
   { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30" },
-  { label: "Zelená tmavá", value: "bg-success/20 text-success border-success/30" },
+  { label: "Zelená", value: "bg-success/20 text-success border-success/30" },
   { label: "Oranžová", value: "bg-warning/20 text-warning border-warning/30" },
+  { label: "Modrá", value: "bg-blue-500/20 text-blue-700 border-blue-500/30" },
+  { label: "Tyrkysová", value: "bg-cyan-500/20 text-cyan-700 border-cyan-500/30" },
+  { label: "Smaragdová", value: "bg-emerald-500/20 text-emerald-700 border-emerald-500/30" },
+  { label: "Limetková", value: "bg-lime-500/20 text-lime-700 border-lime-500/30" },
+  { label: "Žlutá", value: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" },
+  { label: "Růžová", value: "bg-pink-500/20 text-pink-700 border-pink-500/30" },
+  { label: "Indigo", value: "bg-indigo-500/20 text-indigo-700 border-indigo-500/30" },
+  { label: "Šedá", value: "bg-slate-500/20 text-slate-700 border-slate-500/30" },
 ];
+
+// Helpers for custom hex colors stored directly as "#RRGGBB"
+const isHexColor = (v: string) => typeof v === "string" && v.startsWith("#");
+const hexEventStyle = (hex: string): React.CSSProperties => ({
+  backgroundColor: `${hex}33`,
+  color: hex,
+  borderColor: `${hex}66`,
+});
 
 const WEEKDAYS = ["Po", "Út", "St", "Čt", "Pá", "So", "Ne"];
 
@@ -1075,7 +1091,7 @@ const Index = () => {
                     )}
                     <div className="flex w-full flex-col gap-0.5 mt-0.5">
                       {dayEvents.slice(0, 2).map((ev) => (
-                        <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium", ev.color)}>
+                        <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                           {ev.title}
                         </div>
                       ))}
@@ -1138,8 +1154,9 @@ const Index = () => {
                   const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
                   if (allDayEvs.length === 0) return null;
                   return allDayEvs.map((ev, evIdx) => {
-                    const borderColor = ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary";
-                    const textColor = ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground";
+                    const isHex = isHexColor(ev.color);
+                    const borderColor = !isHex ? (ev.color.split(" ").find(c => c.startsWith("border-"))?.replace(/\/\d+$/, "") || "border-primary") : "";
+                    const textColor = !isHex ? (ev.color.split(" ").find(c => c.startsWith("text-")) || "text-foreground") : "";
                     return (
                       <div
                         key={ev.id}
@@ -1156,9 +1173,10 @@ const Index = () => {
                             "bg-card/90 backdrop-blur-sm border-l-[3px] shadow-sm",
                             borderColor
                           )}
+                          style={isHex ? { borderLeftColor: ev.color } : undefined}
                           onClick={(e) => { e.stopPropagation(); openEditEvent(ev); }}
                         >
-                          <span className={cn("text-[10px] font-semibold truncate", textColor)}>
+                          <span className={cn("text-[10px] font-semibold truncate", textColor)} style={isHex ? { color: ev.color } : undefined}>
                             {ev.title}
                           </span>
                         </div>
@@ -1332,9 +1350,9 @@ const Index = () => {
                         key={ev.id}
                         className={cn(
                           "absolute rounded-md border-l-2 px-1.5 py-0.5 text-sm font-bold truncate z-10 cursor-grab group hover:opacity-80",
-                          ev.color
+                          isHexColor(ev.color) ? "" : ev.color
                         )}
-                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 20 }}
+                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 20, ...(isHexColor(ev.color) ? hexEventStyle(ev.color) : {}) }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onEventDragStart(e, ev, "move", dayIdx);
@@ -1593,7 +1611,7 @@ const Index = () => {
                   </button>
                   <span className="text-xs text-muted-foreground">Celodenní</span>
                 </div>
-                <div className="flex gap-1.5">
+                <div className="flex gap-1.5 flex-wrap items-center">
                   {EVENT_COLORS.map((c) => (
                     <button
                       key={c.value}
@@ -1606,6 +1624,21 @@ const Index = () => {
                       title={c.label}
                     />
                   ))}
+                  <label
+                    className={cn(
+                      "h-6 w-6 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
+                      isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                    )}
+                    style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                    title="Vlastní barva"
+                  >
+                    <input
+                      type="color"
+                      value={isHexColor(newEventColor) ? newEventColor : "#8b5cf6"}
+                      onChange={(e) => setNewEventColor(e.target.value)}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </label>
                 </div>
                 <div className="flex gap-2">
                   <Input
@@ -1627,7 +1660,7 @@ const Index = () => {
                   <p className="text-sm text-muted-foreground">Žádné události</p>
                 ) : (
                   getEventsForDate(selectedDate).map((ev) => (
-                    <div key={ev.id} className={cn("flex items-center justify-between rounded-lg px-3 py-2", ev.color)}>
+                    <div key={ev.id} className={cn("flex items-center justify-between rounded-lg px-3 py-2 border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                       <div
                         className="flex flex-col cursor-pointer flex-1"
                         onClick={() => openEditEvent(ev)}
@@ -1944,7 +1977,7 @@ const Index = () => {
             </div>
             <div>
               <label className="text-sm font-medium text-foreground">Barva</label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 flex-wrap items-center">
                 {EVENT_COLORS.map((c) => (
                   <button
                     key={c.value}
@@ -1957,6 +1990,21 @@ const Index = () => {
                     title={c.label}
                   />
                 ))}
+                <label
+                  className={cn(
+                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
+                    isHexColor(editColor) ? "border-foreground scale-110" : "border-transparent"
+                  )}
+                  style={{ background: isHexColor(editColor) ? editColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  title="Vlastní barva"
+                >
+                  <input
+                    type="color"
+                    value={isHexColor(editColor) ? editColor : "#8b5cf6"}
+                    onChange={(e) => setEditColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </label>
               </div>
             </div>
           </div>
@@ -2164,7 +2212,7 @@ const Index = () => {
             )}
             <div>
               <label className="text-sm font-medium text-foreground">Barva</label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-2 flex-wrap items-center">
                 {EVENT_COLORS.map((c) => (
                   <button
                     key={c.value}
@@ -2177,6 +2225,21 @@ const Index = () => {
                     title={c.label}
                   />
                 ))}
+                <label
+                  className={cn(
+                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
+                    isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                  )}
+                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  title="Vlastní barva"
+                >
+                  <input
+                    type="color"
+                    value={isHexColor(newEventColor) ? newEventColor : "#8b5cf6"}
+                    onChange={(e) => setNewEventColor(e.target.value)}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                </label>
               </div>
             </div>
           </div>
