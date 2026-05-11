@@ -48,7 +48,7 @@ export function useTaskEarnings() {
   }, [fetchEarnings]);
 
   const addEarning = useCallback(async (earning: Omit<TaskEarning, 'id' | 'created_at'>) => {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('task_earnings')
       .insert({
         todo_id: earning.todo_id,
@@ -61,6 +61,9 @@ export function useTaskEarnings() {
       })
       .select()
       .single();
+    if (error) {
+      console.error('[addEarning] insert error', error, earning);
+    }
     if (data) {
       setEarnings(prev => [data as TaskEarning, ...prev]);
       emitTaskEarningsChanged();
