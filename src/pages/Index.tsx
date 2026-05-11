@@ -1360,9 +1360,9 @@ const Index = () => {
                         >
                           <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
-                        <div className="text-xs font-bold truncate mt-0.5 text-foreground">{ev.title}</div>
-                        {height > 24 && (
-                          <div className="text-[9px] font-semibold text-foreground/80">
+                        <div className="text-xs font-bold truncate text-foreground leading-tight">{ev.title}</div>
+                        {height > 20 && (
+                          <div className="text-[9px] font-semibold text-foreground/80 leading-tight truncate">
                             {floatToTime(startH)}–{floatToTime(endH)}
                           </div>
                         )}
