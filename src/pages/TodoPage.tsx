@@ -257,7 +257,7 @@ const TodoPage = () => {
       const bonusPercent =
         bonus === 'on_time' ? rewardsConfig.bonusPerTask :
         bonus === 'late' ? rewardsConfig.bonusLate : 0;
-      const earning = await addEarning({
+      let earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
         amount: todo.amount!,
@@ -285,36 +285,50 @@ const TodoPage = () => {
       if (earning) {
         pushAction({
           undo: async () => {
-            await supabase.from("todos").update({ completed: false }).eq("id", id);
-            setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
-            await removeEarning(earning.id);
-            if (bonusEarning) await removeEarning(bonusEarning.id);
-            await revokeGrantedRewards();
+            try {
+              await supabase.from("todos").update({ completed: false }).eq("id", id);
+              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
+              if (earning) await removeEarning(earning.id);
+              if (bonusEarning) await removeEarning(bonusEarning.id);
+              await revokeGrantedRewards();
+            } catch (e) {
+              console.error('[undo toggleTodo] failed', e);
+              toast.error('Vrácení změny selhalo, zkuste znovu.');
+            }
           },
           redo: async () => {
-            await supabase.from("todos").update({ completed: true }).eq("id", id);
-            setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true } : t));
-            await addEarning({
-              todo_id: id,
-              todo_text: todo.text,
-              amount: todo.amount!,
-              bonus_type: bonus === 'pending' ? null : bonus,
-              bonus_percent: bonusPercent,
-              deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
-              completed_at: new Date().toISOString(),
-            });
-            if (bonusAmt > 0) {
-              bonusEarning = await addEarning({
-                todo_id: `${id}__bonus`,
-                todo_text: `🎁 Bonus: ${todo.text}`,
-                amount: bonusAmt,
-                bonus_type: 'bonus',
-                bonus_percent: null,
-                deadline: null,
+            try {
+              await supabase.from("todos").update({ completed: true }).eq("id", id);
+              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true } : t));
+              earning = await addEarning({
+                todo_id: id,
+                todo_text: todo.text,
+                amount: todo.amount!,
+                bonus_type: bonus === 'pending' ? null : bonus,
+                bonus_percent: bonusPercent,
+                deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
                 completed_at: new Date().toISOString(),
               });
+              if (!earning) {
+                console.error('[redo toggleTodo] addEarning returned null');
+                toast.error('Znovu-přičtení odměn selhalo.');
+              }
+              if (bonusAmt > 0) {
+                bonusEarning = await addEarning({
+                  todo_id: `${id}__bonus`,
+                  todo_text: `🎁 Bonus: ${todo.text}`,
+                  amount: bonusAmt,
+                  bonus_type: 'bonus',
+                  bonus_percent: null,
+                  deadline: null,
+                  completed_at: new Date().toISOString(),
+                });
+              }
+              await regrantRewards();
+            } catch (e) {
+              console.error('[redo toggleTodo] failed', e);
+              toast.error('Znovu-provedení selhalo.');
             }
-            await regrantRewards();
           },
         });
       }
