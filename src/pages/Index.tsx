@@ -138,18 +138,11 @@ type ViewMode = "month" | "week";
 // CalendarEvent type imported from hook
 
 const EVENT_COLORS = [
-  { label: "Fialová", value: "bg-primary/20 text-primary border-primary/30" },
-  { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30" },
-  { label: "Zelená", value: "bg-success/20 text-success border-success/30" },
-  { label: "Oranžová", value: "bg-warning/20 text-warning border-warning/30" },
-  { label: "Modrá", value: "bg-blue-500/20 text-blue-700 border-blue-500/30" },
-  { label: "Tyrkysová", value: "bg-cyan-500/20 text-cyan-700 border-cyan-500/30" },
-  { label: "Smaragdová", value: "bg-emerald-500/20 text-emerald-700 border-emerald-500/30" },
-  { label: "Limetková", value: "bg-lime-500/20 text-lime-700 border-lime-500/30" },
-  { label: "Žlutá", value: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" },
-  { label: "Růžová", value: "bg-pink-500/20 text-pink-700 border-pink-500/30" },
-  { label: "Indigo", value: "bg-indigo-500/20 text-indigo-700 border-indigo-500/30" },
-  { label: "Šedá", value: "bg-slate-500/20 text-slate-700 border-slate-500/30" },
+  { label: "Fialová", value: "bg-primary/20 text-primary border-primary/30", swatch: "bg-primary" },
+  { label: "Červená", value: "bg-destructive/20 text-destructive border-destructive/30", swatch: "bg-destructive" },
+  { label: "Zelená", value: "bg-success/20 text-success border-success/30", swatch: "bg-success" },
+  { label: "Žlutá", value: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30", swatch: "bg-yellow-500" },
+  { label: "Modrá", value: "bg-blue-500/20 text-blue-700 border-blue-500/30", swatch: "bg-blue-500" },
 ];
 
 // Helpers for custom hex colors stored directly as "#RRGGBB"
@@ -1607,25 +1600,25 @@ const Index = () => {
                   </button>
                   <span className="text-xs text-muted-foreground">Celodenní</span>
                 </div>
-                <div className="flex gap-1.5 flex-wrap items-center">
+                <div className="flex gap-2 flex-wrap items-center">
                   {EVENT_COLORS.map((c) => (
                     <button
                       key={c.value}
                       onClick={() => setNewEventColor(c.value)}
                       className={cn(
-                        "h-6 w-6 rounded-full border-2 transition-all",
-                        c.value.split(" ")[0],
-                        newEventColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                        "h-7 w-7 rounded-full transition-all ring-offset-2 ring-offset-background",
+                        c.swatch,
+                        newEventColor === c.value ? "ring-2 ring-foreground" : "hover:scale-110"
                       )}
                       title={c.label}
                     />
                   ))}
                   <label
                     className={cn(
-                      "h-6 w-6 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
-                      isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                      "h-7 w-7 rounded-full cursor-pointer transition-all relative overflow-hidden ring-offset-2 ring-offset-background",
+                      isHexColor(newEventColor) ? "ring-2 ring-foreground" : "hover:scale-110"
                     )}
-                    style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                    style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)" }}
                     title="Vlastní barva"
                   >
                     <input
@@ -1979,19 +1972,19 @@ const Index = () => {
                     key={c.value}
                     onClick={() => setEditColor(c.value)}
                     className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-all",
-                      c.value.split(" ")[0],
-                      editColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                      "h-8 w-8 rounded-full transition-all ring-offset-2 ring-offset-background",
+                      c.swatch,
+                      editColor === c.value ? "ring-2 ring-foreground" : "hover:scale-110"
                     )}
                     title={c.label}
                   />
                 ))}
                 <label
                   className={cn(
-                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
-                    isHexColor(editColor) ? "border-foreground scale-110" : "border-transparent"
+                    "h-8 w-8 rounded-full cursor-pointer transition-all relative overflow-hidden ring-offset-2 ring-offset-background",
+                    isHexColor(editColor) ? "ring-2 ring-foreground" : "hover:scale-110"
                   )}
-                  style={{ background: isHexColor(editColor) ? editColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  style={{ background: isHexColor(editColor) ? editColor : "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)" }}
                   title="Vlastní barva"
                 >
                   <input
@@ -2214,19 +2207,19 @@ const Index = () => {
                     key={c.value}
                     onClick={() => setNewEventColor(c.value)}
                     className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-all",
-                      c.value.split(" ")[0],
-                      newEventColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                      "h-8 w-8 rounded-full transition-all ring-offset-2 ring-offset-background",
+                      c.swatch,
+                      newEventColor === c.value ? "ring-2 ring-foreground" : "hover:scale-110"
                     )}
                     title={c.label}
                   />
                 ))}
                 <label
                   className={cn(
-                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
-                    isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                    "h-8 w-8 rounded-full cursor-pointer transition-all relative overflow-hidden ring-offset-2 ring-offset-background",
+                    isHexColor(newEventColor) ? "ring-2 ring-foreground" : "hover:scale-110"
                   )}
-                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)" }}
                   title="Vlastní barva"
                 >
                   <input
