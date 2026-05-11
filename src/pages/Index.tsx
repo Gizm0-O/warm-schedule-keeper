@@ -901,26 +901,22 @@ const Index = () => {
     // If currently toggled (= Tadeáš working from home), reverting refunds the token
     if (isCurrentlyOverridden) {
       toggleLocation(shiftKey);
-      if (!isAdmin) {
-        await grantToken("swap_refund", { shiftKey });
-        toast.success("🪙 Token vrácen");
-      }
+      await grantToken("swap_refund", { shiftKey, note: isAdmin ? "admin revert" : undefined });
+      toast.success("🪙 Token vrácen");
       return { ok: true };
     }
 
-    // Switching to "Z domu" costs 1 token (admin bypass)
-    if (!isAdmin) {
-      if (tokensBalance <= 0) {
-        toast.error("Nemáš žádné tokeny.");
-        return { ok: false, reason: "no-tokens" };
-      }
-      const ok = await spendToken("swap_spend", { shiftKey });
-      if (!ok) {
-        toast.error("Nepodařilo se utratit token.");
-        return { ok: false };
-      }
-      toast.success("🏠 Tadeáš pracuje z domu (–1 🪙)");
+    // Switching to "Z domu" costs 1 token (also for admin)
+    if (tokensBalance <= 0) {
+      toast.error("Nemáš žádné tokeny.");
+      return { ok: false, reason: "no-tokens" };
     }
+    const ok = await spendToken("swap_spend", { shiftKey, note: isAdmin ? "admin swap" : undefined });
+    if (!ok) {
+      toast.error("Nepodařilo se utratit token.");
+      return { ok: false };
+    }
+    toast.success(isAdmin ? "🏠 Z domu (–1 🪙, admin)" : "🏠 Tadeáš pracuje z domu (–1 🪙)");
     toggleLocation(shiftKey);
     return { ok: true };
   };
