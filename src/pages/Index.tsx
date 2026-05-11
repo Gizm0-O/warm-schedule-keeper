@@ -2207,19 +2207,19 @@ const Index = () => {
                     key={c.value}
                     onClick={() => setNewEventColor(c.value)}
                     className={cn(
-                      "h-8 w-8 rounded-full border-2 transition-all",
-                      c.value.split(" ")[0],
-                      newEventColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                      "h-8 w-8 rounded-full transition-all ring-offset-2 ring-offset-background",
+                      c.swatch,
+                      newEventColor === c.value ? "ring-2 ring-foreground" : "hover:scale-110"
                     )}
                     title={c.label}
                   />
                 ))}
                 <label
                   className={cn(
-                    "h-8 w-8 rounded-full border-2 cursor-pointer transition-all relative overflow-hidden",
-                    isHexColor(newEventColor) ? "border-foreground scale-110" : "border-transparent"
+                    "h-8 w-8 rounded-full cursor-pointer transition-all relative overflow-hidden ring-offset-2 ring-offset-background",
+                    isHexColor(newEventColor) ? "ring-2 ring-foreground" : "hover:scale-110"
                   )}
-                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)" }}
+                  style={{ background: isHexColor(newEventColor) ? newEventColor : "conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)" }}
                   title="Vlastní barva"
                 >
                   <input
