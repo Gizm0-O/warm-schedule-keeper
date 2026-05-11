@@ -757,8 +757,11 @@ const Index = () => {
 
   const saveEditEvent = async () => {
     if (!editingEvent) return;
+    const isAllDay = !!editingEvent.allDay;
     const prevData = { title: editingEvent.title, hour: editingEvent.hour, endHour: editingEvent.endHour, color: editingEvent.color };
-    const newData = { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor };
+    const newData: any = isAllDay
+      ? { title: editTitle, color: editColor, hour: null, endHour: null, allDay: true }
+      : { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor };
     const evId = editingEvent.id;
     await updateEventInDb(evId, newData);
     pushAction({
