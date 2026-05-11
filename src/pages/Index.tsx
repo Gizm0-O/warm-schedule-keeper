@@ -1338,7 +1338,7 @@ const Index = () => {
                       <div
                         key={ev.id}
                         className={cn(
-                          "absolute rounded-md border-l-2 px-1.5 py-0.5 text-sm font-bold truncate z-10 cursor-grab group hover:opacity-80",
+                          "absolute rounded-md border-l-2 px-1.5 py-0 text-sm font-bold truncate z-10 cursor-grab group hover:opacity-80 leading-tight",
                           isHexColor(ev.color) ? "" : ev.color
                         )}
                         style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 20, ...(isHexColor(ev.color) ? hexEventStyle(ev.color) : {}) }}
@@ -1360,9 +1360,9 @@ const Index = () => {
                         >
                           <div className="w-6 h-0.5 rounded-full bg-foreground/40 pointer-events-none" />
                         </div>
-                        <div className="text-xs font-bold truncate mt-0.5 text-foreground">{ev.title}</div>
-                        {height > 24 && (
-                          <div className="text-[9px] font-semibold text-foreground/80">
+                        <div className="text-xs font-bold truncate text-foreground leading-tight">{ev.title}</div>
+                        {height > 20 && (
+                          <div className="text-[9px] font-semibold text-foreground/80 leading-tight truncate">
                             {floatToTime(startH)}–{floatToTime(endH)}
                           </div>
                         )}
