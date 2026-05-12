@@ -286,12 +286,13 @@ const Index = () => {
 
     await toggleTodo(id);
 
+    const bonusPercent =
+      bonus === 'on_time' ? rewardsConfig.bonusPerTask :
+      bonus === 'late' ? rewardsConfig.bonusLate : 0;
+    const bonusAmt = getBonusAmount(id);
     let createdEarningId: string | null = null;
     let createdBonusEarningId: string | null = null;
-    if (completing && isBarCaWork && hasAmount) {
-      const bonusPercent =
-        bonus === 'on_time' ? rewardsConfig.bonusPerTask :
-        bonus === 'late' ? rewardsConfig.bonusLate : 0;
+    const recordTaskEarnings = async () => {
       const earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
@@ -303,7 +304,6 @@ const Index = () => {
       });
       if (earning) createdEarningId = earning.id;
 
-      const bonusAmt = getBonusAmount(id);
       if (bonusAmt > 0) {
         const bonusEarning = await addEarning({
           todo_id: `${id}__bonus`,
@@ -316,6 +316,9 @@ const Index = () => {
         });
         if (bonusEarning) createdBonusEarningId = bonusEarning.id;
       }
+    };
+    if (completing && isBarCaWork && hasAmount) {
+      await recordTaskEarnings();
     }
 
     const customRewards = todo.person === 'Barča' ? getRewardsForTodo(id) : [];
@@ -353,12 +356,19 @@ const Index = () => {
     pushAction({
       undo: async () => {
         await toggleTodoRef.current(id);
-        if (createdEarningId) await removeEarning(createdEarningId);
-        if (createdBonusEarningId) await removeEarning(createdBonusEarningId);
+        if (createdEarningId) {
+          await removeEarning(createdEarningId);
+          createdEarningId = null;
+        }
+        if (createdBonusEarningId) {
+          await removeEarning(createdBonusEarningId);
+          createdBonusEarningId = null;
+        }
         if (completing && todo.person === 'Barča') await revokeForTodo(id);
       },
       redo: async () => {
         await toggleTodoRef.current(id);
+        if (completing && isBarCaWork && hasAmount) await recordTaskEarnings();
         if (completing && todo.person === 'Barča') await grantCustomRewards();
       },
     });
