@@ -110,16 +110,9 @@ const TodoPage = () => {
     setShowCompleted(false);
   }, [activeTab]);
 
-  // Auto-delete oldest completed todos beyond MAX_COMPLETED
-  useEffect(() => {
-    const completed = todos.filter((t) => t.completed);
-    if (completed.length <= MAX_COMPLETED) return;
-    const sorted = [...completed].sort((a, b) => a.id.localeCompare(b.id));
-    const toDelete = sorted.slice(0, completed.length - MAX_COMPLETED);
-    const ids = toDelete.map((t) => t.id);
-    setTodos((prev) => prev.filter((t) => !ids.includes(t.id)));
-    ids.forEach((id) => supabase.from("todos").delete().eq("id", id));
-  }, [todos, setTodos]);
+  // NOTE: Previously we auto-deleted completed todos beyond MAX_COMPLETED
+  // sorted by UUID (effectively random), which silently removed freshly
+  // completed tasks from the database. Removed — keep all completed todos.
 
   // Wrapped toggleTodo: for Barča work tasks with amount+bonus, record earning
   const toggleTodo = useCallback(async (id: string) => {
@@ -412,7 +405,13 @@ const TodoPage = () => {
   const filtered = activeTab === "all" ? todos : todos.filter((t) => t.person === activeTab);
   const workPending = filtered.filter((t) => t.category === "work" && !t.completed).sort(sortByDeadline);
   const homePending = filtered.filter((t) => t.category === "home" && !t.completed).sort(sortByDeadline);
-  const completed = filtered.filter((t) => t.completed);
+  const completed = filtered
+    .filter((t) => t.completed)
+    .sort((a: any, b: any) => {
+      const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bd - ad;
+    });
 
   const activeLimit = activeTab === "all" ? 5 : 10;
 
