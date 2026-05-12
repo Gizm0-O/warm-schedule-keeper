@@ -405,7 +405,13 @@ const TodoPage = () => {
   const filtered = activeTab === "all" ? todos : todos.filter((t) => t.person === activeTab);
   const workPending = filtered.filter((t) => t.category === "work" && !t.completed).sort(sortByDeadline);
   const homePending = filtered.filter((t) => t.category === "home" && !t.completed).sort(sortByDeadline);
-  const completed = filtered.filter((t) => t.completed);
+  const completed = filtered
+    .filter((t) => t.completed)
+    .sort((a: any, b: any) => {
+      const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return bd - ad;
+    });
 
   const activeLimit = activeTab === "all" ? 5 : 10;
 
