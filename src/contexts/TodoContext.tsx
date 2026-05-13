@@ -101,6 +101,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
 
     if (!todo.completed && todo.recurrence !== "none") {
       // Mark current as completed
+      const nowIso = new Date().toISOString();
       await supabase.from("todos").update({ completed: true }).eq("id", id);
 
       // Create next recurrence
@@ -121,14 +122,15 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       const { data: newData } = await supabase.from("todos").insert(newRow).select().single();
 
       setTodos((prev) => {
-        const updated = prev.map((t) => (t.id === id ? { ...t, completed: true } : t));
+        const updated = prev.map((t) => (t.id === id ? { ...t, completed: true, completed_at: nowIso } : t));
         if (newData) updated.push(rowToTodo(newData));
         return updated;
       });
     } else {
       const newCompleted = !todo.completed;
+      const nowIso = new Date().toISOString();
       await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
-      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)));
+      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed: newCompleted, completed_at: newCompleted ? nowIso : undefined } : t)));
     }
   }, [todos]);
 
