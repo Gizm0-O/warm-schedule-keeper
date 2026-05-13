@@ -15,6 +15,7 @@ export interface Todo {
   storyNumber?: number;
   storyMonth?: string;
   created_at?: string;
+  completed_at?: string;
 }
 
 interface TodoContextType {
