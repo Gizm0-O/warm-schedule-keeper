@@ -301,7 +301,7 @@ const TodoPage = () => {
           undo: async () => {
             try {
               await supabase.from("todos").update({ completed: false }).eq("id", id);
-              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false } : t));
+              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false, completed_at: undefined } : t));
               if (earning) await removeEarning(earning.id);
               if (bonusEarning) await removeEarning(bonusEarning.id);
               await revokeGrantedRewards();
@@ -312,8 +312,9 @@ const TodoPage = () => {
           },
           redo: async () => {
             try {
+              const nowIso = new Date().toISOString();
               await supabase.from("todos").update({ completed: true }).eq("id", id);
-              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true } : t));
+              setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true, completed_at: nowIso } : t));
               earning = await addEarning({
                 todo_id: id,
                 todo_text: todo.text,
@@ -321,7 +322,7 @@ const TodoPage = () => {
                 bonus_type: bonus === 'pending' ? null : bonus,
                 bonus_percent: bonusPercent,
                 deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
-                completed_at: new Date().toISOString(),
+                completed_at: nowIso,
               });
               if (!earning) {
                 console.error('[redo toggleTodo] addEarning returned null');
@@ -335,7 +336,7 @@ const TodoPage = () => {
                   bonus_type: 'bonus',
                   bonus_percent: null,
                   deadline: null,
-                  completed_at: new Date().toISOString(),
+                  completed_at: nowIso,
                 });
               }
               await regrantRewards();
@@ -352,12 +353,13 @@ const TodoPage = () => {
       pushAction({
         undo: async () => {
           await supabase.from("todos").update({ completed: wasCompleted }).eq("id", id);
-          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: wasCompleted } : t));
+          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: wasCompleted, completed_at: wasCompleted ? (t.completed_at ?? new Date().toISOString()) : undefined } : t));
           await revokeGrantedRewards();
         },
         redo: async () => {
+          const nowIso = new Date().toISOString();
           await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
-          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: newCompleted } : t));
+          setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: newCompleted, completed_at: newCompleted ? nowIso : undefined } : t));
           if (newCompleted) await regrantRewards();
         },
       });
