@@ -110,9 +110,30 @@ const TodoPage = () => {
     setShowCompleted(false);
   }, [activeTab]);
 
-  // NOTE: Previously we auto-deleted completed todos beyond MAX_COMPLETED
-  // sorted by UUID (effectively random), which silently removed freshly
-  // completed tasks from the database. Removed — keep all completed todos.
+  // Keep only the latest 10 completed todos per person (newest by created_at).
+  // This caps history at ~20 total (Tadeáš + Barča) and prevents bloat.
+  useEffect(() => {
+    const PER_PERSON_LIMIT = 10;
+    const completedByPerson: Record<string, any[]> = {};
+    todos.forEach((t: any) => {
+      if (!t.completed) return;
+      (completedByPerson[t.person] ||= []).push(t);
+    });
+    const toDelete: string[] = [];
+    Object.values(completedByPerson).forEach((list) => {
+      list.sort((a, b) => {
+        const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return bd - ad;
+      });
+      list.slice(PER_PERSON_LIMIT).forEach((t) => toDelete.push(t.id));
+    });
+    if (toDelete.length > 0) {
+      supabase.from("todos").delete().in("id", toDelete).then(() => {
+        setTodos((prev) => prev.filter((t) => !toDelete.includes(t.id)));
+      });
+    }
+  }, [todos, setTodos]);
 
   // Wrapped toggleTodo: for Barča work tasks with amount+bonus, record earning
   const toggleTodo = useCallback(async (id: string) => {
