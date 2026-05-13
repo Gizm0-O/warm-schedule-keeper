@@ -110,7 +110,7 @@ const TodoPage = () => {
     setShowCompleted(false);
   }, [activeTab]);
 
-  // Keep only the latest 10 completed todos per person (newest by created_at).
+  // Keep only the latest 10 completed todos per person (newest by completed_at).
   // This caps history at ~20 total (Tadeáš + Barča) and prevents bloat.
   useEffect(() => {
     const PER_PERSON_LIMIT = 10;
@@ -122,8 +122,8 @@ const TodoPage = () => {
     const toDelete: string[] = [];
     Object.values(completedByPerson).forEach((list) => {
       list.sort((a, b) => {
-        const ad = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const bd = b.created_at ? new Date(b.created_at).getTime() : 0;
+        const ad = a.completed_at ? new Date(a.completed_at).getTime() : (a.created_at ? new Date(a.created_at).getTime() : 0);
+        const bd = b.completed_at ? new Date(b.completed_at).getTime() : (b.created_at ? new Date(b.created_at).getTime() : 0);
         return bd - ad;
       });
       list.slice(PER_PERSON_LIMIT).forEach((t) => toDelete.push(t.id));
