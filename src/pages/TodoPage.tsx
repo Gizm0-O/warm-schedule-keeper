@@ -549,6 +549,12 @@ const TodoPage = () => {
               </span>
             )}
             {deadlineLabel(todo.deadline)}
+            {todo.completed && (todo as any).completed_at && (
+              <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground whitespace-nowrap" title="Datum odevzdání">
+                <Check className="h-3 w-3" />
+                {format(new Date((todo as any).completed_at), "d. M. yyyy HH:mm")}
+              </span>
+            )}
             {(() => {
               const xp = getXpFor(todo.id, todo.text);
               if (xp <= 0) return null;
