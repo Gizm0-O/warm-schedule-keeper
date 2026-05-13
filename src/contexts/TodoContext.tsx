@@ -14,6 +14,7 @@ export interface Todo {
   amount?: number;
   storyNumber?: number;
   storyMonth?: string;
+  created_at?: string;
 }
 
 interface TodoContextType {
@@ -52,6 +53,7 @@ const rowToTodo = (row: any): Todo => ({
   amount: row.amount ?? undefined,
   storyNumber: row.story_number ?? undefined,
   storyMonth: row.story_month ?? undefined,
+  created_at: row.created_at ?? undefined,
 });
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
