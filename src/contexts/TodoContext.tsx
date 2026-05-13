@@ -55,6 +55,7 @@ const rowToTodo = (row: any): Todo => ({
   storyNumber: row.story_number ?? undefined,
   storyMonth: row.story_month ?? undefined,
   created_at: row.created_at ?? undefined,
+  completed_at: row.completed_at ?? undefined,
 });
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
