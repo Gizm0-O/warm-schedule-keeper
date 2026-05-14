@@ -218,6 +218,7 @@ export function RewardsBanner() {
   const effectiveLevel = xpInfo?.level ?? 0;
   const effectiveLevelLabel = xpInfo?.label ?? 'Newbie Bambul';
   const effectiveLevelIcon = xpInfo?.icon ?? '🌱';
+  const effectiveLevelImage = xpInfo?.image;
   const effectiveLevelColor = xpInfo?.color ?? LEVEL_COLORS[0];
   const effectiveLevelBg = xpInfo?.bg ?? LEVEL_BG[0];
   const effectiveProgressPct = xpInfo?.progressPct ?? 0;
@@ -325,10 +326,21 @@ export function RewardsBanner() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br text-2xl shadow-inner',
+              'flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br shadow-inner overflow-hidden ring-2 ring-white/40',
               effectiveLevelColor
             )}>
-              {effectiveLevelIcon}
+              {effectiveLevelImage ? (
+                <img
+                  src={effectiveLevelImage}
+                  alt={effectiveLevelLabel}
+                  width={56}
+                  height={56}
+                  loading="lazy"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-2xl">{effectiveLevelIcon}</span>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">

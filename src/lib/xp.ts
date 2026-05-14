@@ -12,7 +12,17 @@ export const XP_LEVELS: { min: number; label: string }[] = [
 ];
 export const MAX_LEVEL = XP_LEVELS.length - 1;
 
+import level0 from '@/assets/level-0.png';
+import level1 from '@/assets/level-1.png';
+import level2 from '@/assets/level-2.png';
+import level3 from '@/assets/level-3.png';
+import level4 from '@/assets/level-4.png';
+import level5 from '@/assets/level-5.png';
+import level6 from '@/assets/level-6.png';
+import level7 from '@/assets/level-7.png';
+
 export const LEVEL_ICONS = ['🌱', '🐣', '⭐', '💪', '✨', '💎', '🔥', '👑'];
+export const LEVEL_IMAGES = [level0, level1, level2, level3, level4, level5, level6, level7];
 export const LEVEL_COLORS = [
   'from-slate-400 to-slate-500',
   'from-emerald-400 to-teal-500',
@@ -49,6 +59,7 @@ export function computeLevel(xp: number) {
     level,
     label: XP_LEVELS[level].label,
     icon: LEVEL_ICONS[level],
+    image: LEVEL_IMAGES[level],
     color: LEVEL_COLORS[level],
     bg: LEVEL_BG[level],
     nextAt,
