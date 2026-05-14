@@ -49,6 +49,7 @@ import { useTokens } from "@/hooks/useTokens";
 import { Gift, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { TodoEditDialog } from "@/components/TodoEditDialog";
+import { TimeRangePicker } from "@/components/TimeRangePicker";
 
 
 const FAMILY_NAMES = new Set([
@@ -1576,26 +1577,12 @@ const Index = () => {
               <div className="space-y-2">
                 <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nová událost</h4>
                 {viewMode === "week" && !newEventAllDay && (
-                  <div className="flex gap-2">
-                    <input
-                      type="time"
-                      step={900}
-                      value={floatToTime(newEventHour)}
-                      onChange={(e) => {
-                        const v = timeToFloat(e.target.value);
-                        setNewEventHour(v);
-                        if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
-                      }}
-                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="time"
-                      step={900}
-                      value={floatToTime(newEventEndHour)}
-                      onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
-                      className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    />
-                  </div>
+                  <TimeRangePicker
+                    start={newEventHour}
+                    end={newEventEndHour}
+                    onStartChange={setNewEventHour}
+                    onEndChange={setNewEventEndHour}
+                  />
                 )}
                 {/* Color picker */}
                 <div className="flex items-center gap-2 mb-1">
@@ -2185,32 +2172,12 @@ const Index = () => {
               <span className="text-sm text-muted-foreground">Celodenní událost</span>
             </div>
             {!newEventAllDay && (
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Od</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(newEventHour)}
-                  onChange={(e) => {
-                    const v = timeToFloat(e.target.value);
-                    setNewEventHour(v);
-                    if (newEventEndHour <= v) setNewEventEndHour(Math.min(v + 1, 24));
-                  }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Do</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(newEventEndHour)}
-                  onChange={(e) => setNewEventEndHour(timeToFloat(e.target.value))}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
+              <TimeRangePicker
+                start={newEventHour}
+                end={newEventEndHour}
+                onStartChange={setNewEventHour}
+                onEndChange={setNewEventEndHour}
+              />
             )}
             <div>
               <label className="text-sm font-medium text-foreground">Barva</label>
