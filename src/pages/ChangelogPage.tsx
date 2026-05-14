@@ -106,13 +106,13 @@ export default function ChangelogPage() {
       {loading ? (
         <p className="text-muted-foreground text-sm">Načítám…</p>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="columns-1 md:columns-2 gap-6">
           {groups.map(({ status, items }) => {
             if (items.length === 0 && status !== "pending") return null;
             const meta = STATUS_META[status];
             const Icon = meta.icon;
             return (
-              <Card key={status} className="p-4 glass-subtle">
+              <Card key={status} className="p-4 glass-subtle break-inside-avoid mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Icon className={cn("h-5 w-5", meta.color)} />
                   <h2 className="font-semibold">{meta.label}</h2>
