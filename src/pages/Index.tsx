@@ -1938,32 +1938,12 @@ const Index = () => {
                 className="mt-1"
               />
             </div>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Od</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(editHour)}
-                  onChange={(e) => {
-                    const v = timeToFloat(e.target.value);
-                    setEditHour(v);
-                    if (editEndHour <= v) setEditEndHour(Math.min(v + 1, 24));
-                  }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Do</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(editEndHour)}
-                  onChange={(e) => setEditEndHour(timeToFloat(e.target.value))}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
+            <TimeRangePicker
+              start={editHour}
+              end={editEndHour}
+              onStartChange={setEditHour}
+              onEndChange={setEditEndHour}
+            />
             <div>
               <label className="text-sm font-medium text-foreground">Barva</label>
               <div className="flex gap-2 mt-2 flex-wrap items-center">
