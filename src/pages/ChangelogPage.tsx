@@ -163,7 +163,9 @@ function GroupCard({
   const items = group?.items ?? [];
   const meta = STATUS_META[status];
   const Icon = meta.icon;
-  if (items.length === 0 && status !== "pending") return null;
+  if (items.length === 0 && status !== "pending") {
+    // still render the panel
+  }
   return (
     <Card className="p-4 glass-subtle bg-[#2aaaf4]/[0.21]">
       <div className="flex items-center gap-2 mb-3">
@@ -172,7 +174,7 @@ function GroupCard({
         <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
       </div>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Žádné položky.</p>
+        <p className="text-xs text-muted-foreground italic">{EMPTY_MESSAGES[status]}</p>
       ) : (
         <ul className="space-y-2">
           {items.map((e) => (
