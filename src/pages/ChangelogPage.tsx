@@ -45,6 +45,14 @@ const KIND_META: Record<Kind, { label: string; icon: any; cls: string }> = {
   idea:   { label: "nápad", icon: Lightbulb,cls: "bg-yellow-500/15 text-yellow-600" },
 };
 
+const EMPTY_MESSAGES: Record<Status, string> = {
+  pending:     "Schránka je prázdná — nikdo si zatím na nic nestěžoval. 🎉",
+  in_progress: "Zrovna se na žádném úkolu nepracuje. Pauza na kafe? ☕",
+  planned:     "Zatím nic naplánováno. Klid před bouří. 🌤️",
+  done:        "Ještě nic hotového — ale brzy to přijde! 💪",
+  idea:        "Žádné nápady. Múza si dala volno. 💡",
+};
+
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
 
 export default function ChangelogPage() {
