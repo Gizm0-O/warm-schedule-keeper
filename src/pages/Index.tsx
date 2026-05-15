@@ -2044,36 +2044,20 @@ const Index = () => {
                 ⚠️ Čas Tadeášovy směny může měnit pouze admin. Místo směny lze přehodit za 🪙 token.
               </div>
             )}
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Od</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(editShiftStart)}
-                  disabled={lockTimes}
-                  onChange={(e) => {
-                    const v = snapQuarter(timeToFloat(e.target.value));
-                    setEditShiftStart(v);
-                    if (editShiftEnd <= v) setEditShiftEnd(Math.min(v + 0.25, 24));
-                  }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                />
-              </div>
-              <div className="flex-1">
-                <label className="text-sm font-medium text-foreground">Do</label>
-                <input
-                  type="time"
-                  step={900}
-                  value={floatToTime(editShiftEnd)}
-                  disabled={lockTimes}
-                  onChange={(e) => {
-                    const v = snapQuarter(timeToFloat(e.target.value));
-                    setEditShiftEnd(Math.max(v, editShiftStart + 0.25));
-                  }}
-                  className="w-full mt-1 rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50"
-                />
-              </div>
+            <div className={lockTimes ? "pointer-events-none opacity-50" : ""}>
+              <TimeRangePicker
+                start={editShiftStart}
+                end={editShiftEnd}
+                onStartChange={(v) => {
+                  const sv = snapQuarter(v);
+                  setEditShiftStart(sv);
+                  if (editShiftEnd <= sv) setEditShiftEnd(Math.min(sv + 0.25, 24));
+                }}
+                onEndChange={(v) => {
+                  const sv = snapQuarter(v);
+                  setEditShiftEnd(Math.max(sv, editShiftStart + 0.25));
+                }}
+              />
             </div>
           </div>
             );
