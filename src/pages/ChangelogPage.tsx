@@ -136,6 +136,53 @@ export default function ChangelogPage() {
   );
 }
 
+function GroupCard({
+  status,
+  items: groups,
+  isAdmin,
+  onEdit,
+  onDelete,
+  onStatus,
+}: {
+  status: Status;
+  items: { status: Status; items: Entry[] }[];
+  isAdmin: boolean;
+  onEdit: (e: Entry) => void;
+  onDelete: (id: string) => void;
+  onStatus: (id: string, s: Status) => void;
+}) {
+  const group = groups.find((g) => g.status === status);
+  const items = group?.items ?? [];
+  const meta = STATUS_META[status];
+  const Icon = meta.icon;
+  if (items.length === 0 && status !== "pending") return null;
+  return (
+    <Card className="p-4 glass-subtle">
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className={cn("h-5 w-5", meta.color)} />
+        <h2 className="font-semibold">{meta.label}</h2>
+        <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
+      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-muted-foreground">Žádné položky.</p>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((e) => (
+            <EntryRow
+              key={e.id}
+              entry={e}
+              isAdmin={isAdmin}
+              onEdit={() => onEdit(e)}
+              onDelete={() => onDelete(e.id)}
+              onStatus={(s) => onStatus(e.id, s)}
+            />
+          ))}
+        </ul>
+      )}
+    </Card>
+  );
+}
+
 function EntryRow({
   entry, isAdmin, onEdit, onDelete, onStatus,
 }: {
