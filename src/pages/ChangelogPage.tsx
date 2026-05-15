@@ -221,6 +221,17 @@ function EntryRow({
         </div>
         {isAdmin && (
           <div className="flex items-center gap-1 shrink-0">
+            {entry.status === "in_progress" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                onClick={() => onStatus("done")}
+                title="Označit jako hotové"
+              >
+                <Check className="h-3.5 w-3.5" /> Hotovo
+              </Button>
+            )}
             <Select value={entry.status} onValueChange={(v) => onStatus(v as Status)}>
               <SelectTrigger className="h-7 w-[140px] text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
