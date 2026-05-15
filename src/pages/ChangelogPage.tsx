@@ -45,6 +45,14 @@ const KIND_META: Record<Kind, { label: string; icon: any; cls: string }> = {
   idea:   { label: "nápad", icon: Lightbulb,cls: "bg-yellow-500/15 text-yellow-600" },
 };
 
+const EMPTY_MESSAGES: Record<Status, string> = {
+  pending:     "Schránka je prázdná — nikdo si zatím na nic nestěžoval. 🎉",
+  in_progress: "Zrovna se na žádném úkolu nepracuje. Pauza na kafe? ☕",
+  planned:     "Zatím nic naplánováno. Klid před bouří. 🌤️",
+  done:        "Ještě nic hotového — ale brzy to přijde! 💪",
+  idea:        "Žádné nápady. Múza si dala volno. 💡",
+};
+
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
 
 export default function ChangelogPage() {
@@ -155,7 +163,9 @@ function GroupCard({
   const items = group?.items ?? [];
   const meta = STATUS_META[status];
   const Icon = meta.icon;
-  if (items.length === 0 && status !== "pending") return null;
+  if (items.length === 0 && status !== "pending") {
+    // still render the panel
+  }
   return (
     <Card className="p-4 glass-subtle bg-[#2aaaf4]/[0.21]">
       <div className="flex items-center gap-2 mb-3">
@@ -164,7 +174,7 @@ function GroupCard({
         <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
       </div>
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">Žádné položky.</p>
+        <p className="text-xs text-muted-foreground italic">{EMPTY_MESSAGES[status]}</p>
       ) : (
         <ul className="space-y-2">
           {items.map((e) => (
@@ -211,6 +221,17 @@ function EntryRow({
         </div>
         {isAdmin && (
           <div className="flex items-center gap-1 shrink-0">
+            {entry.status === "in_progress" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs gap-1 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                onClick={() => onStatus("done")}
+                title="Označit jako hotové"
+              >
+                <Check className="h-3.5 w-3.5" /> Hotovo
+              </Button>
+            )}
             <Select value={entry.status} onValueChange={(v) => onStatus(v as Status)}>
               <SelectTrigger className="h-7 w-[140px] text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
