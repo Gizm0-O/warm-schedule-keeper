@@ -157,7 +157,7 @@ function GroupCard({
   const Icon = meta.icon;
   if (items.length === 0 && status !== "pending") return null;
   return (
-    <Card className="p-4 glass-subtle bg-[#cdddc6]">
+    <Card className="p-4 glass-subtle bg-[#f4e4c8]">
       <div className="flex items-center gap-2 mb-3">
         <Icon className={cn("h-5 w-5", meta.color)} />
         <h2 className="font-semibold">{meta.label}</h2>
