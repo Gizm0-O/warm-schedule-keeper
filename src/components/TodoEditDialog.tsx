@@ -165,6 +165,33 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
               </Select>
             </div>
           </div>
+          {editRecurrence === "weekdays" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Dny v týdnu</label>
+              <div className="flex flex-wrap gap-1.5">
+                {WEEKDAY_ORDER.map((d) => {
+                  const active = editRecurrenceDays.includes(d);
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      disabled={lockedForUser}
+                      onClick={() => setEditRecurrenceDays((prev) =>
+                        prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+                      )}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-muted-foreground border-border hover:bg-accent"
+                      }`}
+                    >
+                      {WEEKDAY_SHORT[d]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {isAdmin && (
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
