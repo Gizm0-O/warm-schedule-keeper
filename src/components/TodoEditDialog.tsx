@@ -45,6 +45,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
+  const [editRecurrenceDays, setEditRecurrenceDays] = useState<number[]>([]);
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
