@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
-import { startOfDay, isBefore, addDays, addWeeks, addMonths, format, parseISO } from "date-fns";
+import { startOfDay, isBefore, addDays, addWeeks, addMonths, format, parseISO, getDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Category, Person, Recurrence } from "@/data/todos";
 
@@ -11,6 +11,7 @@ export interface Todo {
   person: Person;
   deadline?: Date;
   recurrence: Recurrence;
+  recurrenceDays?: number[];
   amount?: number;
   storyNumber?: number;
   storyMonth?: string;
@@ -31,7 +32,7 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null);
 
-const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
+const getNextDeadline = (current: Date, recurrence: Recurrence, days?: number[]): Date => {
   switch (recurrence) {
     case "daily": return addDays(current, 1);
     case "every2days": return addDays(current, 2);
@@ -39,9 +40,34 @@ const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
     case "weekly": return addWeeks(current, 1);
     case "biweekly": return addWeeks(current, 2);
     case "monthly": return addMonths(current, 1);
+    case "weekdays": {
+      if (!days || days.length === 0) return addWeeks(current, 1);
+      let next = addDays(current, 1);
+      for (let i = 0; i < 14; i++) {
+        if (days.includes(getDay(next))) return next;
+        next = addDays(next, 1);
+      }
+      return next;
+    }
     default: return current;
   }
 };
+
+const rowToTodo = (row: any): Todo => ({
+  id: row.id,
+  text: row.text,
+  completed: row.completed,
+  category: row.category as Category,
+  person: row.person as Person,
+  deadline: row.deadline ? parseISO(row.deadline) : undefined,
+  recurrence: row.recurrence as Recurrence,
+  recurrenceDays: row.recurrence_days ?? undefined,
+  amount: row.amount ?? undefined,
+  storyNumber: row.story_number ?? undefined,
+  storyMonth: row.story_month ?? undefined,
+  created_at: row.created_at ?? undefined,
+  completed_at: row.completed_at ?? undefined,
+});
 
 const rowToTodo = (row: any): Todo => ({
   id: row.id,
