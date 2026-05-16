@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, WEEKDAY_SHORT, WEEKDAY_ORDER, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
