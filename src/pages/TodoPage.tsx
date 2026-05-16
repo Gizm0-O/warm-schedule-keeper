@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
 import { cs } from "date-fns/locale";
-import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, WEEKDAY_SHORT, WEEKDAY_ORDER, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { useHourlyTasks } from "@/hooks/useHourlyTasks";
 import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
