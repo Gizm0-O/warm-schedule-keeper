@@ -523,6 +523,7 @@ export type Database = {
           id: string
           person: string
           recurrence: string
+          recurrence_days: number[] | null
           story_month: string | null
           story_number: number | null
           text: string
@@ -537,6 +538,7 @@ export type Database = {
           id?: string
           person: string
           recurrence?: string
+          recurrence_days?: number[] | null
           story_month?: string | null
           story_number?: number | null
           text: string
@@ -551,6 +553,7 @@ export type Database = {
           id?: string
           person?: string
           recurrence?: string
+          recurrence_days?: number[] | null
           story_month?: string | null
           story_number?: number | null
           text?: string
