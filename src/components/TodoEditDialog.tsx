@@ -78,6 +78,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
       person: editPerson,
       deadline: editDeadline ? new Date(editDeadline) : undefined,
       recurrence: editRecurrence,
+      recurrenceDays: editRecurrence === "weekdays" ? editRecurrenceDays : undefined,
       amount: editAmount ? parseInt(editAmount) : undefined,
     });
     const bonusVal = editBonusEnabled && editBonusAmount ? parseInt(editBonusAmount) : 0;
