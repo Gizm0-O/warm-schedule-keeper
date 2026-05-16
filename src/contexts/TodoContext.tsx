@@ -123,10 +123,10 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
 
       // Create next recurrence
       const baseDate = todo.deadline ?? startOfDay(new Date());
-      let nextDeadline = getNextDeadline(baseDate, todo.recurrence);
+      let nextDeadline = getNextDeadline(baseDate, todo.recurrence, todo.recurrenceDays);
       const today = startOfDay(new Date());
       while (isBefore(nextDeadline, today)) {
-        nextDeadline = getNextDeadline(nextDeadline, todo.recurrence);
+        nextDeadline = getNextDeadline(nextDeadline, todo.recurrence, todo.recurrenceDays);
       }
       const newRow = {
         text: todo.text,
@@ -135,6 +135,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
         person: todo.person,
         deadline: format(nextDeadline, "yyyy-MM-dd"),
         recurrence: todo.recurrence,
+        recurrence_days: todo.recurrenceDays ?? null,
       };
       const { data: newData } = await supabase.from("todos").insert(newRow).select().single();
 
