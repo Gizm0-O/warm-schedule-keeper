@@ -69,20 +69,6 @@ const rowToTodo = (row: any): Todo => ({
   completed_at: row.completed_at ?? undefined,
 });
 
-const rowToTodo = (row: any): Todo => ({
-  id: row.id,
-  text: row.text,
-  completed: row.completed,
-  category: row.category as Category,
-  person: row.person as Person,
-  deadline: row.deadline ? parseISO(row.deadline) : undefined,
-  recurrence: row.recurrence as Recurrence,
-  amount: row.amount ?? undefined,
-  storyNumber: row.story_number ?? undefined,
-  storyMonth: row.story_month ?? undefined,
-  created_at: row.created_at ?? undefined,
-  completed_at: row.completed_at ?? undefined,
-});
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
