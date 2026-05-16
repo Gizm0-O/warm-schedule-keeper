@@ -166,6 +166,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       person: todo.person,
       deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
       recurrence: todo.recurrence,
+      recurrence_days: todo.recurrenceDays ?? null,
       amount: todo.amount ?? null,
       story_number: todo.storyNumber ?? null,
       story_month: todo.storyMonth ?? null,
