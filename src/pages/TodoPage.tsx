@@ -548,7 +548,9 @@ const TodoPage = () => {
             {todo.recurrence !== "none" && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                 <Repeat className="h-3 w-3" />
-                {RECURRENCE_LABELS[todo.recurrence]}
+                {todo.recurrence === "weekdays" && todo.recurrenceDays?.length
+                  ? WEEKDAY_ORDER.filter((d) => todo.recurrenceDays!.includes(d)).map((d) => WEEKDAY_SHORT[d]).join(", ")
+                  : RECURRENCE_LABELS[todo.recurrence]}
               </span>
             )}
             {deadlineLabel(todo.deadline)}
