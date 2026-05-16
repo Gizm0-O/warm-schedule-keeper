@@ -376,11 +376,13 @@ const TodoPage = () => {
       person: newPerson,
       deadline: newDeadline ? new Date(newDeadline) : undefined,
       recurrence: newRecurrence,
+      recurrenceDays: newRecurrence === "weekdays" ? newRecurrenceDays : undefined,
       amount: newAmount ? parseInt(newAmount) : undefined,
     });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
+    setNewRecurrenceDays([]);
     setNewAmount("");
     setShowDialog(false);
   };
