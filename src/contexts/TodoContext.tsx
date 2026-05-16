@@ -91,6 +91,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       person: todo.person,
       deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
       recurrence: todo.recurrence,
+      recurrence_days: todo.recurrenceDays ?? null,
       amount: todo.amount ?? null,
     };
     const { data } = await supabase.from("todos").insert(row).select().single();
@@ -101,6 +102,10 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
     const row: any = { ...updates };
     if (updates.deadline !== undefined) {
       row.deadline = updates.deadline ? format(updates.deadline, "yyyy-MM-dd") : null;
+    }
+    if ("recurrenceDays" in updates) {
+      row.recurrence_days = updates.recurrenceDays ?? null;
+      delete row.recurrenceDays;
     }
     delete row.id;
     await supabase.from("todos").update(row).eq("id", id);
