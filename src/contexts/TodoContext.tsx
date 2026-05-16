@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
-import { startOfDay, isBefore, addDays, addWeeks, addMonths, format, parseISO } from "date-fns";
+import { startOfDay, isBefore, addDays, addWeeks, addMonths, format, parseISO, getDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import type { Category, Person, Recurrence } from "@/data/todos";
 
@@ -11,6 +11,7 @@ export interface Todo {
   person: Person;
   deadline?: Date;
   recurrence: Recurrence;
+  recurrenceDays?: number[];
   amount?: number;
   storyNumber?: number;
   storyMonth?: string;
@@ -31,7 +32,7 @@ interface TodoContextType {
 
 const TodoContext = createContext<TodoContextType | null>(null);
 
-const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
+const getNextDeadline = (current: Date, recurrence: Recurrence, days?: number[]): Date => {
   switch (recurrence) {
     case "daily": return addDays(current, 1);
     case "every2days": return addDays(current, 2);
@@ -39,6 +40,15 @@ const getNextDeadline = (current: Date, recurrence: Recurrence): Date => {
     case "weekly": return addWeeks(current, 1);
     case "biweekly": return addWeeks(current, 2);
     case "monthly": return addMonths(current, 1);
+    case "weekdays": {
+      if (!days || days.length === 0) return addWeeks(current, 1);
+      let next = addDays(current, 1);
+      for (let i = 0; i < 14; i++) {
+        if (days.includes(getDay(next))) return next;
+        next = addDays(next, 1);
+      }
+      return next;
+    }
     default: return current;
   }
 };
@@ -51,12 +61,14 @@ const rowToTodo = (row: any): Todo => ({
   person: row.person as Person,
   deadline: row.deadline ? parseISO(row.deadline) : undefined,
   recurrence: row.recurrence as Recurrence,
+  recurrenceDays: row.recurrence_days ?? undefined,
   amount: row.amount ?? undefined,
   storyNumber: row.story_number ?? undefined,
   storyMonth: row.story_month ?? undefined,
   created_at: row.created_at ?? undefined,
   completed_at: row.completed_at ?? undefined,
 });
+
 
 export const TodoProvider = ({ children }: { children: ReactNode }) => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -79,6 +91,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       person: todo.person,
       deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
       recurrence: todo.recurrence,
+      recurrence_days: todo.recurrenceDays ?? null,
       amount: todo.amount ?? null,
     };
     const { data } = await supabase.from("todos").insert(row).select().single();
@@ -89,6 +102,10 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
     const row: any = { ...updates };
     if (updates.deadline !== undefined) {
       row.deadline = updates.deadline ? format(updates.deadline, "yyyy-MM-dd") : null;
+    }
+    if ("recurrenceDays" in updates) {
+      row.recurrence_days = updates.recurrenceDays ?? null;
+      delete row.recurrenceDays;
     }
     delete row.id;
     await supabase.from("todos").update(row).eq("id", id);
@@ -106,10 +123,10 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
 
       // Create next recurrence
       const baseDate = todo.deadline ?? startOfDay(new Date());
-      let nextDeadline = getNextDeadline(baseDate, todo.recurrence);
+      let nextDeadline = getNextDeadline(baseDate, todo.recurrence, todo.recurrenceDays);
       const today = startOfDay(new Date());
       while (isBefore(nextDeadline, today)) {
-        nextDeadline = getNextDeadline(nextDeadline, todo.recurrence);
+        nextDeadline = getNextDeadline(nextDeadline, todo.recurrence, todo.recurrenceDays);
       }
       const newRow = {
         text: todo.text,
@@ -118,6 +135,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
         person: todo.person,
         deadline: format(nextDeadline, "yyyy-MM-dd"),
         recurrence: todo.recurrence,
+        recurrence_days: todo.recurrenceDays ?? null,
       };
       const { data: newData } = await supabase.from("todos").insert(newRow).select().single();
 
@@ -148,6 +166,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       person: todo.person,
       deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
       recurrence: todo.recurrence,
+      recurrence_days: todo.recurrenceDays ?? null,
       amount: todo.amount ?? null,
       story_number: todo.storyNumber ?? null,
       story_month: todo.storyMonth ?? null,

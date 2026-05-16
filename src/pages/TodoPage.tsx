@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format, isBefore, isToday, startOfDay, differenceInDays } from "date-fns";
 import { cs } from "date-fns/locale";
-import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, WEEKDAY_SHORT, WEEKDAY_ORDER, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { useHourlyTasks } from "@/hooks/useHourlyTasks";
 import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
@@ -84,6 +84,7 @@ const TodoPage = () => {
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
   const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
+  const [newRecurrenceDays, setNewRecurrenceDays] = useState<number[]>([]);
   const [newAmount, setNewAmount] = useState("");
 
   // Edit todo state
@@ -375,11 +376,13 @@ const TodoPage = () => {
       person: newPerson,
       deadline: newDeadline ? new Date(newDeadline) : undefined,
       recurrence: newRecurrence,
+      recurrenceDays: newRecurrence === "weekdays" ? newRecurrenceDays : undefined,
       amount: newAmount ? parseInt(newAmount) : undefined,
     });
     setNewText("");
     setNewDeadline("");
     setNewRecurrence("none");
+    setNewRecurrenceDays([]);
     setNewAmount("");
     setShowDialog(false);
   };
@@ -545,7 +548,9 @@ const TodoPage = () => {
             {todo.recurrence !== "none" && (
               <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground">
                 <Repeat className="h-3 w-3" />
-                {RECURRENCE_LABELS[todo.recurrence]}
+                {todo.recurrence === "weekdays" && todo.recurrenceDays?.length
+                  ? WEEKDAY_ORDER.filter((d) => todo.recurrenceDays!.includes(d)).map((d) => WEEKDAY_SHORT[d]).join(", ")
+                  : RECURRENCE_LABELS[todo.recurrence]}
               </span>
             )}
             {deadlineLabel(todo.deadline)}
@@ -895,6 +900,32 @@ const TodoPage = () => {
                 </Select>
               </div>
             </div>
+            {newRecurrence === "weekdays" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Dny v týdnu</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {WEEKDAY_ORDER.map((d) => {
+                    const active = newRecurrenceDays.includes(d);
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => setNewRecurrenceDays((prev) =>
+                          prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+                        )}
+                        className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                          active
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background text-muted-foreground border-border hover:bg-accent"
+                        }`}
+                      >
+                        {WEEKDAY_SHORT[d]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {/* Amount field - only visible in admin mode */}
             {isAdmin && (
               <div className="space-y-1.5">

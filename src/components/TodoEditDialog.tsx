@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import { RECURRENCE_LABELS, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
+import { RECURRENCE_LABELS, WEEKDAY_SHORT, WEEKDAY_ORDER, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useTaskReady } from "@/hooks/useTaskReady";
@@ -45,6 +45,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editPerson, setEditPerson] = useState<Person>("Tadeáš");
   const [editDeadline, setEditDeadline] = useState("");
   const [editRecurrence, setEditRecurrence] = useState<Recurrence>("none");
+  const [editRecurrenceDays, setEditRecurrenceDays] = useState<number[]>([]);
   const [editAmount, setEditAmount] = useState("");
   const [editBonusEnabled, setEditBonusEnabled] = useState(false);
   const [editBonusAmount, setEditBonusAmount] = useState("");
@@ -59,6 +60,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     setEditPerson(todo.person);
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
+    setEditRecurrenceDays(todo.recurrenceDays ?? []);
     setEditAmount(todo.amount ? todo.amount.toString() : "");
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
@@ -76,6 +78,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
       person: editPerson,
       deadline: editDeadline ? new Date(editDeadline) : undefined,
       recurrence: editRecurrence,
+      recurrenceDays: editRecurrence === "weekdays" ? editRecurrenceDays : undefined,
       amount: editAmount ? parseInt(editAmount) : undefined,
     });
     const bonusVal = editBonusEnabled && editBonusAmount ? parseInt(editBonusAmount) : 0;
@@ -162,6 +165,33 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
               </Select>
             </div>
           </div>
+          {editRecurrence === "weekdays" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Dny v týdnu</label>
+              <div className="flex flex-wrap gap-1.5">
+                {WEEKDAY_ORDER.map((d) => {
+                  const active = editRecurrenceDays.includes(d);
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      disabled={lockedForUser}
+                      onClick={() => setEditRecurrenceDays((prev) =>
+                        prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
+                      )}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-muted-foreground border-border hover:bg-accent"
+                      }`}
+                    >
+                      {WEEKDAY_SHORT[d]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           {isAdmin && (
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-muted-foreground flex items-center gap-1">
