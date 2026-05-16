@@ -84,6 +84,7 @@ const TodoPage = () => {
   const [newPerson, setNewPerson] = useState<Person>("Tadeáš");
   const [newDeadline, setNewDeadline] = useState("");
   const [newRecurrence, setNewRecurrence] = useState<Recurrence>("none");
+  const [newRecurrenceDays, setNewRecurrenceDays] = useState<number[]>([]);
   const [newAmount, setNewAmount] = useState("");
 
   // Edit todo state
