@@ -27,6 +27,7 @@ export interface Todo {
   person: Person;
   deadline?: Date;
   recurrence: Recurrence;
+  recurrenceDays?: number[];
   amount?: number;
   storyNumber?: number;
   storyMonth?: string;
