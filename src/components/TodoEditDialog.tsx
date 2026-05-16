@@ -60,6 +60,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
     setEditPerson(todo.person);
     setEditDeadline(todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : "");
     setEditRecurrence(todo.recurrence);
+    setEditRecurrenceDays(todo.recurrenceDays ?? []);
     setEditAmount(todo.amount ? todo.amount.toString() : "");
     setEditBonusEnabled(hasBonus(todo.id));
     setEditBonusAmount(hasBonus(todo.id) ? getBonusAmount(todo.id).toString() : "");
