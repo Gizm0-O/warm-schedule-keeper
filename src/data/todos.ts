@@ -1,6 +1,6 @@
 export type Category = "work" | "home";
 export type Person = "Tadeáš" | "Barča";
-export type Recurrence = "none" | "daily" | "every2days" | "every3days" | "weekly" | "biweekly" | "monthly";
+export type Recurrence = "none" | "daily" | "every2days" | "every3days" | "weekly" | "biweekly" | "monthly" | "weekdays";
 
 export const RECURRENCE_LABELS: Record<Recurrence, string> = {
   none: "Bez opakování",
@@ -10,7 +10,14 @@ export const RECURRENCE_LABELS: Record<Recurrence, string> = {
   weekly: "Týdně",
   biweekly: "Každé 2 týdny",
   monthly: "Měsíčně",
+  weekdays: "Vybrané dny v týdnu",
 };
+
+// 0 = Neděle, 1 = Pondělí, ... 6 = Sobota (kompatibilní s date-fns getDay)
+export const WEEKDAY_SHORT: Record<number, string> = {
+  1: "Po", 2: "Út", 3: "St", 4: "Čt", 5: "Pá", 6: "So", 0: "Ne",
+};
+export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
 export interface Todo {
   id: string;
