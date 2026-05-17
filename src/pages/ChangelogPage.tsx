@@ -180,46 +180,65 @@ function GroupCard({
   status,
   items: groups,
   isAdmin,
+  mySubs,
   onEdit,
   onDelete,
   onStatus,
+  showAllDone,
+  onToggleShowAllDone,
 }: {
   status: Status;
   items: { status: Status; items: Entry[] }[];
   isAdmin: boolean;
+  mySubs: string[];
   onEdit: (e: Entry) => void;
   onDelete: (id: string) => void;
   onStatus: (id: string, s: Status) => void;
+  showAllDone?: boolean;
+  onToggleShowAllDone?: () => void;
 }) {
   const group = groups.find((g) => g.status === status);
-  const items = group?.items ?? [];
+  const allItems = group?.items ?? [];
   const meta = STATUS_META[status];
   const Icon = meta.icon;
-  if (items.length === 0 && status !== "pending") {
-    // still render the panel
-  }
+  const isDone = status === "done";
+  const hiddenCount = isDone && !showAllDone ? Math.max(0, allItems.length - DONE_INITIAL) : 0;
+  const items = isDone && !showAllDone ? allItems.slice(0, DONE_INITIAL) : allItems;
   return (
     <Card className={cn("p-4 glass-subtle", PANEL_BG[status])}>
       <div className="flex items-center gap-2 mb-3">
         <Icon className={cn("h-5 w-5", meta.color)} />
         <h2 className="font-semibold">{meta.label}</h2>
-        <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
+        <Badge variant="secondary" className="ml-auto">{allItems.length}</Badge>
       </div>
-      {items.length === 0 ? (
+      {allItems.length === 0 ? (
         <p className="text-xs text-muted-foreground italic">{EMPTY_MESSAGES[status]}</p>
       ) : (
-        <ul className="space-y-2">
-          {items.map((e) => (
-            <EntryRow
-              key={e.id}
-              entry={e}
-              isAdmin={isAdmin}
-              onEdit={() => onEdit(e)}
-              onDelete={() => onDelete(e.id)}
-              onStatus={(s) => onStatus(e.id, s)}
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-2">
+            {items.map((e) => (
+              <EntryRow
+                key={e.id}
+                entry={e}
+                isAdmin={isAdmin}
+                canEditOwn={status === "pending" && mySubs.includes(e.id)}
+                onEdit={() => onEdit(e)}
+                onDelete={() => onDelete(e.id)}
+                onStatus={(s) => onStatus(e.id, s)}
+              />
+            ))}
+          </ul>
+          {isDone && allItems.length > DONE_INITIAL && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3 w-full text-xs"
+              onClick={onToggleShowAllDone}
+            >
+              {showAllDone ? "Sbalit" : `Zobrazit další (${hiddenCount})`}
+            </Button>
+          )}
+        </>
       )}
     </Card>
   );
