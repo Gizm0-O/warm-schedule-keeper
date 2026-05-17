@@ -356,7 +356,12 @@ function EntryDialog({
       await (supabase as any).from("changelog_entries").update(payload).eq("id", entry.id);
       toast.success("Uloženo");
     } else {
-      await (supabase as any).from("changelog_entries").insert(payload);
+      const { data: inserted } = await (supabase as any)
+        .from("changelog_entries")
+        .insert(payload)
+        .select()
+        .single();
+      if (inserted?.id) addMySub(inserted.id);
       toast.success(isAdmin ? "Přidáno" : "Odesláno k zaevidování");
     }
     onOpenChange(false);
