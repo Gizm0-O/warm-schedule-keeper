@@ -245,10 +245,11 @@ function GroupCard({
 }
 
 function EntryRow({
-  entry, isAdmin, onEdit, onDelete, onStatus,
+  entry, isAdmin, canEditOwn, onEdit, onDelete, onStatus,
 }: {
   entry: Entry;
   isAdmin: boolean;
+  canEditOwn?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onStatus: (s: Status) => void;
