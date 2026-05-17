@@ -63,6 +63,20 @@ const PANEL_BG: Record<Status, string> = {
 
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
 
+const MY_SUBMISSIONS_KEY = "changelogMySubmissions";
+function readMySubs(): string[] {
+  try { return JSON.parse(localStorage.getItem(MY_SUBMISSIONS_KEY) || "[]"); } catch { return []; }
+}
+function addMySub(id: string) {
+  const list = readMySubs();
+  if (!list.includes(id)) {
+    list.push(id);
+    localStorage.setItem(MY_SUBMISSIONS_KEY, JSON.stringify(list));
+  }
+}
+
+const DONE_INITIAL = 10;
+
 export default function ChangelogPage() {
   const isAdmin = useAdminMode();
   const [entries, setEntries] = useState<Entry[]>([]);
