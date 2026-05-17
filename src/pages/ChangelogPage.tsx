@@ -54,11 +54,11 @@ const EMPTY_MESSAGES: Record<Status, string> = {
 };
 
 const PANEL_BG: Record<Status, string> = {
-  pending: "bg-card/90",
-  in_progress: "bg-[#2aaaf4]/[0.21]",
-  planned: "bg-[#f4c86a]/[0.34]",
-  done: "bg-muted/70",
-  idea: "bg-[#d3ceee]/[0.61]",
+  pending: "!bg-white/90",
+  in_progress: "!bg-[#2aaaf4]/[0.21]",
+  planned: "!bg-[#f4c86a]/[0.34]",
+  done: "!bg-muted/70",
+  idea: "!bg-[#d3ceee]/[0.61]",
 };
 
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
