@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { Button } from "@/components/ui/button";
@@ -63,12 +63,29 @@ const PANEL_BG: Record<Status, string> = {
 
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
 
+const MY_SUBMISSIONS_KEY = "changelogMySubmissions";
+function readMySubs(): string[] {
+  try { return JSON.parse(localStorage.getItem(MY_SUBMISSIONS_KEY) || "[]"); } catch { return []; }
+}
+function addMySub(id: string) {
+  const list = readMySubs();
+  if (!list.includes(id)) {
+    list.push(id);
+    localStorage.setItem(MY_SUBMISSIONS_KEY, JSON.stringify(list));
+  }
+}
+
+const DONE_INITIAL = 10;
+
 export default function ChangelogPage() {
   const isAdmin = useAdminMode();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Entry | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [mySubs, setMySubs] = useState<string[]>(() => readMySubs());
+  const [showAllDone, setShowAllDone] = useState(false);
+  const refreshMySubs = () => setMySubs(readMySubs());
 
   const fetchEntries = async () => {
     const { data } = await (supabase as any)
@@ -131,13 +148,13 @@ export default function ChangelogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <div className="space-y-6">
-            <GroupCard status="pending"  items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="planned"  items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="idea"     items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="pending"  items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="planned"  items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="idea"     items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
           </div>
           <div className="space-y-6">
-            <GroupCard status="in_progress" items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="done"        items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="in_progress" items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="done"        items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} showAllDone={showAllDone} onToggleShowAllDone={() => setShowAllDone((v) => !v)} />
           </div>
         </div>
       )}
@@ -146,14 +163,14 @@ export default function ChangelogPage() {
         open={showAdd}
         onOpenChange={setShowAdd}
         isAdmin={isAdmin}
-        onSaved={fetchEntries}
+        onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
       <EntryDialog
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
         entry={editing ?? undefined}
         isAdmin={isAdmin}
-        onSaved={fetchEntries}
+        onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
     </div>
   );
@@ -163,56 +180,76 @@ function GroupCard({
   status,
   items: groups,
   isAdmin,
+  mySubs,
   onEdit,
   onDelete,
   onStatus,
+  showAllDone,
+  onToggleShowAllDone,
 }: {
   status: Status;
   items: { status: Status; items: Entry[] }[];
   isAdmin: boolean;
+  mySubs: string[];
   onEdit: (e: Entry) => void;
   onDelete: (id: string) => void;
   onStatus: (id: string, s: Status) => void;
+  showAllDone?: boolean;
+  onToggleShowAllDone?: () => void;
 }) {
   const group = groups.find((g) => g.status === status);
-  const items = group?.items ?? [];
+  const allItems = group?.items ?? [];
   const meta = STATUS_META[status];
   const Icon = meta.icon;
-  if (items.length === 0 && status !== "pending") {
-    // still render the panel
-  }
+  const isDone = status === "done";
+  const hiddenCount = isDone && !showAllDone ? Math.max(0, allItems.length - DONE_INITIAL) : 0;
+  const items = isDone && !showAllDone ? allItems.slice(0, DONE_INITIAL) : allItems;
   return (
     <Card className={cn("p-4 glass-subtle", PANEL_BG[status])}>
       <div className="flex items-center gap-2 mb-3">
         <Icon className={cn("h-5 w-5", meta.color)} />
         <h2 className="font-semibold">{meta.label}</h2>
-        <Badge variant="secondary" className="ml-auto">{items.length}</Badge>
+        <Badge variant="secondary" className="ml-auto">{allItems.length}</Badge>
       </div>
-      {items.length === 0 ? (
+      {allItems.length === 0 ? (
         <p className="text-xs text-muted-foreground italic">{EMPTY_MESSAGES[status]}</p>
       ) : (
-        <ul className="space-y-2">
-          {items.map((e) => (
-            <EntryRow
-              key={e.id}
-              entry={e}
-              isAdmin={isAdmin}
-              onEdit={() => onEdit(e)}
-              onDelete={() => onDelete(e.id)}
-              onStatus={(s) => onStatus(e.id, s)}
-            />
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-2">
+            {items.map((e) => (
+              <EntryRow
+                key={e.id}
+                entry={e}
+                isAdmin={isAdmin}
+                canEditOwn={status === "pending" && mySubs.includes(e.id)}
+                onEdit={() => onEdit(e)}
+                onDelete={() => onDelete(e.id)}
+                onStatus={(s) => onStatus(e.id, s)}
+              />
+            ))}
+          </ul>
+          {isDone && allItems.length > DONE_INITIAL && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3 w-full text-xs"
+              onClick={onToggleShowAllDone}
+            >
+              {showAllDone ? "Sbalit" : `Zobrazit další (${hiddenCount})`}
+            </Button>
+          )}
+        </>
       )}
     </Card>
   );
 }
 
 function EntryRow({
-  entry, isAdmin, onEdit, onDelete, onStatus,
+  entry, isAdmin, canEditOwn, onEdit, onDelete, onStatus,
 }: {
   entry: Entry;
   isAdmin: boolean;
+  canEditOwn?: boolean;
   onEdit: () => void;
   onDelete: () => void;
   onStatus: (s: Status) => void;
@@ -263,6 +300,16 @@ function EntryRow({
             </Button>
           </div>
         )}
+        {!isAdmin && canEditOwn && (
+          <div className="flex items-center gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onEdit} title="Upravit můj návrh">
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={onDelete} title="Smazat můj návrh">
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
     </li>
   );
@@ -309,7 +356,12 @@ function EntryDialog({
       await (supabase as any).from("changelog_entries").update(payload).eq("id", entry.id);
       toast.success("Uloženo");
     } else {
-      await (supabase as any).from("changelog_entries").insert(payload);
+      const { data: inserted } = await (supabase as any)
+        .from("changelog_entries")
+        .insert(payload)
+        .select()
+        .single();
+      if (inserted?.id) addMySub(inserted.id);
       toast.success(isAdmin ? "Přidáno" : "Odesláno k zaevidování");
     }
     onOpenChange(false);
