@@ -102,7 +102,14 @@ export default function ChangelogPage() {
 
   const groups = STATUS_ORDER.map((s) => ({
     status: s,
-    items: entries.filter((e) => e.status === s),
+    items: entries
+      .filter((e) => e.status === s)
+      .sort((a, b) => {
+        if (s === "done") {
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }),
   }));
 
   return (
