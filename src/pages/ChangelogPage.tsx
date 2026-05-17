@@ -83,6 +83,9 @@ export default function ChangelogPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<Entry | null>(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [mySubs, setMySubs] = useState<string[]>(() => readMySubs());
+  const [showAllDone, setShowAllDone] = useState(false);
+  const refreshMySubs = () => setMySubs(readMySubs());
 
   const fetchEntries = async () => {
     const { data } = await (supabase as any)
