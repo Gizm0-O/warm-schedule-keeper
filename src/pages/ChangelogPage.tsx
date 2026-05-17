@@ -163,14 +163,14 @@ export default function ChangelogPage() {
         open={showAdd}
         onOpenChange={setShowAdd}
         isAdmin={isAdmin}
-        onSaved={fetchEntries}
+        onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
       <EntryDialog
         open={!!editing}
         onOpenChange={(o) => !o && setEditing(null)}
         entry={editing ?? undefined}
         isAdmin={isAdmin}
-        onSaved={fetchEntries}
+        onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
     </div>
   );
