@@ -148,13 +148,13 @@ export default function ChangelogPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           <div className="space-y-6">
-            <GroupCard status="pending"  items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="planned"  items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="idea"     items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="pending"  items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="planned"  items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="idea"     items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
           </div>
           <div className="space-y-6">
-            <GroupCard status="in_progress" items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
-            <GroupCard status="done"        items={groups} isAdmin={isAdmin} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="in_progress" items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} />
+            <GroupCard status="done"        items={groups} isAdmin={isAdmin} mySubs={mySubs} onEdit={setEditing} onDelete={remove} onStatus={updateStatus} showAllDone={showAllDone} onToggleShowAllDone={() => setShowAllDone((v) => !v)} />
           </div>
         </div>
       )}
