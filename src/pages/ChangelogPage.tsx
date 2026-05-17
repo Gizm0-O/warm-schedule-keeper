@@ -53,6 +53,14 @@ const EMPTY_MESSAGES: Record<Status, string> = {
   idea:        "Žádné nápady. Múza si dala volno. 💡",
 };
 
+const PANEL_BG: Record<Status, string> = {
+  pending: "bg-card/90",
+  in_progress: "bg-[#2aaaf4]/[0.21]",
+  planned: "bg-[#f4c86a]/[0.34]",
+  done: "bg-muted/70",
+  idea: "bg-[#d3ceee]/[0.61]",
+};
+
 const STATUS_ORDER: Status[] = ["pending", "in_progress", "planned", "done", "idea"];
 
 export default function ChangelogPage() {
@@ -167,7 +175,7 @@ function GroupCard({
     // still render the panel
   }
   return (
-    <Card className="p-4 glass-subtle bg-[#2aaaf4]/[0.21]">
+    <Card className={cn("p-4 glass-subtle", PANEL_BG[status])}>
       <div className="flex items-center gap-2 mb-3">
         <Icon className={cn("h-5 w-5", meta.color)} />
         <h2 className="font-semibold">{meta.label}</h2>
