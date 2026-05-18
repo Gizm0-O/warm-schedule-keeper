@@ -772,7 +772,7 @@ const TodoPage = () => {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="mx-auto w-full max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl 2xl:max-w-7xl space-y-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-2xl font-bold text-foreground">Úkoly</h2>
         <div className="flex items-center gap-2">
