@@ -89,6 +89,7 @@ export default function ChangelogPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [mySubs, setMySubs] = useState<string[]>(() => readMySubs());
   const [showAllDone, setShowAllDone] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const refreshMySubs = () => setMySubs(readMySubs());
 
   const fetchEntries = async () => {
