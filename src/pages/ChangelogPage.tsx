@@ -180,6 +180,25 @@ export default function ChangelogPage() {
         isAdmin={isAdmin}
         onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Opravdu smazat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Záznam bude trvale odstraněn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušit</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
