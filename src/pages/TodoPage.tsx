@@ -688,6 +688,20 @@ const TodoPage = () => {
             </>
           );
         })()}
+        {isAdmin && todo.person === 'Barča' && todo.category === 'work' && !todo.completed && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setReady(todo.id, !isReady(todo.id)); }}
+            className={cn(
+              "rounded-lg p-1.5 transition-colors shrink-0 border",
+              isReady(todo.id)
+                ? "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50"
+                : "text-muted-foreground border-dashed border-muted-foreground/40 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"
+            )}
+            title={isReady(todo.id) ? "Schváleno – kliknutím zrušíš" : "Schválit úkol (Ready)"}
+          >
+            <Check className="h-4 w-4" />
+          </button>
+        )}
         {(() => {
           const lockedForUser = !isAdmin && todo.person === 'Barča' && todo.category === 'work' && isReady(todo.id);
           return (
