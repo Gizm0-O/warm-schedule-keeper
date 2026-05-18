@@ -10,6 +10,10 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Check, Bug, Lightbulb, Sparkles, Clock, Wrench, Inbox } from "lucide-react";
@@ -85,6 +89,7 @@ export default function ChangelogPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [mySubs, setMySubs] = useState<string[]>(() => readMySubs());
   const [showAllDone, setShowAllDone] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const refreshMySubs = () => setMySubs(readMySubs());
 
   const fetchEntries = async () => {
@@ -111,9 +116,12 @@ export default function ChangelogPage() {
     fetchEntries();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Opravdu smazat?")) return;
-    await (supabase as any).from("changelog_entries").delete().eq("id", id);
+  const remove = (id: string) => setConfirmDeleteId(id);
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    await (supabase as any).from("changelog_entries").delete().eq("id", confirmDeleteId);
+    setConfirmDeleteId(null);
     fetchEntries();
   };
 
@@ -172,6 +180,25 @@ export default function ChangelogPage() {
         isAdmin={isAdmin}
         onSaved={() => { fetchEntries(); refreshMySubs(); }}
       />
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Opravdu smazat?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tato akce je nevratná. Záznam bude trvale odstraněn.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Zrušit</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Smazat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
