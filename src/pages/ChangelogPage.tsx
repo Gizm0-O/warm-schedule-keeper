@@ -116,9 +116,12 @@ export default function ChangelogPage() {
     fetchEntries();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Opravdu smazat?")) return;
-    await (supabase as any).from("changelog_entries").delete().eq("id", id);
+  const remove = (id: string) => setConfirmDeleteId(id);
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return;
+    await (supabase as any).from("changelog_entries").delete().eq("id", confirmDeleteId);
+    setConfirmDeleteId(null);
     fetchEntries();
   };
 
