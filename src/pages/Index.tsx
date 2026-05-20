@@ -1341,21 +1341,32 @@ const Index = () => {
                 {/* Event blocks spanning hours */}
                 {weekDays.map((day, dayIdx) => {
                   const dayEvents = getEventBlocksForDay(day);
+                  const dayShifts = getShiftsForDay(day);
                   const colWidth = `calc((100% - 60px) / 7)`;
                   return dayEvents.map((ev) => {
                     const startH = ev.hour!;
                     const endH = ev.endHour ?? startH + 1;
                     const top = timeToY(startH);
                     const height = timeToY(endH) - top;
-                    const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    // Detect overlap with any shift on this day → render event nested (narrower, right-aligned)
+                    const overlapsShift = dayShifts.some(
+                      (s) => startH < s.endHour && endH > s.startHour
+                    );
+                    const widthCalc = overlapsShift
+                      ? `calc((${colWidth} - 4px) * 0.62)`
+                      : `calc(${colWidth} - 4px)`;
+                    const leftCalc = overlapsShift
+                      ? `calc(60px + ${dayIdx} * ${colWidth} + (${colWidth} - 4px) * 0.38)`
+                      : `calc(60px + ${dayIdx} * ${colWidth})`;
                     return (
                       <div
                         key={ev.id}
                         className={cn(
                           "absolute rounded-md border-l-2 px-1.5 py-[2px] text-sm font-bold truncate z-10 cursor-grab group hover:opacity-80 leading-tight",
+                          overlapsShift && "shadow-md ring-1 ring-foreground/10",
                           isHexColor(ev.color) ? "" : ev.color
                         )}
-                        style={{ top: top + 2, height: Math.max(height - 4, 16), left, width: `calc(${colWidth} - 4px)`, marginLeft: 2, zIndex: 20, ...(isHexColor(ev.color) ? hexEventStyle(ev.color) : {}) }}
+                        style={{ top: top + 2, height: Math.max(height - 4, 16), left: leftCalc, width: widthCalc, marginLeft: 2, zIndex: 20, ...(isHexColor(ev.color) ? hexEventStyle(ev.color) : {}) }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onEventDragStart(e, ev, "move", dayIdx);
