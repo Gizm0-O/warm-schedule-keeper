@@ -1396,29 +1396,19 @@ const Index = () => {
                 {/* Shift blocks */}
                 {weekDays.map((day, dayIdx) => {
                   const shifts = getShiftsForDay(day);
-                  const dayEvs = getEventBlocksForDay(day);
                   return shifts.map((shift) => {
                     const top = timeToY(shift.startHour);
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
-                    // Detect overlap with any event in this day
-                    const hasOverlap = dayEvs.some((ev) => {
-                      const s = ev.hour!;
-                      const e = ev.endHour ?? s + 1;
-                      return s < shift.endHour && e > shift.startHour;
-                    });
-                    const width = hasOverlap ? "26px" : colWidth;
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start overflow-hidden cursor-grab group bg-card",
-                          hasOverlap ? "px-0 py-1 items-center" : "px-1.5 py-1",
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card",
                           shift.bgClass, shift.borderClass
                         )}
-                        style={{ top, height, left, width, zIndex: 5 }}
-                        title={hasOverlap ? `${shift.person} · ${shift.location ?? ""} · ${floatToTime(shift.startHour)}–${floatToTime(shift.endHour)}` : undefined}
+                        style={{ top, height, left, width: colWidth, zIndex: 5 }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
@@ -1437,27 +1427,18 @@ const Index = () => {
                         >
                           <div className="w-8 h-0.5 rounded-full bg-foreground/30 pointer-events-none" />
                         </div>
-                        {hasOverlap ? (
-                          <div className={cn("flex flex-col items-center gap-1 pt-1", shift.textClass)}>
-                            {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
-                            <span className="text-[9px] font-bold leading-none [writing-mode:vertical-rl] rotate-180" style={{color:"#1a1a1a"}}>{shift.person}</span>
-                          </div>
-                        ) : (
-                          <>
-                            <div className={cn("flex items-center gap-1.5", shift.textClass)}>
-                              {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
-                              <span className="text-xs font-bold truncate" style={{color:"#1a1a1a"}}>{shift.person}</span>
-                            </div>
-                            {shift.location && (
-                              <span className={cn("text-[11px] font-medium opacity-70 mt-0.5", shift.textClass)}>
-                                {shift.location}
-                              </span>
-                            )}
-                            <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
-                              {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
-                            </span>
-                          </>
+                        <div className={cn("flex items-center gap-1.5", shift.textClass)}>
+                          {shift.icon === "office" ? <Briefcase className="h-3.5 w-3.5 shrink-0" /> : <Home className="h-3.5 w-3.5 shrink-0" />}
+                          <span className="text-xs font-bold truncate" style={{color:"#1a1a1a"}}>{shift.person}</span>
+                        </div>
+                        {shift.location && (
+                          <span className={cn("text-[11px] font-medium opacity-70 mt-0.5", shift.textClass)}>
+                            {shift.location}
+                          </span>
                         )}
+                        <span className={cn("text-[11px] opacity-50 mt-auto", shift.textClass)}>
+                          {floatToTime(shift.startHour)}–{floatToTime(shift.endHour)}
+                        </span>
 
                         {/* Bottom drag handle */}
                         <div
@@ -1471,7 +1452,6 @@ const Index = () => {
                     );
                   });
                 })}
-
 
                 {/* SWITCH BREAK bar 12:00–13:00 across the work week (Mon–Fri) */}
                 {(() => {
