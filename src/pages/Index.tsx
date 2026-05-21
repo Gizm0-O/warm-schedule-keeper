@@ -20,8 +20,10 @@ import {
   addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
+import { useBirthdays, getBirthdaysForDate } from "@/hooks/useBirthdays";
+import { BirthdayManagerDialog } from "@/components/BirthdayManagerDialog";
 import { useShiftOverrides } from "@/hooks/useShiftOverrides";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { Button } from "@/components/ui/button";
@@ -238,6 +240,8 @@ const Index = () => {
   const { getBonusAmount, hasBonus } = useTaskBonus();
   const { getRewardsForTodo } = useCustomRewards();
   const { getXpFor } = useTaskXp();
+  const { birthdays, addBirthday, updateBirthday, removeBirthday } = useBirthdays();
+  const [birthdayManagerOpen, setBirthdayManagerOpen] = useState(false);
   const { grant: grantReward, revokeForTodo } = useEarnedRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
@@ -973,6 +977,18 @@ const Index = () => {
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Událost</span>
           </Button>
+          {isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 gap-1.5 mr-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              onClick={() => setBirthdayManagerOpen(true)}
+              title="Spravovat narozeniny"
+            >
+              <Cake className="h-4 w-4" />
+              <span className="hidden md:inline">Narozeniny</span>
+            </Button>
+          )}
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
@@ -1032,7 +1048,8 @@ const Index = () => {
                       selected && "ring-2 ring-primary bg-accent",
                       isToday(day) && "bg-primary/5",
                 isBirthday(day) && !selected && "bg-gradient-to-br from-amber-200 to-pink-200 ring-2 ring-amber-400 shadow-md",
-                  isAnniversary(day) && !selected && !isBirthday(day) && "ring-2 ring-rose-400 shadow-md overflow-hidden"
+                  !isBirthday(day) && !selected && getBirthdaysForDate(birthdays, day).length > 0 && "bg-gradient-to-br from-amber-50 to-pink-50/70",
+                  isAnniversary(day) && !selected && !isBirthday(day) && getBirthdaysForDate(birthdays, day).length === 0 && "ring-2 ring-rose-400 shadow-md overflow-hidden"
                     )}
                   >
                     <span
@@ -1093,6 +1110,16 @@ const Index = () => {
                       </div>
                     )}
                     <div className="flex w-full flex-col gap-0.5 mt-0.5">
+                      {getBirthdaysForDate(birthdays, day).map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center gap-1 truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border border-amber-300/60 bg-gradient-to-r from-amber-100 to-pink-100 text-amber-800"
+                          title={`${b.name} – narozeniny`}
+                        >
+                          <Cake className="h-2.5 w-2.5 shrink-0 text-amber-600" />
+                          <span className="truncate">{b.name}</span>
+                        </div>
+                      ))}
                       {dayEvents.slice(0, 2).map((ev) => (
                         <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                           {ev.title}
@@ -1122,7 +1149,8 @@ const Index = () => {
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
                     isToday(day) && "bg-primary/5",
               isBirthday(day) && "bg-gradient-to-b from-amber-100 to-pink-100 ring-1 ring-amber-200",
-              format(day, "dd") === "20" && !isBirthday(day) && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
+              !isBirthday(day) && getBirthdaysForDate(birthdays, day).length > 0 && "bg-gradient-to-b from-amber-50 to-pink-50/60",
+              format(day, "dd") === "20" && !isBirthday(day) && getBirthdaysForDate(birthdays, day).length === 0 && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
@@ -1187,6 +1215,37 @@ const Index = () => {
                     );
                   });
                 })}
+
+                {/* Narozeniny – plovoucí chipy nad kalendářem */}
+                {weekDays.map((day, dayIdx) => {
+                  const bdays = getBirthdaysForDate(birthdays, day);
+                  if (bdays.length === 0) return null;
+                  const allDayCount = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay).length;
+                  return bdays.map((b, bi) => (
+                    <div
+                      key={`bday-${b.id}`}
+                      className="absolute z-30"
+                      style={{
+                        top: 4 + (allDayCount + bi) * 22,
+                        left: `calc(60px + ${dayIdx} * ((100% - 60px) / 7) + 2px)`,
+                        width: `calc((100% - 60px) / 7 - 4px)`,
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-1.5 py-0.5 shadow-sm cursor-default",
+                          "bg-gradient-to-r from-amber-100 to-pink-100 border border-amber-300/70"
+                        )}
+                        onClick={(e) => { e.stopPropagation(); if (isAdmin) setBirthdayManagerOpen(true); }}
+                        title={`${b.name} – narozeniny${isAdmin ? " (klikni pro úpravu)" : ""}`}
+                      >
+                        <Cake className="h-2.5 w-2.5 shrink-0 text-amber-600" />
+                        <span className="text-[10px] font-semibold truncate text-amber-800">{b.name}</span>
+                      </div>
+                    </div>
+                  ));
+                })}
+                
                 
       {/* Birthday column overlay */}
         {weekDays.map((day, dayIdx) => {
@@ -2185,6 +2244,16 @@ const Index = () => {
 
       {/* Edit Todo Dialog (sdílený s TodoPage) */}
       <TodoEditDialog todo={editingTodo} onClose={() => setEditingTodo(null)} />
+
+      {/* Birthday Manager (admin) */}
+      <BirthdayManagerDialog
+        open={birthdayManagerOpen}
+        onOpenChange={setBirthdayManagerOpen}
+        birthdays={birthdays}
+        onAdd={addBirthday}
+        onUpdate={updateBirthday}
+        onRemove={removeBirthday}
+      />
     </div>
   );
 };
