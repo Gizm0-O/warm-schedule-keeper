@@ -1109,6 +1109,16 @@ const Index = () => {
                       </div>
                     )}
                     <div className="flex w-full flex-col gap-0.5 mt-0.5">
+                      {getBirthdaysForDate(birthdays, day).map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center gap-1 truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border border-amber-300/60 bg-gradient-to-r from-amber-100 to-pink-100 text-amber-800"
+                          title={`${b.name} – narozeniny`}
+                        >
+                          <Cake className="h-2.5 w-2.5 shrink-0 text-amber-600" />
+                          <span className="truncate">{b.name}</span>
+                        </div>
+                      ))}
                       {dayEvents.slice(0, 2).map((ev) => (
                         <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                           {ev.title}
