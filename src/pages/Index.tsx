@@ -240,6 +240,8 @@ const Index = () => {
   const { getBonusAmount, hasBonus } = useTaskBonus();
   const { getRewardsForTodo } = useCustomRewards();
   const { getXpFor } = useTaskXp();
+  const { birthdays, addBirthday, updateBirthday, removeBirthday } = useBirthdays();
+  const [birthdayManagerOpen, setBirthdayManagerOpen] = useState(false);
   const { grant: grantReward, revokeForTodo } = useEarnedRewards();
   const { pushAction } = useUndoRedo();
   const toggleTodoRef = useRef(toggleTodo);
