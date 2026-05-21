@@ -1148,7 +1148,8 @@ const Index = () => {
                     selectedDate && isSameDay(day, selectedDate) && "bg-accent",
                     isToday(day) && "bg-primary/5",
               isBirthday(day) && "bg-gradient-to-b from-amber-100 to-pink-100 ring-1 ring-amber-200",
-              format(day, "dd") === "20" && !isBirthday(day) && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
+              !isBirthday(day) && getBirthdaysForDate(birthdays, day).length > 0 && "bg-gradient-to-b from-amber-50 to-pink-50/60",
+              format(day, "dd") === "20" && !isBirthday(day) && getBirthdaysForDate(birthdays, day).length === 0 && "bg-gradient-to-b from-red-100 to-rose-50 ring-1 ring-red-200"
                   )}
                 >
                   <span className="text-[11px] font-semibold text-muted-foreground uppercase">
