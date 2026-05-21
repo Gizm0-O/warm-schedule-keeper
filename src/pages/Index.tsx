@@ -2244,6 +2244,16 @@ const Index = () => {
 
       {/* Edit Todo Dialog (sdílený s TodoPage) */}
       <TodoEditDialog todo={editingTodo} onClose={() => setEditingTodo(null)} />
+
+      {/* Birthday Manager (admin) */}
+      <BirthdayManagerDialog
+        open={birthdayManagerOpen}
+        onOpenChange={setBirthdayManagerOpen}
+        birthdays={birthdays}
+        onAdd={addBirthday}
+        onUpdate={updateBirthday}
+        onRemove={removeBirthday}
+      />
     </div>
   );
 };
