@@ -1213,6 +1213,37 @@ const Index = () => {
                     );
                   });
                 })}
+
+                {/* Narozeniny – plovoucí chipy nad kalendářem */}
+                {weekDays.map((day, dayIdx) => {
+                  const bdays = getBirthdaysForDate(birthdays, day);
+                  if (bdays.length === 0) return null;
+                  const allDayCount = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay).length;
+                  return bdays.map((b, bi) => (
+                    <div
+                      key={`bday-${b.id}`}
+                      className="absolute z-30"
+                      style={{
+                        top: 4 + (allDayCount + bi) * 22,
+                        left: `calc(60px + ${dayIdx} * ((100% - 60px) / 7) + 2px)`,
+                        width: `calc((100% - 60px) / 7 - 4px)`,
+                      }}
+                    >
+                      <div
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-1.5 py-0.5 shadow-sm cursor-default",
+                          "bg-gradient-to-r from-amber-100 to-pink-100 border border-amber-300/70"
+                        )}
+                        onClick={(e) => { e.stopPropagation(); if (isAdmin) setBirthdayManagerOpen(true); }}
+                        title={`${b.name} – narozeniny${isAdmin ? " (klikni pro úpravu)" : ""}`}
+                      >
+                        <Cake className="h-2.5 w-2.5 shrink-0 text-amber-600" />
+                        <span className="text-[10px] font-semibold truncate text-amber-800">{b.name}</span>
+                      </div>
+                    </div>
+                  ));
+                })}
+                
                 
       {/* Birthday column overlay */}
         {weekDays.map((day, dayIdx) => {
