@@ -977,6 +977,18 @@ const Index = () => {
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Událost</span>
           </Button>
+          {isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 gap-1.5 mr-2 border-amber-300 text-amber-700 hover:bg-amber-50"
+              onClick={() => setBirthdayManagerOpen(true)}
+              title="Spravovat narozeniny"
+            >
+              <Cake className="h-4 w-4" />
+              <span className="hidden md:inline">Narozeniny</span>
+            </Button>
+          )}
           <div className="flex rounded-lg border border-border bg-muted p-0.5 mr-2">
             <Button
               variant={viewMode === "month" ? "default" : "ghost"}
