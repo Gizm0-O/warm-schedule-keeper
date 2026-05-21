@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      birthdays: {
+        Row: {
+          created_at: string
+          day: number
+          id: string
+          month: number
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day: number
+          id?: string
+          month: number
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day?: number
+          id?: string
+          month?: number
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calendar_events: {
         Row: {
           all_day: boolean
