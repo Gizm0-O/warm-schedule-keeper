@@ -109,14 +109,25 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
+            <ApprovalsBell />
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setDark((d) => !d)}
-              className="ml-2 rounded-xl hover:glass-subtle transition-all duration-300"
+              className="ml-1 rounded-xl hover:glass-subtle transition-all duration-300"
               aria-label="Přepnout tmavý/světlý režim"
             >
               {dark ? <Sun className="h-4 w-4 text-cosmic-star" /> : <Moon className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={signOut}
+              className="rounded-xl hover:glass-subtle transition-all duration-300"
+              aria-label="Odhlásit se"
+              title={profile?.display_name ? `Odhlásit (${profile.display_name})` : "Odhlásit"}
+            >
+              <LogOut className="h-4 w-4" />
             </Button>
           </div>
         </div>
