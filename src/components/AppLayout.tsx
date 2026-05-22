@@ -15,6 +15,7 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  const { signOut, profile } = useAuth();
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") === "dark";
