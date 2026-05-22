@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 
 const STORAGE_KEY = 'adminModePersist';
 const SESSION_KEY = 'adminMode';
-const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 function readPersisted(): boolean {
   try {
@@ -19,7 +18,7 @@ function readPersisted(): boolean {
   }
 }
 
-function isAdminNow(): boolean {
+function isAdminToggleOn(): boolean {
   return sessionStorage.getItem(SESSION_KEY) === '1' || readPersisted();
 }
 
@@ -36,15 +35,33 @@ export function disableAdminMode() {
   window.dispatchEvent(new Event('adminModeChanged'));
 }
 
+/**
+ * Returns true only if the user has admin role AND has the admin toggle on.
+ * Without admin role, always returns false regardless of stored toggle state.
+ */
 export function useAdminMode(): boolean {
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => isAdminNow());
+  const [toggleOn, setToggleOn] = useState<boolean>(() => isAdminToggleOn());
+  const [hasRole, setHasRole] = useState<boolean>(false);
 
   useEffect(() => {
-    // Promote persisted -> session on mount so other code paths still work
-    if (!sessionStorage.getItem(SESSION_KEY) && readPersisted()) {
-      sessionStorage.setItem(SESSION_KEY, '1');
-    }
-    const handler = () => setIsAdmin(isAdminNow());
+    let alive = true;
+    // lazy import to avoid circular deps at module load
+    import('@/integrations/supabase/client').then(({ supabase }) => {
+      const check = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) { if (alive) setHasRole(false); return; }
+        const { data } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).eq('role', 'admin').maybeSingle();
+        if (alive) setHasRole(!!data);
+      };
+      check();
+      const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+      return () => sub.subscription.unsubscribe();
+    });
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setToggleOn(isAdminToggleOn());
     window.addEventListener('adminModeChanged', handler);
     window.addEventListener('storage', handler);
     return () => {
@@ -53,8 +70,26 @@ export function useAdminMode(): boolean {
     };
   }, []);
 
-  return isAdmin;
+  return hasRole && toggleOn;
 }
 
-// Suppress unused export warning from THIRTY_DAYS_MS in case tree-shaken
-void THIRTY_DAYS_MS;
+/** Whether the current user has the admin role (regardless of toggle). */
+export function useHasAdminRole(): boolean {
+  const [hasRole, setHasRole] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    import('@/integrations/supabase/client').then(({ supabase }) => {
+      const check = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) { if (alive) setHasRole(false); return; }
+        const { data } = await supabase.from('user_roles').select('role').eq('user_id', session.user.id).eq('role', 'admin').maybeSingle();
+        if (alive) setHasRole(!!data);
+      };
+      check();
+      const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+      return () => sub.subscription.unsubscribe();
+    });
+    return () => { alive = false; };
+  }, []);
+  return hasRole;
+}
