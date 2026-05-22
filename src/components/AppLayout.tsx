@@ -1,9 +1,11 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
+import ApprovalsBell from "@/components/ApprovalsBell";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
