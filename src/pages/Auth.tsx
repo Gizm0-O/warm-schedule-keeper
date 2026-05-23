@@ -99,6 +99,10 @@ export default function AuthPage() {
                 <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Jak ti říkáme" />
               </div>
               <div className="space-y-2">
+                <Label>Uživatelské jméno</Label>
+                <Input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
+              </div>
+              <div className="space-y-2">
                 <Label>Email</Label>
                 <Input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} />
               </div>
