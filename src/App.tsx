@@ -13,6 +13,7 @@ import ChangelogPage from "./pages/ChangelogPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
 import PendingApproval from "./pages/PendingApproval";
+import ProfilePage from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
