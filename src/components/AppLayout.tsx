@@ -118,16 +118,7 @@ const AppLayout = () => {
             >
               {dark ? <Sun className="h-4 w-4 text-cosmic-star" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={signOut}
-              className="rounded-xl hover:glass-subtle transition-all duration-300"
-              aria-label="Odhlásit se"
-              title={profile?.display_name ? `Odhlásit (${profile.display_name})` : "Odhlásit"}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <UserMenu />
           </div>
         </div>
       </header>
