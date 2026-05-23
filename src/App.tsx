@@ -40,6 +40,7 @@ const App = () => (
                 <Route path="/todo" element={<TodoPage />} />
                 <Route path="/shopping" element={<ShoppingPage />} />
                 <Route path="/changelog" element={<ChangelogPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
