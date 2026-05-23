@@ -21,11 +21,23 @@ const emit = () => window.dispatchEvent(new CustomEvent(HOURLY_TASKS_CHANGED));
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
 
+// Module-level lock: ensure restoration runs at most once per page load
+let restorationPromise: Promise<void> | null = null;
+
 export function useHourlyTasks() {
   const [tasks, setTasks] = useState<HourlyTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = useCallback(async () => {
+    // Don't fetch (and especially don't restore) until user is authenticated.
+    // Otherwise RLS returns empty -> we'd duplicate tasks from the archive on every login.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
     const month = currentMonth();
     let { data } = await supabase
       .from('hourly_tasks')
@@ -35,38 +47,60 @@ export function useHourlyTasks() {
 
     // Pokud v aktuálním měsíci nejsou žádné hodinové úkoly,
     // zkus je obnovit (resetované) z posledního archivu.
+    // Lock zabraňuje souběžnému běhu (více komponent / rychlé re-mounty).
     if (!data || data.length === 0) {
-      const { data: lastArchive } = await supabase
-        .from('monthly_archives')
-        .select('month, hourly_tasks_snapshot')
-        .lt('month', month)
-        .order('month', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const snapshot = (lastArchive?.hourly_tasks_snapshot as any[]) || [];
-      if (snapshot.length > 0) {
-        const rows = snapshot.map((t: any) => ({
-          name: t.name,
-          rate_per_hour: t.rate_per_hour ?? 250,
-          milestone_hours: t.milestone_hours ?? 5,
-          milestone_bonus_percent: t.milestone_bonus_percent ?? 0.5,
-          color: t.color ?? 'hsl(var(--primary))',
-          person: t.person ?? 'Tadeáš',
-          xp_per_hour: t.xp_per_hour ?? 10,
-          month,
-          hours_worked: 0,
-        }));
-        const { data: inserted } = await supabase
-          .from('hourly_tasks')
-          .insert(rows)
-          .select();
-        data = inserted || [];
+      if (!restorationPromise) {
+        restorationPromise = (async () => {
+          // Re-check inside the lock
+          const { data: existing } = await supabase
+            .from('hourly_tasks')
+            .select('id')
+            .eq('month', month)
+            .limit(1);
+          if (existing && existing.length > 0) return;
+
+          const { data: lastArchive } = await supabase
+            .from('monthly_archives')
+            .select('month, hourly_tasks_snapshot')
+            .lt('month', month)
+            .order('month', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const snapshot = (lastArchive?.hourly_tasks_snapshot as any[]) || [];
+          if (snapshot.length === 0) return;
+          const rows = snapshot.map((t: any) => ({
+            name: t.name,
+            rate_per_hour: t.rate_per_hour ?? 250,
+            milestone_hours: t.milestone_hours ?? 5,
+            milestone_bonus_percent: t.milestone_bonus_percent ?? 0.5,
+            color: t.color ?? 'hsl(var(--primary))',
+            person: t.person ?? 'Tadeáš',
+            xp_per_hour: t.xp_per_hour ?? 10,
+            month,
+            hours_worked: 0,
+          }));
+          await supabase.from('hourly_tasks').insert(rows);
+        })();
       }
+      await restorationPromise;
+      const { data: refetched } = await supabase
+        .from('hourly_tasks')
+        .select('*')
+        .eq('month', month)
+        .order('created_at', { ascending: true });
+      data = refetched || [];
     }
 
     if (data) setTasks(data as HourlyTask[]);
     setLoading(false);
   }, []);
+
+  // Re-fetch when auth state changes (e.g. after login)
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { fetchTasks(); });
+    return () => sub.subscription.unsubscribe();
+  }, [fetchTasks]);
+
 
 
   useEffect(() => {
