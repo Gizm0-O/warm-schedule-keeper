@@ -9,6 +9,8 @@ interface Profile {
   display_name: string;
   email: string;
   status: ProfileStatus;
+  username?: string | null;
+  avatar_url?: string | null;
 }
 
 interface AuthCtx {
