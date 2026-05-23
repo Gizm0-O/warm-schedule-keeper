@@ -13,12 +13,13 @@ export default function AuthPage() {
   const { session, loading } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  // login
-  const [loginEmail, setLoginEmail] = useState("");
+  // login (username OR email)
+  const [loginId, setLoginId] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
   // register
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPass, setRegPass] = useState("");
 
@@ -28,7 +29,17 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPass });
+    let email = loginId.trim();
+    if (!email.includes("@")) {
+      const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
+      if (rpcErr || !data) {
+        setBusy(false);
+        toast.error("Uživatel nenalezen");
+        return;
+      }
+      email = data as string;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Přihlášeno");
