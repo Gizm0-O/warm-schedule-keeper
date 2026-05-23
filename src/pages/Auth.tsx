@@ -13,12 +13,13 @@ export default function AuthPage() {
   const { session, loading } = useAuth();
   const [busy, setBusy] = useState(false);
 
-  // login
-  const [loginEmail, setLoginEmail] = useState("");
+  // login (username OR email)
+  const [loginId, setLoginId] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
   // register
   const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPass, setRegPass] = useState("");
 
@@ -28,7 +29,17 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPass });
+    let email = loginId.trim();
+    if (!email.includes("@")) {
+      const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
+      if (rpcErr || !data) {
+        setBusy(false);
+        toast.error("Uživatel nenalezen");
+        return;
+      }
+      email = data as string;
+    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Přihlášeno");
@@ -38,7 +49,7 @@ export default function AuthPage() {
     e.preventDefault();
     if (regPass.length < 6) { toast.error("Heslo musí mít alespoň 6 znaků"); return; }
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: regEmail,
       password: regPass,
       options: {
@@ -46,6 +57,9 @@ export default function AuthPage() {
         data: { display_name: name },
       },
     });
+    if (!error && data.user && username.trim()) {
+      await supabase.from("profiles").update({ username: username.trim() }).eq("user_id", data.user.id);
+    }
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Účet vytvořen. Čeká na schválení adminem.");
@@ -68,8 +82,8 @@ export default function AuthPage() {
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
+                <Label>Uživatelské jméno nebo e-mail</Label>
+                <Input required value={loginId} onChange={(e) => setLoginId(e.target.value)} autoComplete="username" />
               </div>
               <div className="space-y-2">
                 <Label>Heslo</Label>
@@ -83,6 +97,10 @@ export default function AuthPage() {
               <div className="space-y-2">
                 <Label>Jméno</Label>
                 <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Jak ti říkáme" />
+              </div>
+              <div className="space-y-2">
+                <Label>Uživatelské jméno</Label>
+                <Input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>

@@ -1,11 +1,11 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, LogOut } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
 import ApprovalsBell from "@/components/ApprovalsBell";
-import { useAuth } from "@/contexts/AuthContext";
+import UserMenu from "@/components/UserMenu";
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
@@ -15,7 +15,6 @@ const navItems = [
 ];
 
 const AppLayout = () => {
-  const { signOut, profile } = useAuth();
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") === "dark";
@@ -119,16 +118,7 @@ const AppLayout = () => {
             >
               {dark ? <Sun className="h-4 w-4 text-cosmic-star" /> : <Moon className="h-4 w-4" />}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={signOut}
-              className="rounded-xl hover:glass-subtle transition-all duration-300"
-              aria-label="Odhlásit se"
-              title={profile?.display_name ? `Odhlásit (${profile.display_name})` : "Odhlásit"}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
+            <UserMenu />
           </div>
         </div>
       </header>
