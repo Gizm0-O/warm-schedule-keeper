@@ -49,7 +49,7 @@ export default function AuthPage() {
     e.preventDefault();
     if (regPass.length < 6) { toast.error("Heslo musí mít alespoň 6 znaků"); return; }
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: regEmail,
       password: regPass,
       options: {
@@ -57,6 +57,9 @@ export default function AuthPage() {
         data: { display_name: name },
       },
     });
+    if (!error && data.user && username.trim()) {
+      await supabase.from("profiles").update({ username: username.trim() }).eq("user_id", data.user.id);
+    }
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Účet vytvořen. Čeká na schválení adminem.");
