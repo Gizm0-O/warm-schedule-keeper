@@ -292,6 +292,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           display_name: string
           email: string
@@ -299,8 +300,10 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           display_name: string
           email: string
@@ -308,8 +311,10 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string
           email?: string
@@ -317,6 +322,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -731,6 +737,7 @@ export type Database = {
         Args: { p_month: string }
         Returns: undefined
       }
+      get_email_by_username: { Args: { _username: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
