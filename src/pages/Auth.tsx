@@ -79,8 +79,8 @@ export default function AuthPage() {
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Email</Label>
-                <Input type="email" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} />
+                <Label>Uživatelské jméno nebo e-mail</Label>
+                <Input required value={loginId} onChange={(e) => setLoginId(e.target.value)} autoComplete="username" />
               </div>
               <div className="space-y-2">
                 <Label>Heslo</Label>
