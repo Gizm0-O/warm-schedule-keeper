@@ -68,25 +68,47 @@ export default function ProfilePage() {
     if (!username.trim()) return toast.error("Uživatelské jméno nesmí být prázdné");
     if (newPass && newPass.length < 6) return toast.error("Heslo musí mít alespoň 6 znaků");
     setBusy(true);
+    try {
+      const { error: pErr } = await supabase
+        .from("profiles")
+        .update({ username: username.trim(), display_name: username.trim() })
+        .eq("user_id", user.id);
+      if (pErr) throw pErr;
 
-    const { error: pErr } = await supabase
-      .from("profiles")
-      .update({ username: username.trim(), display_name: username.trim() })
-      .eq("user_id", user.id);
-    if (pErr) { setBusy(false); return toast.error(pErr.message); }
+      const needsAuthUpdate = (email && email !== profile?.email) || !!newPass;
+      console.log("[saveAll] needsAuthUpdate=", needsAuthUpdate, "email=", email, "profileEmail=", profile?.email);
+      if (needsAuthUpdate) {
+        const { data: sess } = await supabase.auth.getSession();
+        const token = sess.session?.access_token;
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user-credentials`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({ email: email || undefined, password: newPass || undefined }),
+          }
+        );
+        const text = await resp.text();
+        console.log("[saveAll] edge resp", resp.status, text);
+        if (!resp.ok) throw new Error(text || `HTTP ${resp.status}`);
+        if (email && email !== profile?.email) {
+          await supabase.auth.refreshSession();
+        }
+      }
 
-    const needsAuthUpdate = (email && email !== profile?.email) || !!newPass;
-    if (needsAuthUpdate) {
-      const { error: fnErr } = await supabase.functions.invoke("update-user-credentials", {
-        body: { email: email || undefined, password: newPass || undefined },
-      });
-      if (fnErr) { setBusy(false); return toast.error(fnErr.message); }
+      setNewPass("");
+      await refresh();
+      toast.success("Změny uloženy");
+    } catch (e: any) {
+      console.error("[saveAll] error", e);
+      toast.error(e?.message || "Chyba při ukládání");
+    } finally {
+      setBusy(false);
     }
-
-    setNewPass("");
-    await refresh();
-    setBusy(false);
-    toast.success("Změny uloženy");
   };
 
   const deleteAccount = async () => {
