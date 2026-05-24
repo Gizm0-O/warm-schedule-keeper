@@ -20,22 +20,23 @@ Deno.serve(async (req) => {
     if (uErr || !user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     const { email, password } = await req.json();
-    const updates: Record<string, unknown> = {};
-    if (email && email !== user.email) {
-      updates.email = email;
-      updates.email_confirm = true;
-    }
-    if (password) updates.password = password;
-    if (Object.keys(updates).length === 0) {
-      return new Response(JSON.stringify({ ok: true, nochange: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
+    console.log("update request", { current: user.email, requested: email, hasPass: !!password });
     const admin = createClient(supaUrl, serviceKey);
-    const { error } = await admin.auth.admin.updateUserById(user.id, updates);
-    if (error) throw error;
 
     if (email && email !== user.email) {
-      await admin.from("profiles").update({ email }).eq("user_id", user.id);
+      const { data: updated, error } = await admin.auth.admin.updateUserById(user.id, {
+        email,
+        email_confirm: true,
+      });
+      console.log("email update result", { newEmail: updated?.user?.email, error: error?.message });
+      if (error) throw error;
+      const { error: pErr } = await admin.from("profiles").update({ email }).eq("user_id", user.id);
+      if (pErr) console.log("profile email update error", pErr.message);
+    }
+
+    if (password) {
+      const { error } = await admin.auth.admin.updateUserById(user.id, { password });
+      if (error) throw error;
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
