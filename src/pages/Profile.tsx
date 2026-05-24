@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,66 +19,42 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, Trash2 } from "lucide-react";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 export default function ProfilePage() {
   const { user, profile, refresh, signOut } = useAuth();
   const navigate = useNavigate();
-  const [displayName, setDisplayName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [newPass, setNewPass] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
-      setDisplayName(profile.display_name || "");
-      setUsername(profile.username || "");
+      setUsername(profile.username || profile.display_name || "");
       setEmail(profile.email || "");
     }
   }, [profile]);
 
   if (!user) return null;
-  const initials = (displayName || email || "?").slice(0, 2).toUpperCase();
+  const initials = (username || email || "?").slice(0, 2).toUpperCase();
 
-  const saveProfile = async () => {
-    setBusy(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ display_name: displayName.trim(), username: username.trim() || null })
-      .eq("user_id", user.id);
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    await refresh();
-    toast.success("Profil uložen");
-  };
-
-  const changeEmail = async () => {
-    if (!email || email === profile?.email) return;
-    setBusy(true);
-    const { error } = await supabase.auth.updateUser({ email });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Pro potvrzení změny e-mailu zkontroluj schránku.");
-  };
-
-  const changePassword = async () => {
-    if (newPass.length < 6) return toast.error("Heslo musí mít alespoň 6 znaků");
-    setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: newPass });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    setNewPass("");
-    toast.success("Heslo změněno");
-  };
-
-  const handleAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const uploadCropped = async (blob: Blob) => {
     setUploading(true);
-    const ext = file.name.split(".").pop() || "png";
-    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    const path = `${user.id}/avatar-${Date.now()}.jpg`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (upErr) { setUploading(false); return toast.error(upErr.message); }
     const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
     const { error: updErr } = await supabase.from("profiles").update({ avatar_url: pub.publicUrl }).eq("user_id", user.id);
@@ -86,6 +62,31 @@ export default function ProfilePage() {
     if (updErr) return toast.error(updErr.message);
     await refresh();
     toast.success("Fotka aktualizována");
+  };
+
+  const saveAll = async () => {
+    if (!username.trim()) return toast.error("Uživatelské jméno nesmí být prázdné");
+    if (newPass && newPass.length < 6) return toast.error("Heslo musí mít alespoň 6 znaků");
+    setBusy(true);
+
+    const { error: pErr } = await supabase
+      .from("profiles")
+      .update({ username: username.trim(), display_name: username.trim() })
+      .eq("user_id", user.id);
+    if (pErr) { setBusy(false); return toast.error(pErr.message); }
+
+    const needsAuthUpdate = (email && email !== profile?.email) || !!newPass;
+    if (needsAuthUpdate) {
+      const { error: fnErr } = await supabase.functions.invoke("update-user-credentials", {
+        body: { email: email || undefined, password: newPass || undefined },
+      });
+      if (fnErr) { setBusy(false); return toast.error(fnErr.message); }
+    }
+
+    setNewPass("");
+    await refresh();
+    setBusy(false);
+    toast.success("Změny uloženy");
   };
 
   const deleteAccount = async () => {
@@ -111,43 +112,31 @@ export default function ProfilePage() {
             <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback className="text-lg bg-primary/20 text-primary">{initials}</AvatarFallback>
           </Avatar>
-          <label className="cursor-pointer">
-            <input type="file" accept="image/*" className="hidden" onChange={handleAvatar} disabled={uploading} />
-            <span className="inline-flex items-center gap-2 px-3 py-2 rounded-lg glass-subtle text-sm hover:bg-accent">
-              <Upload className="h-4 w-4" /> {uploading ? "Nahrávám…" : "Změnit fotku"}
-            </span>
-          </label>
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+          <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
+            <Upload className="h-4 w-4 mr-2" /> {uploading ? "Nahrávám…" : "Změnit fotku"}
+          </Button>
         </div>
 
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <Label>Jméno</Label>
-            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <Label>Uživatelské jméno (pro přihlášení)</Label>
-            <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
-          </div>
-          <Button onClick={saveProfile} disabled={busy}>Uložit profil</Button>
+        <div className="space-y-2">
+          <Label>Uživatelské jméno</Label>
+          <Input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
+          <p className="text-xs text-muted-foreground">Lze používat pro přihlášení (spolu s heslem) místo e-mailu.</p>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-border">
+        <div className="space-y-2">
           <Label>E-mail</Label>
-          <div className="flex gap-2">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <Button onClick={changeEmail} disabled={busy || email === profile?.email}>Změnit</Button>
-          </div>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-border">
+        <div className="space-y-2">
           <Label>Nové heslo</Label>
-          <div className="flex gap-2">
-            <Input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="Min. 6 znaků" />
-            <Button onClick={changePassword} disabled={busy || !newPass}>Změnit</Button>
-          </div>
+          <Input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="Nech prázdné pro zachování" />
         </div>
 
-        <div className="pt-4 border-t border-destructive/30">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <Button onClick={saveAll} disabled={busy}>Uložit změny</Button>
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" disabled={busy}>
@@ -169,6 +158,15 @@ export default function ProfilePage() {
           </AlertDialog>
         </div>
       </div>
+
+      {cropSrc && (
+        <AvatarCropDialog
+          src={cropSrc}
+          open={!!cropSrc}
+          onClose={() => setCropSrc(null)}
+          onCropped={uploadCropped}
+        />
+      )}
     </div>
   );
 }
