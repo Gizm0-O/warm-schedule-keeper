@@ -22,7 +22,7 @@ import { ArrowLeft, Upload, Trash2 } from "lucide-react";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 export default function ProfilePage() {
-  const { user, profile, refresh, signOut } = useAuth();
+  const { session, user, profile, refresh, signOut } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -67,7 +67,7 @@ export default function ProfilePage() {
   const saveAll = async () => {
     if (!username.trim()) return toast.error("Uživatelské jméno nesmí být prázdné");
     if (newPass && newPass.length < 6) return toast.error("Heslo musí mít alespoň 6 znaků");
-    const token = user ? (await supabase.auth.getSession()).data.session?.access_token : null;
+    const token = session?.access_token;
     if (!token) return toast.error("Relace vypršela. Přihlas se prosím znovu.");
     setBusy(true);
     try {
