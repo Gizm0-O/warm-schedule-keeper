@@ -10,6 +10,19 @@ const ADMIN_EMAIL = "tadeas@bambuls.app";
 const ADMIN_PASSWORD = "Sebastian1";
 const ADMIN_NAME = "Tadeáš";
 
+const listAllUsers = async (admin: ReturnType<typeof createClient>) => {
+  const users = [];
+  let page = 1;
+  while (true) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw error;
+    users.push(...(data?.users ?? []));
+    if (!data?.users?.length || data.users.length < 1000) break;
+    page += 1;
+  }
+  return users;
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -19,9 +32,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Check if user exists
-    const { data: list } = await supabase.auth.admin.listUsers();
-    let user = list?.users?.find((u) => u.email === ADMIN_EMAIL);
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_id")
+      .eq("email", ADMIN_EMAIL)
+      .order("user_id")
+      .limit(1)
+      .maybeSingle();
+
+    const users = await listAllUsers(supabase);
+    const sameEmailUsers = users.filter((u) => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
+    let user = users.find((u) => u.id === profile?.user_id) ?? sameEmailUsers[0];
 
     if (!user) {
       const { data, error } = await supabase.auth.admin.createUser({
@@ -32,12 +53,27 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       user = data.user!;
+    } else {
+      const { data, error } = await supabase.auth.admin.updateUserById(user.id, {
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        email_confirm: true,
+        user_metadata: { display_name: ADMIN_NAME },
+      });
+      if (error) throw error;
+      user = data.user!;
     }
+
+    await Promise.all(
+      sameEmailUsers
+        .filter((u) => u.id !== user!.id)
+        .map((u) => supabase.auth.admin.deleteUser(u.id)),
+    );
 
     // Approve profile
     await supabase
       .from("profiles")
-      .update({ status: "approved", display_name: ADMIN_NAME })
+      .update({ status: "approved", display_name: ADMIN_NAME, username: ADMIN_NAME, email: ADMIN_EMAIL })
       .eq("user_id", user!.id);
 
     // Grant admin role
