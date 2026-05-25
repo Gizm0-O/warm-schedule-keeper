@@ -44,6 +44,12 @@ Deno.serve(async (req) => {
     const sameEmailUsers = users.filter((u) => u.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase());
     let user = users.find((u) => u.id === profile?.user_id) ?? sameEmailUsers[0];
 
+    const duplicateUserIds = sameEmailUsers.filter((u) => u.id !== user?.id).map((u) => u.id);
+    await Promise.all(duplicateUserIds.map((id) => supabase.auth.admin.deleteUser(id)));
+    if (duplicateUserIds.length > 0) {
+      await supabase.from("profiles").delete().in("user_id", duplicateUserIds);
+    }
+
     if (!user) {
       const { data, error } = await supabase.auth.admin.createUser({
         email: ADMIN_EMAIL,
@@ -62,12 +68,6 @@ Deno.serve(async (req) => {
       });
       if (error) throw error;
       user = data.user!;
-    }
-
-    const duplicateUserIds = sameEmailUsers.filter((u) => u.id !== user!.id).map((u) => u.id);
-    await Promise.all(duplicateUserIds.map((id) => supabase.auth.admin.deleteUser(id)));
-    if (duplicateUserIds.length > 0) {
-      await supabase.from("profiles").delete().in("user_id", duplicateUserIds);
     }
 
     // Approve profile
