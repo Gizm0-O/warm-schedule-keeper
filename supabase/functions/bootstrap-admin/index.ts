@@ -64,11 +64,11 @@ Deno.serve(async (req) => {
       user = data.user!;
     }
 
-    await Promise.all(
-      sameEmailUsers
-        .filter((u) => u.id !== user!.id)
-        .map((u) => supabase.auth.admin.deleteUser(u.id)),
-    );
+    const duplicateUserIds = sameEmailUsers.filter((u) => u.id !== user!.id).map((u) => u.id);
+    await Promise.all(duplicateUserIds.map((id) => supabase.auth.admin.deleteUser(id)));
+    if (duplicateUserIds.length > 0) {
+      await supabase.from("profiles").delete().in("user_id", duplicateUserIds);
+    }
 
     // Approve profile
     await supabase
