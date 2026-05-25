@@ -92,6 +92,13 @@ export default function ProfilePage() {
         );
         const text = await resp.text();
         if (!resp.ok) throw new Error(text || `HTTP ${resp.status}`);
+        if (newPass) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail || profile?.email || "",
+            password: newPass,
+          });
+          if (signInErr) throw signInErr;
+        }
       } else {
         const { error: pErr } = await supabase
           .from("profiles")
