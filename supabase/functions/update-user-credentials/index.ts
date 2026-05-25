@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,19 +20,28 @@ Deno.serve(async (req) => {
     const { data: { user }, error: uErr } = await userClient.auth.getUser();
     if (uErr || !user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { email, password } = await req.json();
-    console.log("update request", { current: user.email, requested: email, hasPass: !!password });
+    const { email, password, username } = await req.json();
     const admin = createClient(supaUrl, serviceKey);
+    const cleanEmail = typeof email === "string" ? email.trim() : "";
+    const cleanUsername = typeof username === "string" ? username.trim() : "";
 
-    if (email && email !== user.email) {
+    if (cleanUsername) {
+      const { error } = await admin
+        .from("profiles")
+        .update({ username: cleanUsername, display_name: cleanUsername })
+        .eq("user_id", user.id);
+      if (error) throw error;
+    }
+
+    if (cleanEmail && cleanEmail !== user.email) {
       const { data: updated, error } = await admin.auth.admin.updateUserById(user.id, {
-        email,
+        email: cleanEmail,
         email_confirm: true,
       });
-      console.log("email update result", { newEmail: updated?.user?.email, error: error?.message });
       if (error) throw error;
-      const { error: pErr } = await admin.from("profiles").update({ email }).eq("user_id", user.id);
-      if (pErr) console.log("profile email update error", pErr.message);
+      const savedEmail = updated?.user?.email ?? cleanEmail;
+      const { error: pErr } = await admin.from("profiles").update({ email: savedEmail }).eq("user_id", user.id);
+      if (pErr) throw pErr;
     }
 
     if (password) {
