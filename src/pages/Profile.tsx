@@ -22,7 +22,7 @@ import { ArrowLeft, Upload, Trash2 } from "lucide-react";
 import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 export default function ProfilePage() {
-  const { user, profile, refresh, signOut } = useAuth();
+  const { session, user, profile, refresh, signOut } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -67,19 +67,13 @@ export default function ProfilePage() {
   const saveAll = async () => {
     if (!username.trim()) return toast.error("Uživatelské jméno nesmí být prázdné");
     if (newPass && newPass.length < 6) return toast.error("Heslo musí mít alespoň 6 znaků");
+    const token = session?.access_token;
+    if (!token) return toast.error("Relace vypršela. Přihlas se prosím znovu.");
     setBusy(true);
     try {
-      const { error: pErr } = await supabase
-        .from("profiles")
-        .update({ username: username.trim(), display_name: username.trim() })
-        .eq("user_id", user.id);
-      if (pErr) throw pErr;
-
-      const needsAuthUpdate = (email && email !== profile?.email) || !!newPass;
-      console.log("[saveAll] needsAuthUpdate=", needsAuthUpdate, "email=", email, "profileEmail=", profile?.email);
-      if (needsAuthUpdate) {
-        const { data: sess } = await supabase.auth.getSession();
-        const token = sess.session?.access_token;
+      const normalizedEmail = email.trim();
+      const needsCredentialUpdate = normalizedEmail !== (profile?.email || "") || !!newPass;
+      if (needsCredentialUpdate) {
         const resp = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user-credentials`,
           {
@@ -89,15 +83,28 @@ export default function ProfilePage() {
               Authorization: `Bearer ${token}`,
               apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
             },
-            body: JSON.stringify({ email: email || undefined, password: newPass || undefined }),
+            body: JSON.stringify({
+              username: username.trim(),
+              email: normalizedEmail || undefined,
+              password: newPass || undefined,
+            }),
           }
         );
         const text = await resp.text();
-        console.log("[saveAll] edge resp", resp.status, text);
         if (!resp.ok) throw new Error(text || `HTTP ${resp.status}`);
-        if (email && email !== profile?.email) {
-          await supabase.auth.refreshSession();
+        if (newPass) {
+          const { error: signInErr } = await supabase.auth.signInWithPassword({
+            email: normalizedEmail || profile?.email || "",
+            password: newPass,
+          });
+          if (signInErr) throw signInErr;
         }
+      } else {
+        const { error: pErr } = await supabase
+          .from("profiles")
+          .update({ username: username.trim(), display_name: username.trim() })
+          .eq("user_id", user.id);
+        if (pErr) throw pErr;
       }
 
       setNewPass("");
