@@ -19,7 +19,7 @@ function getMotivation(pct: number) {
 }
 
 export default function ItalySavingsBanner() {
-  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
+  const { entries, total, percentage, goal, addDeposit, removeDeposit, loading } = useItalySavings();
   const isAdmin = useAdminMode();
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
@@ -105,6 +105,15 @@ export default function ItalySavingsBanner() {
     const t = setTimeout(() => setAnimPct(percentage), 300);
     return () => clearTimeout(t);
   }, [percentage]);
+
+  if (loading) {
+    return (
+      <div
+        className="relative overflow-hidden rounded-2xl p-4 sm:p-6 animate-pulse"
+        style={{ background: "linear-gradient(135deg, hsl(25 60% 92%), hsl(38 70% 88%), hsl(25 50% 90%))", minHeight: 120 }}
+      />
+    );
+  }
 
   return (
     <>
