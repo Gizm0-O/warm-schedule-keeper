@@ -18,9 +18,11 @@ import ProfilePage from "./pages/Profile";
 const queryClient = new QueryClient();
 
 function ProtectedShell() {
-  const { session, isApproved, loading, profile } = useAuth();
+  const { session, isApproved, loading, profile, profileLoading } = useAuth();
   if (loading) return null;
   if (!session) return <Navigate to="/auth" replace />;
+  // Wait until profile is loaded after login to avoid flashing "pending approval"
+  if (profileLoading || !profile) return null;
   if (!isApproved && profile?.status !== "approved") return <PendingApproval />;
   return <AppLayout />;
 }
