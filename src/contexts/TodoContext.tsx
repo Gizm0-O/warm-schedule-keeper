@@ -76,11 +76,22 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const fetchTodos = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setTodos([]);
+        setLoading(false);
+        return;
+      }
       const { data } = await supabase.from("todos").select("*").order("created_at");
       if (data) setTodos(data.map(rowToTodo));
       setLoading(false);
     };
     fetchTodos();
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s?.user) fetchTodos();
+      else setTodos([]);
+    });
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const addTodo = useCallback(async (todo: Omit<Todo, "id">) => {
