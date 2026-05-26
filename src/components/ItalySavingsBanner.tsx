@@ -19,7 +19,7 @@ function getMotivation(pct: number) {
 }
 
 export default function ItalySavingsBanner() {
-  const { entries, total, percentage, goal, addDeposit, removeDeposit } = useItalySavings();
+  const { entries, total, percentage, goal, addDeposit, removeDeposit, loading } = useItalySavings();
   const isAdmin = useAdminMode();
   const [showPin, setShowPin] = useState(false);
   const [pin, setPin] = useState("");
