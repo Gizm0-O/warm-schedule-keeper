@@ -85,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin,
       isApproved: profile?.status === "approved",
       loading,
+      profileLoading,
       signOut,
       refresh,
     }}>
