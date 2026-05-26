@@ -265,6 +265,14 @@ export function RewardsBanner() {
 
   const noEarnings = totalEarned === 0;
 
+  // Skeleton placeholder until live data finished loading — prevents flash of Lv.0/default image
+  const isLoadingLive = !isArchiveView && !liveXp.loaded;
+  if (isLoadingLive) {
+    return (
+      <div className="relative rounded-2xl border-2 border-transparent bg-muted/30 p-4 mb-2 animate-pulse" style={{ minHeight: 96 }} />
+    );
+  }
+
   return (
     <>
       {/* Měsíční navigace - viditelná jen pokud existuje historie */}
