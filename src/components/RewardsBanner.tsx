@@ -315,7 +315,7 @@ export function RewardsBanner() {
 
       <div
         className={cn(
-          'relative rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none overflow-hidden',
+          'relative rounded-2xl border-2 p-4 mb-2 transition-all cursor-pointer select-none overflow-hidden animate-fade-in',
           'dark:bg-opacity-10',
           effectiveLevelBg,
           isArchiveView && 'opacity-95 ring-1 ring-muted-foreground/10',

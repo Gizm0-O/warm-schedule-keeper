@@ -57,7 +57,7 @@ const TodoPage = () => {
   const { todos, setTodos, toggleTodo: rawToggleTodo, removeTodo, restoreTodo, addTodo: addTodoToDb, updateTodo, loading } = useTodos();
   const { addEarning, removeEarning } = useTaskEarnings();
   const { pushAction } = useUndoRedo();
-  const { tasks: hourlyTasks } = useHourlyTasks();
+  const { tasks: hourlyTasks, loading: hourlyLoading } = useHourlyTasks();
   const { isReady, setReady } = useTaskReady();
   const { getBonusAmount, hasBonus, setBonusAmount } = useTaskBonus();
   const { getRewardsForTodo, setRewardsForTodo } = useCustomRewards();
@@ -807,56 +807,65 @@ const TodoPage = () => {
         </TabsList>
       </Tabs>
 
-      {(() => {
-        const filteredHourly = activeTab === "all" ? hourlyTasks : hourlyTasks.filter((t) => t.person === activeTab);
-        if (filteredHourly.length === 0) return null;
-        return (
-          <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Hodinové úkoly ({filteredHourly.length})
-              </span>
-            </div>
-            <div className="p-2 space-y-1.5">
-              {filteredHourly.map((task) => (
-                <HourlyTaskRow key={task.id} task={task} />
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+      {(loading || hourlyLoading) ? (
+        <>
+          <div className="glass rounded-2xl shadow-sm overflow-hidden animate-pulse" style={{ minHeight: 80 }} />
+          <div className="glass rounded-2xl shadow-sm overflow-hidden animate-pulse" style={{ minHeight: 240 }} />
+        </>
+      ) : (
+        <div className="animate-fade-in space-y-4">
+          {(() => {
+            const filteredHourly = activeTab === "all" ? hourlyTasks : hourlyTasks.filter((t) => t.person === activeTab);
+            if (filteredHourly.length === 0) return null;
+            return (
+              <div className="glass rounded-2xl shadow-sm overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Hodinové úkoly ({filteredHourly.length})
+                  </span>
+                </div>
+                <div className="p-2 space-y-1.5">
+                  {filteredHourly.map((task) => (
+                    <HourlyTaskRow key={task.id} task={task} />
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
-      <div className="glass rounded-2xl shadow-sm overflow-hidden animate-slide-up">
-        {workPending.length === 0 && homePending.length === 0 && completed.length === 0 && (
-          <p className="p-6 text-center text-sm text-muted-foreground">
-            Žádné úkoly. Přidejte první!
-          </p>
-        )}
-        <Section icon={Briefcase} label="Práce" items={workPending} />
-        <Section icon={Home} label="Domácnost" items={homePending} />
-        {completed.length > 0 && (
-          <div>
-            <button
-              onClick={() => setShowCompleted((v) => !v)}
-              className="flex w-full items-center gap-1.5 px-4 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
-              {showCompleted ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
-              <Check className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Hotové úkoly ({completed.length})
-              </span>
-            </button>
-            {showCompleted && (
-              <div className="divide-y divide-border">
-                {completed.map((todo) => (
-                  <TodoItem key={todo.id} todo={todo} />
-                ))}
+          <div className="glass rounded-2xl shadow-sm overflow-hidden">
+            {workPending.length === 0 && homePending.length === 0 && completed.length === 0 && (
+              <p className="p-6 text-center text-sm text-muted-foreground">
+                Žádné úkoly. Přidejte první!
+              </p>
+            )}
+            <Section icon={Briefcase} label="Práce" items={workPending} />
+            <Section icon={Home} label="Domácnost" items={homePending} />
+            {completed.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setShowCompleted((v) => !v)}
+                  className="flex w-full items-center gap-1.5 px-4 py-2.5 bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  {showCompleted ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
+                  <Check className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Hotové úkoly ({completed.length})
+                  </span>
+                </button>
+                {showCompleted && (
+                  <div className="divide-y divide-border">
+                    {completed.map((todo) => (
+                      <TodoItem key={todo.id} todo={todo} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* New Todo Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

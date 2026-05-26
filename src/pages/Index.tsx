@@ -231,8 +231,8 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 
 const Index = () => {
   const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
-  const { todos, toggleTodo } = useTodos();
-  const { tasks: hourlyTasks } = useHourlyTasks();
+  const { todos, toggleTodo, loading: todosLoading } = useTodos();
+  const { tasks: hourlyTasks, loading: hourlyLoading } = useHourlyTasks();
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
   const { addEarning, removeEarning } = useTaskEarnings();
   const isAdmin = useAdminMode();
@@ -1764,8 +1764,15 @@ const Index = () => {
 
               {sidePanelTab === "vouchers" ? (
                 <RewardsVouchersPanel />
+              ) : (todosLoading || hourlyLoading) ? (
+                <div className="space-y-2">
+                  <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 24, width: '40%' }} />
+                  <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 48 }} />
+                  <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 48 }} />
+                  <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 48 }} />
+                </div>
               ) : (
-            (() => {
+            <div className="animate-fade-in">{(() => {
               const today = startOfDay(new Date());
               const tomorrow = addDays(today, 1);
               const urgentTodos = todos.filter((t) => {
@@ -1975,7 +1982,7 @@ const Index = () => {
                   )}
                 </div>
               );
-            })()
+            })()}</div>
               )}
             </div>
           )}
