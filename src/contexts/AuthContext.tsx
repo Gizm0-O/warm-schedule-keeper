@@ -31,14 +31,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const loadProfile = async (uid: string) => {
-    const [{ data: p }, { data: roles }] = await Promise.all([
-      supabase.from("profiles").select("user_id,display_name,email,status,username,avatar_url").eq("user_id", uid).maybeSingle(),
-      supabase.from("user_roles").select("role").eq("user_id", uid),
-    ]);
-    setProfile(p as Profile | null);
-    setIsAdmin(!!roles?.some((r: any) => r.role === "admin"));
+    setProfileLoading(true);
+    try {
+      const [{ data: p }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("user_id,display_name,email,status,username,avatar_url").eq("user_id", uid).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", uid),
+      ]);
+      setProfile(p as Profile | null);
+      setIsAdmin(!!roles?.some((r: any) => r.role === "admin"));
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const refresh = async () => {
@@ -49,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       if (s?.user) {
+        setProfileLoading(true);
         setTimeout(() => loadProfile(s.user.id), 0);
       } else {
         setProfile(null);
