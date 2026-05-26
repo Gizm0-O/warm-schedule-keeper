@@ -118,7 +118,7 @@ export default function ItalySavingsBanner() {
   return (
     <>
       <div
-        className="relative overflow-hidden rounded-2xl p-4 sm:p-6"
+        className="relative overflow-hidden rounded-2xl p-4 sm:p-6 animate-fade-in"
         style={{
           background: "linear-gradient(135deg, hsl(25 60% 92%), hsl(38 70% 88%), hsl(25 50% 90%))",
         }}
