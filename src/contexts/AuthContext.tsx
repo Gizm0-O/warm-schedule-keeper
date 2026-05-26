@@ -20,6 +20,7 @@ interface AuthCtx {
   isAdmin: boolean;
   isApproved: boolean;
   loading: boolean;
+  profileLoading: boolean;
   signOut: () => Promise<void>;
   refresh: () => Promise<void>;
 }
