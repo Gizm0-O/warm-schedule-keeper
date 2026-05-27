@@ -54,7 +54,7 @@ export function useAdminMode(): boolean {
         if (alive) setHasRole(!!data);
       };
       check();
-      const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+      const { data: sub } = supabase.auth.onAuthStateChange(() => setTimeout(() => check(), 0));
       return () => sub.subscription.unsubscribe();
     });
     return () => { alive = false; };
@@ -86,7 +86,7 @@ export function useHasAdminRole(): boolean {
         if (alive) setHasRole(!!data);
       };
       check();
-      const { data: sub } = supabase.auth.onAuthStateChange(() => check());
+      const { data: sub } = supabase.auth.onAuthStateChange(() => setTimeout(() => check(), 0));
       return () => sub.subscription.unsubscribe();
     });
     return () => { alive = false; };
