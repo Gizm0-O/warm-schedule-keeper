@@ -88,7 +88,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
     };
     fetchTodos();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s?.user) fetchTodos();
+      if (s?.user) setTimeout(() => fetchTodos(), 0);
       else setTodos([]);
     });
     return () => sub.subscription.unsubscribe();

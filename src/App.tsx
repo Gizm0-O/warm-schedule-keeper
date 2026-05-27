@@ -12,6 +12,7 @@ import ShoppingPage from "./pages/ShoppingPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
+import ResetPasswordPage from "./pages/ResetPassword";
 import PendingApproval from "./pages/PendingApproval";
 import ProfilePage from "./pages/Profile";
 
@@ -37,6 +38,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<AuthPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route element={<ProtectedShell />}>
                 <Route path="/" element={<Index />} />
                 <Route path="/todo" element={<TodoPage />} />

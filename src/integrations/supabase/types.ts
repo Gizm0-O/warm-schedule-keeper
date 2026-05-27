@@ -733,6 +733,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      email_has_account: { Args: { _email: string }; Returns: boolean }
       generate_stories_for_month: {
         Args: { p_month: string }
         Returns: undefined

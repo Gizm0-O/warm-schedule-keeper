@@ -97,7 +97,7 @@ export function useHourlyTasks() {
 
   // Re-fetch when auth state changes (e.g. after login)
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange(() => { fetchTasks(); });
+    const { data: sub } = supabase.auth.onAuthStateChange(() => { setTimeout(() => fetchTasks(), 0); });
     return () => sub.subscription.unsubscribe();
   }, [fetchTasks]);
 
