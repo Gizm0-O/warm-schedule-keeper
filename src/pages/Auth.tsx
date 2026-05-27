@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Orbit } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,10 +19,14 @@ export default function AuthPage() {
   const [loginPass, setLoginPass] = useState("");
 
   // register
-  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPass, setRegPass] = useState("");
+
+  // forgot password
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotBusy, setForgotBusy] = useState(false);
 
   if (loading) return null;
   if (session) return <Navigate to="/" replace />;
@@ -29,40 +34,74 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
-    let email = loginId.trim();
-    if (!email.includes("@")) {
-      const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
-      if (rpcErr || !data) {
-        setBusy(false);
-        toast.error("Uživatel nenalezen");
-        return;
+    try {
+      let email = loginId.trim();
+      if (!email.includes("@")) {
+        const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
+        if (rpcErr || !data) {
+          toast.error("Uživatel nenalezen");
+          return;
+        }
+        email = data as string;
       }
-      email = data as string;
+      const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
+      if (error) toast.error(error.message);
+      else toast.success("Přihlášeno");
+    } finally {
+      setBusy(false);
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
-    setBusy(false);
-    if (error) toast.error(error.message);
-    else toast.success("Přihlášeno");
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (regPass.length < 6) { toast.error("Heslo musí mít alespoň 6 znaků"); return; }
     setBusy(true);
+    const uname = username.trim();
     const { data, error } = await supabase.auth.signUp({
       email: regEmail,
       password: regPass,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { display_name: name },
+        data: { display_name: uname },
       },
     });
-    if (!error && data.user && username.trim()) {
-      await supabase.from("profiles").update({ username: username.trim() }).eq("user_id", data.user.id);
+    if (!error && data.user && uname) {
+      await supabase.from("profiles").update({ username: uname, display_name: uname }).eq("user_id", data.user.id);
     }
     setBusy(false);
     if (error) toast.error(error.message);
     else toast.success("Účet vytvořen. Čeká na schválení adminem.");
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = forgotEmail.trim();
+    if (!email) return;
+    setForgotBusy(true);
+    try {
+      // Check if account exists for this email
+      const { data: exists } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("email", email)
+        .maybeSingle();
+      if (!exists) {
+        toast.error("Na tento e-mail nebyl založen žádný účet");
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Poslali jsme ti e-mail s odkazem na změnu hesla");
+      setForgotOpen(false);
+      setForgotEmail("");
+    } finally {
+      setForgotBusy(false);
+    }
   };
 
   return (
@@ -90,14 +129,19 @@ export default function AuthPage() {
                 <Input type="password" required value={loginPass} onChange={(e) => setLoginPass(e.target.value)} />
               </div>
               <Button type="submit" className="w-full" disabled={busy}>Přihlásit se</Button>
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setForgotOpen(true)}
+                  className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline transition-colors"
+                >
+                  Zapomněl jsem heslo
+                </button>
+              </div>
             </form>
           </TabsContent>
           <TabsContent value="register">
             <form onSubmit={handleRegister} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label>Jméno</Label>
-                <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Jak ti říkáme" />
-              </div>
               <div className="space-y-2">
                 <Label>Uživatelské jméno</Label>
                 <Input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
@@ -118,6 +162,27 @@ export default function AuthPage() {
           </TabsContent>
         </Tabs>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Obnova hesla</DialogTitle>
+            <DialogDescription>
+              Zadej svůj e-mail. Pokud na něj existuje účet, pošleme ti odkaz pro nastavení nového hesla.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleForgot} className="space-y-4">
+            <div className="space-y-2">
+              <Label>E-mail</Label>
+              <Input type="email" required value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setForgotOpen(false)}>Zrušit</Button>
+              <Button type="submit" disabled={forgotBusy}>Odeslat</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
