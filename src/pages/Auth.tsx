@@ -79,12 +79,13 @@ export default function AuthPage() {
     if (!email) return;
     setForgotBusy(true);
     try {
-      // Check if account exists for this email
-      const { data: exists } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("email", email)
-        .maybeSingle();
+      // Check if account exists for this email via SECURITY DEFINER RPC (bypasses RLS for anon users)
+      const { data: exists, error: rpcErr } = await supabase
+        .rpc("email_has_account", { _email: email });
+      if (rpcErr) {
+        toast.error("Chyba při ověřování e-mailu");
+        return;
+      }
       if (!exists) {
         toast.error("Na tento e-mail nebyl založen žádný účet");
         return;
@@ -144,7 +145,7 @@ export default function AuthPage() {
             <form onSubmit={handleRegister} className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label>Uživatelské jméno</Label>
-                <Input required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="např. tadeas" />
+                <Input required value={username} onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
