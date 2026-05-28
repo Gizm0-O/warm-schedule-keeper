@@ -1535,25 +1535,76 @@ const Index = () => {
                   });
                 })}
 
-                {/* SWITCH BREAK bar 12:00–13:00 across the work week (Mon–Fri) */}
-                {(() => {
-                  const top = getHourTop(12);
-                  const height = getHourHeight(12);
+                {/* SWITCH BREAK – per day, podle aktuálního rozvrhu */}
+                {weekDays.map((day, dayIdx) => {
+                  const brk = getSwitchBreakForIsoDay(isoDayOf(day));
+                  if (!brk) return null;
+                  const top = timeToY(brk.start);
+                  const height = timeToY(brk.end) - top;
                   const colWidth = `calc((100% - 60px) / 7)`;
-                  const left = `calc(60px + 0 * ${colWidth})`;
+                  const left = `calc(60px + ${dayIdx} * ${colWidth})`;
                   return (
                     <div
-                      key="switch-break-bar"
+                      key={`switch-break-${dayIdx}`}
                       className="absolute pointer-events-none z-[4] flex items-center justify-center bg-muted/60 border border-muted-foreground/40"
-                      style={{ top, height, left, width: `calc(${colWidth} * 5)` }}
+                      style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
                     >
-                      <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
-                        Switch Break
+                      <span className="text-[9px] font-bold tracking-wider uppercase text-muted-foreground">
+                        Switch
                       </span>
                     </div>
                   );
-                })()}
+                })}
+
+                {/* TRIP DAY – sobotní pozadí */}
+                {weekDays.map((day, dayIdx) => {
+                  if (isoDayOf(day) !== 6) return null;
+                  const colWidth = `calc((100% - 60px) / 7)`;
+                  const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                  return (
+                    <div
+                      key={`trip-day-${dayIdx}`}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left,
+                        width: colWidth,
+                        height: totalGridHeight,
+                        pointerEvents: "none",
+                        zIndex: 1,
+                        borderLeft: "1px solid rgba(56, 132, 195, 0.4)",
+                        borderRight: "1px solid rgba(56, 132, 195, 0.4)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        backgroundImage: "url('/trip-day-bg.png')",
+                        backgroundSize: "cover",
+                        backgroundPosition: "center top",
+                        opacity: 0.55,
+                      }} />
+                      <div style={{
+                        position: "absolute",
+                        top: 8,
+                        left: 0,
+                        right: 0,
+                        textAlign: "center",
+                        fontFamily: "'Brush Script MT', cursive",
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: "#ffffff",
+                        textShadow: "0 2px 6px rgba(0,0,0,0.45)",
+                        letterSpacing: 0.5,
+                      }}>
+                        Trip Day
+                      </div>
+                    </div>
+                  );
+                })}
+
 
                 {/* Current time indicator */}
                 {isCurrentWeek && (
