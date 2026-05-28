@@ -202,31 +202,54 @@ interface DisplayShift extends Shift {
   sourceIndex: number;
 }
 
-// day of week (1=Mon..5=Fri) -> shifts
-const MORNING_SHIFT: Shift = { person: "Barča", location: "Z domu", startHour: 6, endHour: 12, bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home" };
-const AFTERNOON_SHIFT: Shift = { person: "Tadeáš", location: "Kancelář", startHour: 13, endHour: 21, bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office" };
+// Shift building blocks. Tadeáš = ráno (Kancelář), Barča = odpoledne (Z domu).
+const tadeasShift = (startHour: number, endHour: number): Shift => ({
+  person: "Tadeáš", location: "Kancelář", startHour, endHour,
+  bgClass: "bg-shift-office/35", textClass: "text-shift-office", borderClass: "border-shift-office/60", icon: "office",
+});
+const barcaShift = (startHour: number, endHour: number): Shift => ({
+  person: "Barča", location: "Z domu", startHour, endHour,
+  bgClass: "bg-shift-partner/35", textClass: "text-shift-partner", borderClass: "border-shift-partner/60", icon: "home",
+});
 
+// Standardní den: Tadeáš 6–14:30, switch break 14:30–15:00, Barča 15–21.
+// Čtvrtek + Neděle: Tadeáš 6–13:00, switch break 13:00–13:30, Barča 13:30–21.
+// Sobota: Trip Day – bez směn.
 const SHIFT_SCHEDULE: Record<number, Shift[]> = {
-  1: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
-  2: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
-  3: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
-  4: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
-  5: [{ ...MORNING_SHIFT }, { ...AFTERNOON_SHIFT }],
+  1: [tadeasShift(6, 14.5), barcaShift(15, 21)],
+  2: [tadeasShift(6, 14.5), barcaShift(15, 21)],
+  3: [tadeasShift(6, 14.5), barcaShift(15, 21)],
+  4: [tadeasShift(6, 13),   barcaShift(13.5, 21)],
+  5: [tadeasShift(6, 14.5), barcaShift(15, 21)],
+  7: [tadeasShift(6, 13),   barcaShift(13.5, 21)],
+};
+
+// Switch break interval pro daný ISO den (1=Po..7=Ne). Null = bez breaku.
+const getSwitchBreakForIsoDay = (isoDay: number): { start: number; end: number } | null => {
+  if (isoDay === 4 || isoDay === 7) return { start: 13, end: 13.5 };
+  if (isoDay === 6) return null;
+  if (isoDay >= 1 && isoDay <= 5) return { start: 14.5, end: 15 };
+  return null;
+};
+
+const isoDayOf = (day: Date): number => {
+  const dow = getDay(day);
+  return dow === 0 ? 7 : dow;
 };
 
 const getDefaultShiftsForDay = (day: Date): Shift[] => {
-  const dow = getDay(day);
-  const isoDay = dow === 0 ? 7 : dow;
-  return SHIFT_SCHEDULE[isoDay] || [];
+  return SHIFT_SCHEDULE[isoDayOf(day)] || [];
 };
 
+// Prohození směn: zachová časy, prohodí osoby (a jejich defaultní lokaci/ikonu).
 const swapShifts = (shifts: Shift[]): Shift[] => {
   if (shifts.length !== 2) return shifts;
-  const [morning, afternoon] = shifts;
-  return [
-    { ...afternoon, startHour: 6, endHour: 12 },
-    { ...morning, startHour: 13, endHour: 21 },
-  ];
+  const [a, b] = shifts;
+  const personSwap = (src: Shift, target: Shift): Shift => {
+    const base = src.person === "Tadeáš" ? tadeasShift(target.startHour, target.endHour) : barcaShift(target.startHour, target.endHour);
+    return base;
+  };
+  return [personSwap(b, a), personSwap(a, b)];
 };
 
 const Index = () => {
