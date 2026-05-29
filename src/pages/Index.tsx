@@ -1582,9 +1582,12 @@ const Index = () => {
                         position: "absolute",
                         inset: 0,
                         backgroundImage: "url('/trip-day-bg.png')",
-                        backgroundSize: "cover",
-                        backgroundPosition: "center top",
+                        backgroundSize: "100% 100%",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
                         opacity: 0.25,
+
+
                       }} />
 
                     </div>
