@@ -1585,6 +1585,8 @@ const Index = () => {
                         backgroundSize: "100% 100%",
                         backgroundPosition: "center",
                         backgroundRepeat: "no-repeat",
+                        opacity: 0.25,
+
 
                       }} />
 
