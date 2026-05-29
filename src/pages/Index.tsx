@@ -1584,23 +1584,9 @@ const Index = () => {
                         backgroundImage: "url('/trip-day-bg.png')",
                         backgroundSize: "cover",
                         backgroundPosition: "center top",
-                        opacity: 0.55,
+                        opacity: 0.25,
                       }} />
-                      <div style={{
-                        position: "absolute",
-                        top: 8,
-                        left: 0,
-                        right: 0,
-                        textAlign: "center",
-                        fontFamily: "'Brush Script MT', cursive",
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: "#ffffff",
-                        textShadow: "0 2px 6px rgba(0,0,0,0.45)",
-                        letterSpacing: 0.5,
-                      }}>
-                        Trip Day
-                      </div>
+
                     </div>
                   );
                 })}
