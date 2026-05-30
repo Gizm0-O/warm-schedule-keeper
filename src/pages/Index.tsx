@@ -1556,8 +1556,11 @@ const Index = () => {
                       {/* Thin dashed divider */}
                       <div className="absolute left-2 right-2 top-1/2 -translate-y-px border-t border-dashed border-foreground/25" />
                       {/* Center swap badge */}
-                      <div className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full bg-background/90 border border-foreground/15 shadow-sm">
-                        <ArrowLeftRight className="h-2.5 w-2.5 text-foreground/55" />
+                      <div
+                        className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full shadow-sm border border-white/40"
+                        style={{ background: "linear-gradient(135deg, hsl(200 90% 55%), hsl(265 80% 60%))" }}
+                      >
+                        <ArrowLeftRight className="h-2.5 w-2.5 text-white" />
                       </div>
                     </div>
                   );
