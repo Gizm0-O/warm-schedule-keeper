@@ -1483,8 +1483,9 @@ const Index = () => {
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
-                    const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
-                    const shiftGradient = `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
+                    const shiftGradient = shift.person === "Tadeáš"
+                      ? "linear-gradient(180deg, hsl(var(--shift-office) / 0.55), hsl(var(--shift-office) / 0.2))"
+                      : "linear-gradient(180deg, hsl(45 95% 60% / 0.65), hsl(38 90% 50% / 0.25))";
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
