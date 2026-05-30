@@ -1483,14 +1483,16 @@ const Index = () => {
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
+                    const shiftGradient = `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card",
-                          shift.bgClass, shift.borderClass
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group",
+                          shift.borderClass
                         )}
-                        style={{ top, height, left, width: colWidth, zIndex: 5 }}
+                        style={{ top, height, left, width: colWidth, zIndex: 5, background: shiftGradient }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
@@ -1546,13 +1548,16 @@ const Index = () => {
                   return (
                     <div
                       key={`switch-break-${dayIdx}`}
-                      className="absolute pointer-events-none z-[4] flex items-center justify-center bg-muted/60 border border-muted-foreground/40"
+                      className="absolute pointer-events-none z-[6] flex items-center justify-center"
                       style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
                     >
-                      <span className="text-[9px] font-bold tracking-wider uppercase text-muted-foreground">
-                        Switch
-                      </span>
+                      {/* Thin dashed divider */}
+                      <div className="absolute left-2 right-2 top-1/2 -translate-y-px border-t border-dashed border-foreground/25" />
+                      {/* Center swap badge */}
+                      <div className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full bg-background/90 border border-foreground/15 shadow-sm">
+                        <ArrowLeftRight className="h-2.5 w-2.5 text-foreground/55" />
+                      </div>
                     </div>
                   );
                 })}
