@@ -1483,14 +1483,16 @@ const Index = () => {
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                    const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
+                    const shiftGradient = `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
                         className={cn(
-                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group bg-card",
-                          shift.bgClass, shift.borderClass
+                          "absolute rounded-lg border-l-3 pointer-events-auto z-[5] flex flex-col justify-start px-1.5 py-1 overflow-hidden cursor-grab group",
+                          shift.borderClass
                         )}
-                        style={{ top, height, left, width: colWidth, zIndex: 5 }}
+                        style={{ top, height, left, width: colWidth, zIndex: 5, background: shiftGradient }}
                         onMouseDown={(e) => {
                           if ((e.target as HTMLElement).dataset.handle) return;
                           onShiftDragStart(e, shift.sourceDayKey, shift.sourceIndex, shift, "move", dayIdx);
