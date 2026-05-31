@@ -20,7 +20,7 @@ import {
   addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake, Shuffle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useBirthdays, getBirthdaysForDate } from "@/hooks/useBirthdays";
 import { BirthdayManagerDialog } from "@/components/BirthdayManagerDialog";
@@ -1569,19 +1569,15 @@ const Index = () => {
                             "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
                         }}
                       />
-                      {/* Center swap badge — light circle with two-tone diagonal arrows */}
+                      {/* Center swap badge — brand gradient */}
                       <div
-                        className="relative z-[1] flex items-center justify-center w-6 h-6 rounded-full bg-background shadow-sm"
-                        style={{ border: "1.5px solid hsl(265 70% 78%)" }}
+                        className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full shadow-sm"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, hsl(265 80% 60%), hsl(330 75% 60%), hsl(200 80% 55%))",
+                        }}
                       >
-                        <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          {/* Blue arrow: shaft from bottom-center up to top-left, arrowhead ↖ */}
-                          <path d="M13 17 L8 8" stroke="hsl(215 85% 55%)" />
-                          <path d="M8 8 L12 8 M8 8 L8 12" stroke="hsl(215 85% 55%)" />
-                          {/* Purple arrow: shaft from top-center down to bottom-right, arrowhead ↘ */}
-                          <path d="M11 7 L16 16" stroke="hsl(270 65% 55%)" />
-                          <path d="M16 16 L12 16 M16 16 L16 12" stroke="hsl(270 65% 55%)" />
-                        </svg>
+                        <ArrowLeftRight className="h-2.5 w-2.5 text-white" />
                       </div>
                     </div>
                   );
