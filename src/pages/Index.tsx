@@ -20,7 +20,7 @@ import {
   addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake, Shuffle } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useBirthdays, getBirthdaysForDate } from "@/hooks/useBirthdays";
 import { BirthdayManagerDialog } from "@/components/BirthdayManagerDialog";
@@ -1569,15 +1569,19 @@ const Index = () => {
                             "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
                         }}
                       />
-                      {/* Center swap badge — brand gradient */}
+                      {/* Center swap badge — light circle with two-tone arrows */}
                       <div
-                        className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full shadow-sm"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, hsl(265 80% 60%), hsl(330 75% 60%), hsl(200 80% 55%))",
-                        }}
+                        className="relative z-[1] flex items-center justify-center w-6 h-6 rounded-full bg-background shadow-sm"
+                        style={{ border: "1.5px solid hsl(265 70% 75%)" }}
                       >
-                        <ArrowLeftRight className="h-2.5 w-2.5 text-white" />
+                        <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          {/* Top-left arrow (blue) */}
+                          <path d="M14 6 L8 6 L8 12" stroke="hsl(210 90% 55%)" />
+                          <path d="M8 6 L14 12" stroke="hsl(210 90% 55%)" />
+                          {/* Bottom-right arrow (purple) */}
+                          <path d="M10 18 L16 18 L16 12" stroke="hsl(270 70% 55%)" />
+                          <path d="M16 18 L10 12" stroke="hsl(270 70% 55%)" />
+                        </svg>
                       </div>
                     </div>
                   );
