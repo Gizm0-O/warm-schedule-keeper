@@ -1557,24 +1557,24 @@ const Index = () => {
                       style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
                     >
-                      {/* Thin dashed divider with gradient */}
+                      {/* Thin dashed divider with brand gradient */}
                       <div
                         className="absolute left-2 right-2 top-1/2 -translate-y-px h-px"
                         style={{
                           backgroundImage:
-                            "linear-gradient(90deg, hsl(35 95% 55% / 0.55), hsl(330 75% 60% / 0.55))",
+                            "linear-gradient(90deg, hsl(265 80% 60% / 0.6), hsl(330 75% 60% / 0.6), hsl(200 80% 55% / 0.6))",
                           maskImage:
                             "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
                           WebkitMaskImage:
                             "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
                         }}
                       />
-                      {/* Center swap badge — colored */}
+                      {/* Center swap badge — brand gradient */}
                       <div
                         className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full shadow-sm"
                         style={{
                           background:
-                            "linear-gradient(135deg, hsl(35 95% 55%), hsl(330 75% 60%))",
+                            "linear-gradient(135deg, hsl(265 80% 60%), hsl(330 75% 60%), hsl(200 80% 55%))",
                         }}
                       >
                         <ArrowLeftRight className="h-2.5 w-2.5 text-white" />
