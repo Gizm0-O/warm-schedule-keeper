@@ -1483,8 +1483,13 @@ const Index = () => {
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
-                    const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
-                    const shiftGradient = `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
+                    const isTadeasHome = shift.person === "Tadeáš" && shift.icon === "home";
+                    const shiftGradient = isTadeasHome
+                      ? `linear-gradient(180deg, hsl(35 95% 55% / 0.6), hsl(45 95% 60% / 0.25))`
+                      : (() => {
+                          const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
+                          return `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
+                        })();
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
@@ -1552,11 +1557,27 @@ const Index = () => {
                       style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
                     >
-                      {/* Thin dashed divider */}
-                      <div className="absolute left-2 right-2 top-1/2 -translate-y-px border-t border-dashed border-foreground/25" />
-                      {/* Center swap badge */}
-                      <div className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full bg-background/90 border border-foreground/15 shadow-sm">
-                        <ArrowLeftRight className="h-2.5 w-2.5 text-foreground/55" />
+                      {/* Thin dashed divider with gradient */}
+                      <div
+                        className="absolute left-2 right-2 top-1/2 -translate-y-px h-px"
+                        style={{
+                          backgroundImage:
+                            "linear-gradient(90deg, hsl(35 95% 55% / 0.55), hsl(330 75% 60% / 0.55))",
+                          maskImage:
+                            "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
+                          WebkitMaskImage:
+                            "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
+                        }}
+                      />
+                      {/* Center swap badge — colored */}
+                      <div
+                        className="relative z-[1] flex items-center justify-center w-5 h-5 rounded-full shadow-sm"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, hsl(35 95% 55%), hsl(330 75% 60%))",
+                        }}
+                      >
+                        <ArrowLeftRight className="h-2.5 w-2.5 text-white" />
                       </div>
                     </div>
                   );
