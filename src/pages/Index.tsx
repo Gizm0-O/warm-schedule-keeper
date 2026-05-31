@@ -1483,8 +1483,13 @@ const Index = () => {
                     const height = timeToY(shift.endHour) - top;
                     const colWidth = `calc((100% - 60px) / 7)`;
                     const left = `calc(60px + ${dayIdx} * ${colWidth})`;
-                    const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
-                    const shiftGradient = `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
+                    const isTadeasHome = shift.person === "Tadeáš" && shift.icon === "home";
+                    const shiftGradient = isTadeasHome
+                      ? `linear-gradient(180deg, hsl(35 95% 55% / 0.6), hsl(45 95% 60% / 0.25))`
+                      : (() => {
+                          const gradientVar = shift.person === "Tadeáš" ? "--shift-office" : "--shift-partner";
+                          return `linear-gradient(180deg, hsl(var(${gradientVar}) / 0.55), hsl(var(${gradientVar}) / 0.2))`;
+                        })();
                     return (
                       <div
                         key={`shift-${shift.shiftKey}`}
