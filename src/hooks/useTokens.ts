@@ -26,12 +26,13 @@ const SYNC_EVENT = "tokens-sync";
 const emitSync = () => window.dispatchEvent(new Event(SYNC_EVENT));
 
 /**
- * Returns the most recent Sunday at-or-before `from` (we grant on Sundays evening).
+ * Returns the most recent Monday at-or-before `from` (we grant overnight Sun→Mon).
  */
-function lastSundayOnOrBefore(from: Date): Date {
+function lastMondayOnOrBefore(from: Date): Date {
   const d = startOfDay(from);
-  const dow = d.getDay(); // 0 = Sunday
-  return addDays(d, -dow);
+  const dow = d.getDay(); // 0=Sun, 1=Mon, ... 6=Sat
+  const offset = dow === 0 ? 6 : dow - 1;
+  return addDays(d, -offset);
 }
 
 /**
