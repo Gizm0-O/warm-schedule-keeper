@@ -1574,13 +1574,13 @@ const Index = () => {
                         className="relative z-[1] flex items-center justify-center w-6 h-6 rounded-full bg-background shadow-sm"
                         style={{ border: "1.5px solid hsl(265 70% 78%)" }}
                       >
-                        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          {/* Blue arrow: top arc curving right-to-left */}
-                          <path d="M18 8 C 15 3, 9 3, 6 8" stroke="hsl(215 85% 55%)" />
-                          <path d="M6 8 L10 7 M6 8 L7 12" stroke="hsl(215 85% 55%)" />
-                          {/* Purple arrow: bottom arc curving left-to-right */}
-                          <path d="M6 16 C 9 21, 15 21, 18 16" stroke="hsl(270 65% 55%)" />
-                          <path d="M18 16 L14 17 M18 16 L17 12" stroke="hsl(270 65% 55%)" />
+                        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          {/* Blue arrow: top arc right→left, head at left end */}
+                          <path d="M18 9 C 15 4, 9 4, 6 9" stroke="hsl(215 85% 55%)" />
+                          <path d="M6 9 L9.5 8 M6 9 L7 5.5" stroke="hsl(215 85% 55%)" />
+                          {/* Purple arrow: bottom arc left→right, head at right end */}
+                          <path d="M6 15 C 9 20, 15 20, 18 15" stroke="hsl(270 65% 55%)" />
+                          <path d="M18 15 L14.5 16 M18 15 L17 18.5" stroke="hsl(270 65% 55%)" />
                         </svg>
                       </div>
                     </div>
