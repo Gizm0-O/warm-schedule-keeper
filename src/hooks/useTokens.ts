@@ -71,7 +71,7 @@ export function useTokens() {
     const transactions: { amount: number; reason: TokenReason; note: string }[] = [];
 
     // Weekly: every Sunday
-    const lastSun = lastSundayOnOrBefore(today);
+    const lastSun = lastMondayOnOrBefore(today);
     let cursor = lastWeekly ? addDays(lastWeekly, 7) : lastSun;
     if (!lastWeekly) {
       // first ever run: just mark this week as granted without back-paying
