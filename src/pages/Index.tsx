@@ -1575,12 +1575,12 @@ const Index = () => {
                         style={{ border: "1.5px solid hsl(265 70% 78%)" }}
                       >
                         <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          {/* Blue arrow: shaft from bottom-center up to top-left, arrowhead ↖ */}
-                          <path d="M13 17 L8 8" stroke="hsl(215 85% 55%)" />
-                          <path d="M8 8 L12 8 M8 8 L8 12" stroke="hsl(215 85% 55%)" />
-                          {/* Purple arrow: shaft from top-center down to bottom-right, arrowhead ↘ */}
-                          <path d="M11 7 L16 16" stroke="hsl(270 65% 55%)" />
-                          <path d="M16 16 L12 16 M16 16 L16 12" stroke="hsl(270 65% 55%)" />
+                          {/* Blue arrow: top arc curving right-to-left, arrowhead pointing left/down */}
+                          <path d="M16 8 C 14 5, 10 5, 8 8" stroke="hsl(215 85% 55%)" />
+                          <path d="M8 8 L11 7 M8 8 L9 11" stroke="hsl(215 85% 55%)" />
+                          {/* Purple arrow: bottom arc curving left-to-right, arrowhead pointing right/up */}
+                          <path d="M8 16 C 10 19, 14 19, 16 16" stroke="hsl(270 65% 55%)" />
+                          <path d="M16 16 L13 17 M16 16 L15 13" stroke="hsl(270 65% 55%)" />
                         </svg>
                       </div>
                     </div>
