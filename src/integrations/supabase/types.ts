@@ -158,12 +158,14 @@ export type Database = {
           created_at: string
           hours_worked: number
           id: string
+          kind: string
           milestone_bonus_percent: number
           milestone_hours: number
           month: string
           name: string
           person: string
           rate_per_hour: number
+          unit_amount: number
           updated_at: string
           xp_per_hour: number
         }
@@ -172,12 +174,14 @@ export type Database = {
           created_at?: string
           hours_worked?: number
           id?: string
+          kind?: string
           milestone_bonus_percent?: number
           milestone_hours?: number
           month?: string
           name: string
           person?: string
           rate_per_hour?: number
+          unit_amount?: number
           updated_at?: string
           xp_per_hour?: number
         }
@@ -186,12 +190,14 @@ export type Database = {
           created_at?: string
           hours_worked?: number
           id?: string
+          kind?: string
           milestone_bonus_percent?: number
           milestone_hours?: number
           month?: string
           name?: string
           person?: string
           rate_per_hour?: number
+          unit_amount?: number
           updated_at?: string
           xp_per_hour?: number
         }
