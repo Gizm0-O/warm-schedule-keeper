@@ -42,11 +42,13 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
   const { adjustHours, deleteTask } = useHourlyTasks();
   const isAdmin = useAdminMode();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const totalEarned = task.hours_worked * task.rate_per_hour;
+  const isProgressive = task.kind === 'progressive';
+  const totalEarned = isProgressive ? 0 : task.hours_worked * task.rate_per_hour;
   const milestonesReached = Math.floor(task.hours_worked / task.milestone_hours);
   const totalBonus = milestonesReached * task.milestone_bonus_percent;
   const hoursToNext = task.milestone_hours - (task.hours_worked % task.milestone_hours);
   const isOnMilestone = task.hours_worked > 0 && task.hours_worked % task.milestone_hours === 0;
+  const totalXpEarned = Math.round(Number(task.hours_worked) * (task.xp_per_hour ?? 10));
 
   const borderClass = task.person === "Tadeáš" ? "border-shift-office/30" : "border-shift-partner/30";
   const personBadgeClass = task.person === "Tadeáš"
