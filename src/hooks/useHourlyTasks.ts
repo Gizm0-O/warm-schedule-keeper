@@ -199,10 +199,11 @@ export function useHourlyTasks() {
           todo_text: `${task.name} – hodina ${h}`,
           amount: task.rate_per_hour,
           bonus_type: null,
-        bonus_percent: null,
-        deadline: null,
-        completed_at: new Date().toISOString(),
-      });
+          bonus_percent: null,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
     }
     // Bonusy za dosažené milníky
     const milestonesReached = Math.floor(newHours / task.milestone_hours);
