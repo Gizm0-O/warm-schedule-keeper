@@ -78,6 +78,8 @@ export function useHourlyTasks() {
             color: t.color ?? 'hsl(var(--primary))',
             person: t.person ?? 'Tadeáš',
             xp_per_hour: t.xp_per_hour ?? 10,
+            kind: t.kind ?? 'hourly',
+            unit_amount: t.unit_amount ?? 0,
             month,
             hours_worked: 0,
           }));
