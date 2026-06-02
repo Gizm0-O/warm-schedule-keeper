@@ -12,6 +12,8 @@ export interface HourlyTask {
   color: string;
   person: string;
   xp_per_hour: number;
+  kind: 'hourly' | 'progressive';
+  unit_amount: number;
   created_at: string;
   updated_at: string;
 }
