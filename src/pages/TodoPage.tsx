@@ -822,7 +822,7 @@ const TodoPage = () => {
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Hodinové úkoly ({filteredHourly.length})
+                    Progresivní úkoly ({filteredHourly.length})
                   </span>
                 </div>
                 <div className="p-2 space-y-1.5">

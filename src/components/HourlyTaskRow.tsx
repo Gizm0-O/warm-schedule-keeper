@@ -42,11 +42,13 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
   const { adjustHours, deleteTask } = useHourlyTasks();
   const isAdmin = useAdminMode();
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const totalEarned = task.hours_worked * task.rate_per_hour;
+  const isProgressive = task.kind === 'progressive';
+  const totalEarned = isProgressive ? 0 : task.hours_worked * task.rate_per_hour;
   const milestonesReached = Math.floor(task.hours_worked / task.milestone_hours);
   const totalBonus = milestonesReached * task.milestone_bonus_percent;
   const hoursToNext = task.milestone_hours - (task.hours_worked % task.milestone_hours);
   const isOnMilestone = task.hours_worked > 0 && task.hours_worked % task.milestone_hours === 0;
+  const totalXpEarned = Math.round(Number(task.hours_worked) * (task.xp_per_hour ?? 10));
 
   const borderClass = task.person === "Tadeáš" ? "border-shift-office/30" : "border-shift-partner/30";
   const personBadgeClass = task.person === "Tadeáš"
@@ -66,7 +68,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
         <button
           onClick={(e) => { e.stopPropagation(); adjustHours(task, 1); }}
           className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-success/40 hover:border-success hover:bg-success/20 transition-colors"
-          title="Přidat hodinu"
+          title={isProgressive ? `Přidat ${task.unit_amount} Kč` : "Přidat hodinu"}
         >
           <Plus className="h-3 w-3 text-success" />
         </button>
@@ -74,7 +76,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
           onClick={(e) => { e.stopPropagation(); adjustHours(task, -1); }}
           disabled={task.hours_worked <= 0}
           className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-destructive/40 hover:border-destructive hover:bg-destructive/20 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Ubrat hodinu"
+          title={isProgressive ? `Ubrat ${task.unit_amount} Kč` : "Ubrat hodinu"}
         >
           <Minus className="h-3 w-3 text-destructive" />
         </button>
@@ -84,15 +86,19 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
         <div className="text-foreground flex items-center gap-1.5 min-w-0">
           <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: task.color.startsWith("hsl") ? undefined : task.color }} />
           <span className="truncate font-medium">{task.name}</span>
-          <span className="text-[10px] text-muted-foreground shrink-0">
-            ({task.hours_worked}h odpracováno)
-          </span>
+          {!isProgressive && (
+            <span className="text-[10px] text-muted-foreground shrink-0">
+              ({task.hours_worked}h odpracováno)
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap">
-            💰 {totalEarned.toLocaleString("cs-CZ")} Kč
-          </span>
+          {!isProgressive && (
+            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap">
+              💰 {totalEarned.toLocaleString("cs-CZ")} Kč
+            </span>
+          )}
           {totalBonus > 0 && (
             <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap">
               ⭐ +{totalBonus}%
@@ -100,17 +106,19 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
           )}
           {task.hours_worked > 0 && (task.xp_per_hour ?? 10) > 0 && (
             <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-violet-100 text-violet-700 border-violet-300 dark:bg-violet-900/40 dark:text-violet-300 dark:border-violet-800/50 whitespace-nowrap" title="Vydělané XP">
-              ⚡ {Math.round(Number(task.hours_worked) * (task.xp_per_hour ?? 10))} XP
+              ⚡ {totalXpEarned} XP
             </span>
           )}
-          {isOnMilestone ? (
-            <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium whitespace-nowrap">
-              <Sparkles className="h-3 w-3" /> Milník!
-            </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-              do bonusu: <strong className="text-foreground">{hoursToNext}h</strong>
-            </span>
+          {!isProgressive && (
+            isOnMilestone ? (
+              <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium whitespace-nowrap">
+                <Sparkles className="h-3 w-3" /> Milník!
+              </span>
+            ) : (
+              <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                do bonusu: <strong className="text-foreground">{hoursToNext}h</strong>
+              </span>
+            )
           )}
         </div>
       </div>

@@ -12,6 +12,8 @@ export interface HourlyTask {
   color: string;
   person: string;
   xp_per_hour: number;
+  kind: 'hourly' | 'progressive';
+  unit_amount: number;
   created_at: string;
   updated_at: string;
 }
@@ -76,6 +78,8 @@ export function useHourlyTasks() {
             color: t.color ?? 'hsl(var(--primary))',
             person: t.person ?? 'Tadeáš',
             xp_per_hour: t.xp_per_hour ?? 10,
+            kind: t.kind ?? 'hourly',
+            unit_amount: t.unit_amount ?? 0,
             month,
             hours_worked: 0,
           }));
@@ -188,18 +192,20 @@ export function useHourlyTasks() {
 
     await supabase.from('task_earnings').delete().like('todo_id', `hourly:${task.id}:%`);
 
-    // 3) Vytvoř nové earningy pro každou hodinu
+    // 3) Vytvoř nové earningy pro každou hodinu (jen pokud má sazbu > 0; progresivní úkoly přeskočí)
     const rows: any[] = [];
-    for (let h = 1; h <= newHours; h++) {
-      rows.push({
-        todo_id: `${todoIdHourPrefix}${h}`,
-        todo_text: `${task.name} – hodina ${h}`,
-        amount: task.rate_per_hour,
-        bonus_type: null,
-        bonus_percent: null,
-        deadline: null,
-        completed_at: new Date().toISOString(),
-      });
+    if (task.rate_per_hour > 0) {
+      for (let h = 1; h <= newHours; h++) {
+        rows.push({
+          todo_id: `${todoIdHourPrefix}${h}`,
+          todo_text: `${task.name} – hodina ${h}`,
+          amount: task.rate_per_hour,
+          bonus_type: null,
+          bonus_percent: null,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
     }
     // Bonusy za dosažené milníky
     const milestonesReached = Math.floor(newHours / task.milestone_hours);
