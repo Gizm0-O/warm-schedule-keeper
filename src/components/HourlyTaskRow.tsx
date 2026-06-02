@@ -68,7 +68,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
         <button
           onClick={(e) => { e.stopPropagation(); adjustHours(task, 1); }}
           className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-success/40 hover:border-success hover:bg-success/20 transition-colors"
-          title="Přidat hodinu"
+          title={isProgressive ? `Přidat ${task.unit_amount} Kč` : "Přidat hodinu"}
         >
           <Plus className="h-3 w-3 text-success" />
         </button>
