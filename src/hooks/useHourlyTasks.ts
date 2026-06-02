@@ -190,14 +190,15 @@ export function useHourlyTasks() {
 
     await supabase.from('task_earnings').delete().like('todo_id', `hourly:${task.id}:%`);
 
-    // 3) Vytvoř nové earningy pro každou hodinu
+    // 3) Vytvoř nové earningy pro každou hodinu (jen pokud má sazbu > 0; progresivní úkoly přeskočí)
     const rows: any[] = [];
-    for (let h = 1; h <= newHours; h++) {
-      rows.push({
-        todo_id: `${todoIdHourPrefix}${h}`,
-        todo_text: `${task.name} – hodina ${h}`,
-        amount: task.rate_per_hour,
-        bonus_type: null,
+    if (task.rate_per_hour > 0) {
+      for (let h = 1; h <= newHours; h++) {
+        rows.push({
+          todo_id: `${todoIdHourPrefix}${h}`,
+          todo_text: `${task.name} – hodina ${h}`,
+          amount: task.rate_per_hour,
+          bonus_type: null,
         bonus_percent: null,
         deadline: null,
         completed_at: new Date().toISOString(),
