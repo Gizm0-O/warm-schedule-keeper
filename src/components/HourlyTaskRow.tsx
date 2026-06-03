@@ -94,11 +94,9 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
         </div>
 
         <div className="flex items-center gap-2 mt-1 flex-wrap">
-          {!isProgressive && (
-            <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap">
-              💰 {totalEarned.toLocaleString("cs-CZ")} Kč
-            </span>
-          )}
+          <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50 whitespace-nowrap">
+            💰 {totalEarned.toLocaleString("cs-CZ")} Kč
+          </span>
           {totalBonus > 0 && (
             <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0 h-4 rounded border bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/40 dark:text-emerald-400 dark:border-emerald-800/50 whitespace-nowrap">
               ⭐ +{totalBonus}%
