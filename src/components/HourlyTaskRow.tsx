@@ -43,7 +43,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
   const isAdmin = useAdminMode();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isProgressive = task.kind === 'progressive';
-  const totalEarned = isProgressive ? 0 : task.hours_worked * task.rate_per_hour;
+  const totalEarned = isProgressive ? Number(task.hours_worked) * task.unit_amount : task.hours_worked * task.rate_per_hour;
   const milestonesReached = Math.floor(task.hours_worked / task.milestone_hours);
   const totalBonus = milestonesReached * task.milestone_bonus_percent;
   const hoursToNext = task.milestone_hours - (task.hours_worked % task.milestone_hours);
