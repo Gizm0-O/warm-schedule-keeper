@@ -194,12 +194,13 @@ export function useHourlyTasks() {
 
     // 3) Vytvoř nové earningy pro každou hodinu (jen pokud má sazbu > 0; progresivní úkoly přeskočí)
     const rows: any[] = [];
-    if (task.rate_per_hour > 0) {
+    const perUnitAmount = task.kind === 'progressive' ? task.unit_amount : task.rate_per_hour;
+    if (perUnitAmount > 0) {
       for (let h = 1; h <= newHours; h++) {
         rows.push({
           todo_id: `${todoIdHourPrefix}${h}`,
-          todo_text: `${task.name} – hodina ${h}`,
-          amount: task.rate_per_hour,
+          todo_text: task.kind === 'progressive' ? `${task.name} – +${task.unit_amount} Kč (${h})` : `${task.name} – hodina ${h}`,
+          amount: perUnitAmount,
           bonus_type: null,
           bonus_percent: null,
           deadline: null,
