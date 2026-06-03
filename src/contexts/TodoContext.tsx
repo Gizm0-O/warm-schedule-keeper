@@ -118,8 +118,15 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       row.recurrence_days = updates.recurrenceDays ?? null;
       delete row.recurrenceDays;
     }
+    // Strip undefined values – supabase-js posílá `null` pro explicitní vymazání,
+    // ale `undefined` ponechané v payloadu může způsobit, že PostgREST přepíše sloupec na NULL.
+    Object.keys(row).forEach((k) => row[k] === undefined && delete row[k]);
     delete row.id;
-    await supabase.from("todos").update(row).eq("id", id);
+    const { error } = await supabase.from("todos").update(row).eq("id", id);
+    if (error) {
+      console.error("[updateTodo] failed", error, { id, row });
+      return;
+    }
     setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
   }, []);
 
