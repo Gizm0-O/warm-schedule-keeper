@@ -19,6 +19,7 @@ import {
 import { Plus, Pencil, Trash2, Check, Bug, Lightbulb, Sparkles, Clock, Wrench, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Kind = "change" | "bug" | "idea";
 type Status = "pending" | "planned" | "in_progress" | "done" | "idea";
@@ -351,11 +352,11 @@ function EntryDialog({
   isAdmin: boolean;
   onSaved: () => void;
 }) {
+  const { profile } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [kind, setKind] = useState<Kind>("change");
   const [status, setStatus] = useState<Status>("pending");
-  const [submittedBy, setSubmittedBy] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -363,7 +364,6 @@ function EntryDialog({
       setDescription(entry?.description ?? "");
       setKind((entry?.kind as Kind) ?? "change");
       setStatus((entry?.status as Status) ?? "pending");
-      setSubmittedBy(entry?.submitted_by ?? "");
     }
   }, [open, entry]);
 
@@ -377,7 +377,7 @@ function EntryDialog({
       description: description.trim() || null,
       kind,
       status: isAdmin ? status : (entry?.status ?? "pending"),
-      submitted_by: submittedBy.trim() || null,
+      submitted_by: entry ? entry.submitted_by : (profile?.display_name ?? null),
     };
     if (entry) {
       await (supabase as any).from("changelog_entries").update(payload).eq("id", entry.id);
@@ -435,10 +435,6 @@ function EntryDialog({
                 </Select>
               </div>
             )}
-          </div>
-          <div>
-            <label className="text-xs font-medium">Kdo to píše (volitelné)</label>
-            <Input value={submittedBy} onChange={(e) => setSubmittedBy(e.target.value)} placeholder="Jméno…" />
           </div>
           {!isAdmin && !entry && (
             <p className="text-xs text-muted-foreground">
