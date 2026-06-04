@@ -436,10 +436,6 @@ function EntryDialog({
               </div>
             )}
           </div>
-          <div>
-            <label className="text-xs font-medium">Kdo to píše (volitelné)</label>
-            <Input value={submittedBy} onChange={(e) => setSubmittedBy(e.target.value)} placeholder="Jméno…" />
-          </div>
           {!isAdmin && !entry && (
             <p className="text-xs text-muted-foreground">
               Návrh bude označen jako <strong>nový</strong> a admin ho zaeviduje.
