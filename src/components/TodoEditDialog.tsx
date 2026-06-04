@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Briefcase, Home, Coins, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
   const [editBonusAmount, setEditBonusAmount] = useState("");
   const [editXp, setEditXp] = useState("");
   const [editCustomRewards, setEditCustomRewards] = useState<{ label: string; repeat_on_recurring: boolean; is_token: boolean; expires_at: string | null }[]>([]);
+  const deadlineInputRef = useRef<HTMLInputElement>(null);
 
   // Hydrate state when a todo is opened
   useEffect(() => {
@@ -73,6 +74,10 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
 
   const saveEdit = async () => {
     if (!todo || !editText.trim()) return;
+    if (deadlineInputRef.current?.validity.badInput) {
+      toast({ title: "Neplatné datum", description: "Zadané datum neexistuje.", variant: "destructive" });
+      return;
+    }
     let deadlineDate: Date | undefined = undefined;
     if (editDeadline) {
       const m = editDeadline.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -163,6 +168,7 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
                 {lockedForUser && (<span className="ml-1 text-[10px]">🔒 schváleno</span>)}
               </label>
               <Input
+                ref={deadlineInputRef}
                 type="date"
                 value={editDeadline}
                 onChange={(e) => setEditDeadline(e.target.value)}
