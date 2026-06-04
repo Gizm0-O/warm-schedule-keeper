@@ -3,6 +3,7 @@ import { Briefcase, Home, Coins, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -72,11 +73,26 @@ export function TodoEditDialog({ todo, onClose }: TodoEditDialogProps) {
 
   const saveEdit = async () => {
     if (!todo || !editText.trim()) return;
+    let deadlineDate: Date | undefined = undefined;
+    if (editDeadline) {
+      const m = editDeadline.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) {
+        toast({ title: "Neplatné datum", description: "Formát musí být YYYY-MM-DD.", variant: "destructive" });
+        return;
+      }
+      const y = +m[1], mo = +m[2], d = +m[3];
+      const dt = new Date(y, mo - 1, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) {
+        toast({ title: "Neplatné datum", description: `Datum ${editDeadline} neexistuje.`, variant: "destructive" });
+        return;
+      }
+      deadlineDate = dt;
+    }
     await updateTodo(todo.id, {
       text: editText.trim(),
       category: editCategory,
       person: editPerson,
-      deadline: editDeadline ? new Date(editDeadline) : undefined,
+      deadline: deadlineDate,
       recurrence: editRecurrence,
       recurrenceDays: editRecurrence === "weekdays" ? editRecurrenceDays : undefined,
       amount: editAmount ? parseInt(editAmount) : undefined,
