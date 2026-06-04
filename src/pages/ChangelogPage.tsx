@@ -19,6 +19,7 @@ import {
 import { Plus, Pencil, Trash2, Check, Bug, Lightbulb, Sparkles, Clock, Wrench, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Kind = "change" | "bug" | "idea";
 type Status = "pending" | "planned" | "in_progress" | "done" | "idea";
