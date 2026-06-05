@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
-import ApprovalsBell from "@/components/ApprovalsBell";
 import NotificationsBell from "@/components/NotificationsBell";
 import UserMenu from "@/components/UserMenu";
 
@@ -109,7 +108,6 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
-            <ApprovalsBell />
             <NotificationsBell />
             <Button
               variant="ghost"
