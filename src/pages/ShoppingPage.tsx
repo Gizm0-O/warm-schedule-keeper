@@ -20,6 +20,7 @@ import { useWishlistItems } from "@/hooks/useWishlistItems";
 import { ShoppingItemRow } from "@/components/shopping/ShoppingItemRow";
 import { WishlistItemRow } from "@/components/shopping/WishlistItemRow";
 import { CategoryFilter } from "@/components/shopping/CategoryFilter";
+import PriceTagsPanel from "@/components/shopping/PriceTagsPanel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const MAX_COMPLETED = 50;
@@ -53,7 +54,8 @@ const ShoppingPage = () => {
   const activeWishes = wishlist.filter((w) => !w.done);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+      <div className="space-y-6 min-w-0">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -254,6 +256,10 @@ const ShoppingPage = () => {
           )}
         </div>
       </div>
+      </div>
+      <aside className="lg:sticky lg:top-20 lg:self-start">
+        <PriceTagsPanel />
+      </aside>
     </div>
   );
 };

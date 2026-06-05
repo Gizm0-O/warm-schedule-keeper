@@ -335,6 +335,36 @@ export type Database = {
         }
         Relationships: []
       }
+      price_tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          note: string | null
+          price: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          note?: string | null
+          price: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          note?: string | null
+          price?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
