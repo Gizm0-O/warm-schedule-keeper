@@ -256,6 +256,7 @@ const ShoppingPage = () => {
           )}
         </div>
       </div>
+      </div>
       <aside className="lg:sticky lg:top-20 lg:self-start">
         <PriceTagsPanel />
       </aside>
