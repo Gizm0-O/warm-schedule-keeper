@@ -296,6 +296,45 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          todo_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          todo_id?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          todo_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -303,6 +342,7 @@ export type Database = {
           display_name: string
           email: string
           id: string
+          person_key: string | null
           status: string
           updated_at: string
           user_id: string
@@ -314,6 +354,7 @@ export type Database = {
           display_name: string
           email: string
           id?: string
+          person_key?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -325,6 +366,7 @@ export type Database = {
           display_name?: string
           email?: string
           id?: string
+          person_key?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -753,6 +795,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
+      person_to_user_id: { Args: { _person: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
