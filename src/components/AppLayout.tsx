@@ -11,6 +11,7 @@ const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
   { to: "/todo", icon: CheckSquare, label: "Úkoly" },
   { to: "/shopping", icon: ShoppingCart, label: "Nákupy" },
+  { to: "/gifts", icon: Gift, label: "Dárečky" },
   { to: "/changelog", icon: ListChecks, label: "Změny" },
 ];
 
