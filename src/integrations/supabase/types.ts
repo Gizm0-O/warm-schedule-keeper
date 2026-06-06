@@ -342,6 +342,7 @@ export type Database = {
           name: string
           note: string | null
           price: number
+          quantity: number
           unit: string
           updated_at: string
         }
@@ -351,6 +352,7 @@ export type Database = {
           name: string
           note?: string | null
           price: number
+          quantity?: number
           unit?: string
           updated_at?: string
         }
@@ -360,6 +362,7 @@ export type Database = {
           name?: string
           note?: string | null
           price?: number
+          quantity?: number
           unit?: string
           updated_at?: string
         }
