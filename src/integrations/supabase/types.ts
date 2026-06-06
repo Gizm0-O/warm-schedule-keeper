@@ -152,6 +152,72 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_ideas: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          recipient: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          recipient: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          recipient?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      gift_wishes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          owner: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          owner: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          owner?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       hourly_tasks: {
         Row: {
           color: string
