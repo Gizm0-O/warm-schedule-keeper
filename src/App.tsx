@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import TodoPage from "./pages/TodoPage";
 import ShoppingPage from "./pages/ShoppingPage";
 import ChangelogPage from "./pages/ChangelogPage";
+import GiftsPage from "./pages/GiftsPage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
 import ResetPasswordPage from "./pages/ResetPassword";
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/todo" element={<TodoPage />} />
                 <Route path="/shopping" element={<ShoppingPage />} />
+                <Route path="/gifts" element={<GiftsPage />} />
                 <Route path="/changelog" element={<ChangelogPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
