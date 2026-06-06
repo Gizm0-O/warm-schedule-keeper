@@ -44,7 +44,6 @@ export default function PriceTagsPanel() {
   const [editPrice, setEditPrice] = useState("");
   const [editQty, setEditQty] = useState("1");
   const [editUnit, setEditUnit] = useState("ks");
-  const [editName, setEditName] = useState("");
 
   const load = async () => {
     const { data } = await supabase
@@ -105,7 +104,6 @@ export default function PriceTagsPanel() {
 
   const startEdit = (t: PriceTag) => {
     setEditingId(t.id);
-    setEditName(t.name);
     setEditPrice(String(t.price));
     setEditQty(String(t.quantity ?? 1));
     setEditUnit(t.unit);
@@ -115,8 +113,8 @@ export default function PriceTagsPanel() {
     if (!editingId) return;
     const p = parseFloat(editPrice.replace(",", "."));
     const q = parseFloat(editQty.replace(",", ".")) || 1;
-    if (!editName.trim() || isNaN(p)) { toast.error("Neplatné údaje"); return; }
-    await supabase.from("price_tags" as any).update({ name: editName.trim(), price: p, unit: editUnit, quantity: q }).eq("id", editingId);
+    if (isNaN(p)) { toast.error("Neplatné údaje"); return; }
+    await supabase.from("price_tags" as any).update({ price: p, unit: editUnit, quantity: q }).eq("id", editingId);
     setEditingId(null);
     load();
   };
@@ -202,7 +200,6 @@ export default function PriceTagsPanel() {
                     <div key={t.id} className="flex items-center gap-2 group/v">
                       {editingId === t.id ? (
                         <div className="flex gap-1 flex-1">
-                          <Input value={editName} onChange={(e) => setEditName(e.target.value)} className="h-7 text-xs flex-1 min-w-0" />
                           <Input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="h-7 text-xs w-14" />
                           <Input value={editQty} onChange={(e) => setEditQty(e.target.value)} className="h-7 text-xs w-10" />
                           <Select value={editUnit} onValueChange={setEditUnit}>
