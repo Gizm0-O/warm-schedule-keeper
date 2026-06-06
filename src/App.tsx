@@ -44,6 +44,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/todo" element={<TodoPage />} />
                 <Route path="/shopping" element={<ShoppingPage />} />
+                <Route path="/gifts" element={<GiftsPage />} />
                 <Route path="/changelog" element={<ChangelogPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
