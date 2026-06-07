@@ -250,6 +250,8 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
           open={!!cropSrc}
           onClose={() => setCropSrc(null)}
           onCropped={uploadCropped}
+          aspect={16 / 9}
+          cropShape="rect"
         />
       )}
     </div>
