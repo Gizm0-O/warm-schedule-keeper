@@ -216,10 +216,24 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
                 {fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               </Button>
             </div>
-            <Input placeholder="URL obrázku" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            <div className="flex gap-2">
+              <Input placeholder="URL obrázku" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFilePick} />
+              <Button type="button" variant="outline" size="icon" onClick={() => fileRef.current?.click()} disabled={uploading} title="Nahrát z počítače">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              </Button>
+            </div>
             {form.image_url && (
-              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+              <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
                 <img src={form.image_url} alt="preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setCropSrc(form.image_url)}
+                  className="absolute top-2 right-2 px-2 py-1 text-xs rounded-md bg-background/80 hover:bg-background border border-border backdrop-blur flex items-center gap-1"
+                  title="Upravit výřez"
+                >
+                  <Pencil className="h-3 w-3" /> Upravit
+                </button>
               </div>
             )}
           </div>
@@ -229,6 +243,15 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {cropSrc && (
+        <AvatarCropDialog
+          src={cropSrc}
+          open={!!cropSrc}
+          onClose={() => setCropSrc(null)}
+          onCropped={uploadCropped}
+        />
+      )}
     </div>
   );
 }
