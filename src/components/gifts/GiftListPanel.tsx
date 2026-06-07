@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ExternalLink, Loader2, Plus, Sparkles, Trash2, Pencil, Gift } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Sparkles, Trash2, Pencil, Gift, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 export interface GiftItem {
   id: string;
