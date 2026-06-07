@@ -126,6 +126,28 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
     if (error) toast.error(error.message); else load();
   };
 
+  const onFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const uploadCropped = async (blob: Blob) => {
+    if (!user) { toast.error("Nejsi přihlášen"); return; }
+    setUploading(true);
+    const path = `${user.id}/gifts/${Date.now()}.jpg`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    if (upErr) { setUploading(false); toast.error(upErr.message); return; }
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+    setForm((f) => ({ ...f, image_url: pub.publicUrl }));
+    setUploading(false);
+    toast.success("Obrázek nahrán");
+  };
+
+
   return (
     <div className={cn("glass rounded-2xl p-4 sm:p-5 border-t-4", accent)}>
       <div className="flex items-center justify-between mb-3">
