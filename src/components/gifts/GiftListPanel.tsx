@@ -43,12 +43,16 @@ interface FormState {
 const empty = (): FormState => ({ name: "", description: "", url: "", image_url: "", recipient: "" });
 
 export default function GiftListPanel({ title, table, groupColumn, groupValue, showRecipientInput, accent, icon }: Props) {
+  const { user } = useAuth();
   const [items, setItems] = useState<GiftItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty());
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
