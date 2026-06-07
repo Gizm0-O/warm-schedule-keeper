@@ -97,10 +97,10 @@ const AppLayout = () => {
                   end={item.to === "/"}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300",
+                      "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-transform transition-colors duration-200",
                       isActive
                         ? "glass text-primary glow-primary"
-                        : "text-muted-foreground hover:text-foreground hover:glass-subtle"
+                        : "text-muted-foreground hover:text-foreground hover:scale-105 hover:bg-secondary/50"
                     )
                   }
                 >
