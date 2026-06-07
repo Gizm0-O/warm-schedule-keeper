@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ExternalLink, Loader2, Plus, Sparkles, Trash2, Pencil, Gift } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Sparkles, Trash2, Pencil, Gift, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import AvatarCropDialog from "@/components/AvatarCropDialog";
 
 export interface GiftItem {
   id: string;
@@ -41,12 +43,16 @@ interface FormState {
 const empty = (): FormState => ({ name: "", description: "", url: "", image_url: "", recipient: "" });
 
 export default function GiftListPanel({ title, table, groupColumn, groupValue, showRecipientInput, accent, icon }: Props) {
+  const { user } = useAuth();
   const [items, setItems] = useState<GiftItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<FormState>(empty());
   const [fetching, setFetching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     setLoading(true);
@@ -120,6 +126,28 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
     if (error) toast.error(error.message); else load();
   };
 
+  const onFilePick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const uploadCropped = async (blob: Blob) => {
+    if (!user) { toast.error("Nejsi přihlášen"); return; }
+    setUploading(true);
+    const path = `${user.id}/gifts/${Date.now()}.jpg`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    if (upErr) { setUploading(false); toast.error(upErr.message); return; }
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+    setForm((f) => ({ ...f, image_url: pub.publicUrl }));
+    setUploading(false);
+    toast.success("Obrázek nahrán");
+  };
+
+
   return (
     <div className={cn("glass rounded-2xl p-4 sm:p-5 border-t-4", accent)}>
       <div className="flex items-center justify-between mb-3">
@@ -188,10 +216,24 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
                 {fetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               </Button>
             </div>
-            <Input placeholder="URL obrázku" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+            <div className="flex gap-2">
+              <Input placeholder="URL obrázku" value={form.image_url} onChange={(e) => setForm({ ...form, image_url: e.target.value })} />
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFilePick} />
+              <Button type="button" variant="outline" size="icon" onClick={() => fileRef.current?.click()} disabled={uploading} title="Nahrát z počítače">
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              </Button>
+            </div>
             {form.image_url && (
-              <div className="aspect-video bg-muted rounded-lg overflow-hidden">
+              <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
                 <img src={form.image_url} alt="preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => setCropSrc(form.image_url)}
+                  className="absolute top-2 right-2 px-2 py-1 text-xs rounded-md bg-background/80 hover:bg-background border border-border backdrop-blur flex items-center gap-1"
+                  title="Upravit výřez"
+                >
+                  <Pencil className="h-3 w-3" /> Upravit
+                </button>
               </div>
             )}
           </div>
@@ -201,6 +243,15 @@ export default function GiftListPanel({ title, table, groupColumn, groupValue, s
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {cropSrc && (
+        <AvatarCropDialog
+          src={cropSrc}
+          open={!!cropSrc}
+          onClose={() => setCropSrc(null)}
+          onCropped={uploadCropped}
+        />
+      )}
     </div>
   );
 }
