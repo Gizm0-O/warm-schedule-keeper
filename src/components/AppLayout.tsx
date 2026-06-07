@@ -76,19 +76,18 @@ const AppLayout = () => {
 
       <header className="group/header sticky top-0 z-50 glass-strong">
         <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
-          <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer">
-        <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-            <Orbit className="h-5 w-5 text-primary animate-twinkle" />
-            <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
-              Bambuls Universe
-            </span>
-          </h1>
-        </RouterNavLink>
-          {/* Skryté admin tlačítko uprostřed lišty */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <AdminToggle />
-          </div>
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-3">
+          <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer shrink-0">
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <Orbit className="h-5 w-5 text-primary animate-twinkle" />
+              <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
+                Bambuls Universe
+              </span>
+            </h1>
+          </RouterNavLink>
+          <AdminToggle />
+        </div>
+        <div className="flex items-center gap-1">
             <nav className="flex gap-1">
               {navItems.map((item) => (
                 <RouterNavLink
