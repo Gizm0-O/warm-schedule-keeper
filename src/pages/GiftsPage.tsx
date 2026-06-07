@@ -13,7 +13,7 @@ export default function GiftsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <GiftListPanel
-          title="Barča chce"
+          title="Barča si přeje…"
           table="gift_wishes"
           groupColumn="owner"
           groupValue="Barča"
@@ -21,7 +21,7 @@ export default function GiftsPage() {
           icon={<Heart className="h-4 w-4 text-pink-400" />}
         />
         <GiftListPanel
-          title="Tadeáš chce"
+          title="Tadeáš si přeje…"
           table="gift_wishes"
           groupColumn="owner"
           groupValue="Tadeáš"
