@@ -9,9 +9,13 @@ interface Props {
   open: boolean;
   onClose: () => void;
   onCropped: (blob: Blob) => void;
+  aspect?: number;
+  cropShape?: "round" | "rect";
+  /** longest output side in px */
+  outputSize?: number;
 }
 
-async function getCroppedBlob(src: string, area: Area): Promise<Blob> {
+async function getCroppedBlob(src: string, area: Area, outW: number, outH: number): Promise<Blob> {
   const img = await new Promise<HTMLImageElement>((res, rej) => {
     const i = new Image();
     i.crossOrigin = "anonymous";
@@ -19,16 +23,15 @@ async function getCroppedBlob(src: string, area: Area): Promise<Blob> {
     i.onerror = rej;
     i.src = src;
   });
-  const size = 512;
   const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, size, size);
+  ctx.drawImage(img, area.x, area.y, area.width, area.height, 0, 0, outW, outH);
   return new Promise((resolve) => canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.9));
 }
 
-export default function AvatarCropDialog({ src, open, onClose, onCropped }: Props) {
+export default function AvatarCropDialog({ src, open, onClose, onCropped, aspect = 1, cropShape = "round", outputSize = 1024 }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [area, setArea] = useState<Area | null>(null);
@@ -37,7 +40,9 @@ export default function AvatarCropDialog({ src, open, onClose, onCropped }: Prop
 
   const save = async () => {
     if (!area) return;
-    const blob = await getCroppedBlob(src, area);
+    const outW = aspect >= 1 ? outputSize : Math.round(outputSize * aspect);
+    const outH = aspect >= 1 ? Math.round(outputSize / aspect) : outputSize;
+    const blob = await getCroppedBlob(src, area, outW, outH);
     onCropped(blob);
     onClose();
   };
@@ -53,8 +58,8 @@ export default function AvatarCropDialog({ src, open, onClose, onCropped }: Prop
             image={src}
             crop={crop}
             zoom={zoom}
-            aspect={1}
-            cropShape="round"
+            aspect={aspect}
+            cropShape={cropShape}
             showGrid={false}
             minZoom={1}
             maxZoom={4}
