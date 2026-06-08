@@ -269,6 +269,121 @@ export type Database = {
         }
         Relationships: []
       }
+      idea_comments: {
+        Row: {
+          author_name: string | null
+          body: string
+          created_at: string
+          id: string
+          idea_id: string
+          user_id: string
+        }
+        Insert: {
+          author_name?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          idea_id: string
+          user_id: string
+        }
+        Update: {
+          author_name?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          idea_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_comments_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      idea_votes: {
+        Row: {
+          created_at: string
+          id: string
+          idea_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idea_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idea_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idea_votes_idea_id_fkey"
+            columns: ["idea_id"]
+            isOneToOne: false
+            referencedRelation: "ideas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ideas: {
+        Row: {
+          category: string | null
+          cost: number
+          created_at: string
+          created_by: string
+          created_by_name: string | null
+          description: string | null
+          difficulty: number
+          id: string
+          image_url: string | null
+          name: string
+          priority: string
+          status: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          category?: string | null
+          cost?: number
+          created_at?: string
+          created_by: string
+          created_by_name?: string | null
+          description?: string | null
+          difficulty?: number
+          id?: string
+          image_url?: string | null
+          name: string
+          priority?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          category?: string | null
+          cost?: number
+          created_at?: string
+          created_by?: string
+          created_by_name?: string | null
+          description?: string | null
+          difficulty?: number
+          id?: string
+          image_url?: string | null
+          name?: string
+          priority?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       italy_savings: {
         Row: {
           amount: number
