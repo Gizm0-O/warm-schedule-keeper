@@ -1,5 +1,5 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift, Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ const navItems = [
   { to: "/todo", icon: CheckSquare, label: "Úkoly" },
   { to: "/shopping", icon: ShoppingCart, label: "Nákupy" },
   { to: "/gifts", icon: Gift, label: "Dárečky" },
+  { to: "/ideas", icon: Lightbulb, label: "Nápady" },
   { to: "/changelog", icon: ListChecks, label: "Změny" },
 ];
 
