@@ -232,7 +232,56 @@ export default function NotificationsBell() {
         </PopoverContent>
       </Popover>
       {isAdmin && <ComposeDialog open={composeOpen} onOpenChange={setComposeOpen} profiles={profiles} />}
+      {isAdmin && <EditNotifDialog notif={editing} onClose={() => setEditing(null)} onSaved={load} />}
     </>
+  );
+}
+
+function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onClose: () => void; onSaved: () => void }) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); }
+  }, [notif?.id]);
+
+  const save = async () => {
+    if (!notif) return;
+    if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
+    setSaving(true);
+    // Update all rows in the same batch (same sender + same created_at + original title/body)
+    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null })
+      .eq("created_at", notif.created_at)
+      .eq("title", notif.title);
+    if (notif.created_by) q = q.eq("created_by", notif.created_by); else q = q.eq("id", notif.id);
+    if (notif.body === null) q = q.is("body", null); else q = q.eq("body", notif.body);
+    const { error } = await q;
+    setSaving(false);
+    if (error) { toast.error("Chyba: " + error.message); return; }
+    toast.success("Upraveno");
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <Dialog open={!!notif} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Upravit notifikaci</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium">Nadpis</label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Zpráva</label>
+            <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
+          </div>
+          <p className="text-[10px] text-muted-foreground">Změna se promítne všem příjemcům této notifikace.</p>
+          <Button onClick={save} disabled={saving} className="w-full">Uložit</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
