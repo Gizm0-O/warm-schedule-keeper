@@ -22,6 +22,7 @@ interface Notif {
   type: string;
   read_at: string | null;
   created_at: string;
+  created_by?: string | null;
 }
 
 interface ProfileLite { user_id: string; display_name: string; email: string; status: string; created_at: string; id: string; }
