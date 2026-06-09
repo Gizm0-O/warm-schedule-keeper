@@ -1,0 +1,2 @@
+CREATE POLICY "Admins update any notification" ON public.notifications FOR UPDATE TO authenticated USING (has_role(auth.uid(), 'admin')) WITH CHECK (has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admins delete any notification" ON public.notifications FOR DELETE TO authenticated USING (has_role(auth.uid(), 'admin'));
