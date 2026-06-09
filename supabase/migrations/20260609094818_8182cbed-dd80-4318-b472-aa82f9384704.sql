@@ -1,0 +1,1 @@
+CREATE POLICY "Admins view all notifications" ON public.notifications FOR SELECT TO authenticated USING (has_role(auth.uid(), 'admin'));
