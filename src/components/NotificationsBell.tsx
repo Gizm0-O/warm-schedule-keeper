@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Check, Trash2, Send, X } from "lucide-react";
+import { Bell, Check, Trash2, Send, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -22,6 +22,7 @@ interface Notif {
   type: string;
   read_at: string | null;
   created_at: string;
+  created_by?: string | null;
 }
 
 interface ProfileLite { user_id: string; display_name: string; email: string; status: string; created_at: string; id: string; }
@@ -34,12 +35,13 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("notif");
   const [composeOpen, setComposeOpen] = useState(false);
+  const [editing, setEditing] = useState<Notif | null>(null);
 
   const load = async () => {
     if (!user) return;
     const { data } = await supabase
       .from("notifications" as any)
-      .select("id,title,body,type,read_at,created_at")
+      .select("id,title,body,type,read_at,created_at,created_by")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -158,6 +160,11 @@ export default function NotificationsBell() {
                               {new Date(n.created_at).toLocaleString("cs-CZ")}
                             </p>
                           </div>
+                          {isAdmin && (
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => setEditing(n)}>
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => remove(n.id)}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -225,7 +232,56 @@ export default function NotificationsBell() {
         </PopoverContent>
       </Popover>
       {isAdmin && <ComposeDialog open={composeOpen} onOpenChange={setComposeOpen} profiles={profiles} />}
+      {isAdmin && <EditNotifDialog notif={editing} onClose={() => setEditing(null)} onSaved={load} />}
     </>
+  );
+}
+
+function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onClose: () => void; onSaved: () => void }) {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); }
+  }, [notif?.id]);
+
+  const save = async () => {
+    if (!notif) return;
+    if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
+    setSaving(true);
+    // Update all rows in the same batch (same sender + same created_at + original title/body)
+    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null })
+      .eq("created_at", notif.created_at)
+      .eq("title", notif.title);
+    if (notif.created_by) q = q.eq("created_by", notif.created_by); else q = q.eq("id", notif.id);
+    if (notif.body === null) q = q.is("body", null); else q = q.eq("body", notif.body);
+    const { error } = await q;
+    setSaving(false);
+    if (error) { toast.error("Chyba: " + error.message); return; }
+    toast.success("Upraveno");
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <Dialog open={!!notif} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Upravit notifikaci</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs font-medium">Nadpis</label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Zpráva</label>
+            <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
+          </div>
+          <p className="text-[10px] text-muted-foreground">Změna se promítne všem příjemcům této notifikace.</p>
+          <Button onClick={save} disabled={saving} className="w-full">Uložit</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -244,12 +300,14 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
   const send = async () => {
     if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
     setSending(true);
+    const { data: { user: me } } = await supabase.auth.getUser();
     const recipients = target === "all" ? approved.map((u) => u.user_id) : [target];
     const rows = recipients.map((uid) => ({
       user_id: uid,
       title: title.trim(),
       body: body.trim() || null,
       type: "custom",
+      created_by: me?.id ?? null,
     }));
     const { error } = await supabase.from("notifications" as any).insert(rows);
     setSending(false);
