@@ -35,12 +35,13 @@ export default function NotificationsBell() {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("notif");
   const [composeOpen, setComposeOpen] = useState(false);
+  const [editing, setEditing] = useState<Notif | null>(null);
 
   const load = async () => {
     if (!user) return;
     const { data } = await supabase
       .from("notifications" as any)
-      .select("id,title,body,type,read_at,created_at")
+      .select("id,title,body,type,read_at,created_at,created_by")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
