@@ -300,12 +300,14 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
   const send = async () => {
     if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
     setSending(true);
+    const { data: { user: me } } = await supabase.auth.getUser();
     const recipients = target === "all" ? approved.map((u) => u.user_id) : [target];
     const rows = recipients.map((uid) => ({
       user_id: uid,
       title: title.trim(),
       body: body.trim() || null,
       type: "custom",
+      created_by: me?.id ?? null,
     }));
     const { error } = await supabase.from("notifications" as any).insert(rows);
     setSending(false);
