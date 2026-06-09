@@ -160,6 +160,11 @@ export default function NotificationsBell() {
                               {new Date(n.created_at).toLocaleString("cs-CZ")}
                             </p>
                           </div>
+                          {isAdmin && (
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => setEditing(n)}>
+                              <Pencil className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => remove(n.id)}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
