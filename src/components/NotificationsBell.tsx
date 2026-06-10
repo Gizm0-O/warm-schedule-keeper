@@ -165,14 +165,26 @@ export default function NotificationsBell() {
                   <p className="p-4 text-xs text-muted-foreground text-center">Žádné notifikace</p>
                 ) : (
                   <ul className="divide-y">
-                    {items.map((n) => (
-                      <li key={n.id} className={cn("p-3 group", !n.read_at && "bg-primary/5")}>
+                    {items.map((n) => {
+                      const clickable = !!n.link;
+                      const openLink = () => {
+                        if (!n.link) return;
+                        if (!n.read_at) supabase.from("notifications" as any).update({ read_at: new Date().toISOString() }).eq("id", n.id).then(() => load());
+                        setOpen(false);
+                        navigate(n.link);
+                      };
+                      return (
+                      <li key={n.id} className={cn("p-3 group transition-colors", !n.read_at && "bg-primary/5", clickable && "hover:bg-primary/10 cursor-pointer border-l-2 border-l-primary/60")} onClick={clickable ? openLink : undefined}>
                         <div className="flex items-start gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium leading-snug">{n.title}</p>
+                            <p className="text-sm font-medium leading-snug flex items-center gap-1.5">
+                              {n.title}
+                              {clickable && <ExternalLink className="h-3 w-3 text-primary shrink-0" />}
+                            </p>
                             {n.body && <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{n.body}</p>}
                             <p className="text-[10px] text-muted-foreground mt-1">
                               {new Date(n.created_at).toLocaleString("cs-CZ")}
+                              {clickable && <span className="ml-1 text-primary">· {linkLabel(n.link)}</span>}
                             </p>
                           </div>
                           {isAdmin && (
