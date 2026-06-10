@@ -44,6 +44,7 @@ const linkLabel = (l?: string | null) => LINK_OPTIONS.find((o) => o.value === l)
 export default function NotificationsBell() {
   const { user } = useAuth();
   const isAdmin = useAdminMode();
+  const navigate = useNavigate();
   const [items, setItems] = useState<Notif[]>([]);
   const [profiles, setProfiles] = useState<ProfileLite[]>([]);
   const [open, setOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function NotificationsBell() {
     if (!user) return;
     const { data } = await supabase
       .from("notifications" as any)
-      .select("id,title,body,type,read_at,created_at,created_by")
+      .select("id,title,body,type,read_at,created_at,created_by,link")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
