@@ -188,16 +188,17 @@ export default function NotificationsBell() {
                             </p>
                           </div>
                           {isAdmin && (
-                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => setEditing(n)}>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); setEditing(n); }}>
                               <Pencil className="h-3 w-3" />
                             </Button>
                           )}
-                          <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => remove(n.id)}>
+                          <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); remove(n.id); }}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </div>
