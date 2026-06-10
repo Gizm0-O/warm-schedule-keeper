@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Bell, Check, Trash2, Send, X, Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Check, Trash2, Send, X, Pencil, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,13 +24,27 @@ interface Notif {
   read_at: string | null;
   created_at: string;
   created_by?: string | null;
+  link?: string | null;
 }
 
 interface ProfileLite { user_id: string; display_name: string; email: string; status: string; created_at: string; id: string; }
 
+const LINK_OPTIONS: { value: string; label: string }[] = [
+  { value: "none", label: "Bez odkazu" },
+  { value: "/", label: "Kalendář" },
+  { value: "/todo", label: "Úkoly" },
+  { value: "/shopping", label: "Nákupy" },
+  { value: "/gifts", label: "Dárečky" },
+  { value: "/ideas", label: "Nápady" },
+  { value: "/changelog", label: "Změny" },
+];
+
+const linkLabel = (l?: string | null) => LINK_OPTIONS.find((o) => o.value === l)?.label ?? l;
+
 export default function NotificationsBell() {
   const { user } = useAuth();
   const isAdmin = useAdminMode();
+  const navigate = useNavigate();
   const [items, setItems] = useState<Notif[]>([]);
   const [profiles, setProfiles] = useState<ProfileLite[]>([]);
   const [open, setOpen] = useState(false);
@@ -41,7 +56,7 @@ export default function NotificationsBell() {
     if (!user) return;
     const { data } = await supabase
       .from("notifications" as any)
-      .select("id,title,body,type,read_at,created_at,created_by")
+      .select("id,title,body,type,read_at,created_at,created_by,link")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -150,27 +165,40 @@ export default function NotificationsBell() {
                   <p className="p-4 text-xs text-muted-foreground text-center">Žádné notifikace</p>
                 ) : (
                   <ul className="divide-y">
-                    {items.map((n) => (
-                      <li key={n.id} className={cn("p-3 group", !n.read_at && "bg-primary/5")}>
+                    {items.map((n) => {
+                      const clickable = !!n.link;
+                      const openLink = () => {
+                        if (!n.link) return;
+                        if (!n.read_at) supabase.from("notifications" as any).update({ read_at: new Date().toISOString() }).eq("id", n.id).then(() => load());
+                        setOpen(false);
+                        navigate(n.link);
+                      };
+                      return (
+                      <li key={n.id} className={cn("p-3 group transition-colors", !n.read_at && "bg-primary/5", clickable && "hover:bg-primary/10 cursor-pointer border-l-2 border-l-primary/60")} onClick={clickable ? openLink : undefined}>
                         <div className="flex items-start gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium leading-snug">{n.title}</p>
+                            <p className="text-sm font-medium leading-snug flex items-center gap-1.5">
+                              {n.title}
+                              {clickable && <ExternalLink className="h-3 w-3 text-primary shrink-0" />}
+                            </p>
                             {n.body && <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{n.body}</p>}
                             <p className="text-[10px] text-muted-foreground mt-1">
                               {new Date(n.created_at).toLocaleString("cs-CZ")}
+                              {clickable && <span className="ml-1 text-primary">· {linkLabel(n.link)}</span>}
                             </p>
                           </div>
                           {isAdmin && (
-                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => setEditing(n)}>
+                            <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); setEditing(n); }}>
                               <Pencil className="h-3 w-3" />
                             </Button>
                           )}
-                          <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => remove(n.id)}>
+                          <Button size="icon" variant="ghost" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={(e) => { e.stopPropagation(); remove(n.id); }}>
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -240,18 +268,20 @@ export default function NotificationsBell() {
 function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onClose: () => void; onSaved: () => void }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [link, setLink] = useState<string>("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); }
+    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); setLink(notif.link ?? "none"); }
   }, [notif?.id]);
 
   const save = async () => {
     if (!notif) return;
     if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
     setSaving(true);
+    const newLink = link === "none" ? null : link;
     // Update all rows in the same batch (same sender + same created_at + original title/body)
-    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null })
+    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null, link: newLink })
       .eq("created_at", notif.created_at)
       .eq("title", notif.title);
     if (notif.created_by) q = q.eq("created_by", notif.created_by); else q = q.eq("id", notif.id);
@@ -277,6 +307,17 @@ function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onC
             <label className="text-xs font-medium">Zpráva</label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
           </div>
+          <div>
+            <label className="text-xs font-medium">Odkaz po kliknutí</label>
+            <Select value={link} onValueChange={setLink}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LINK_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <p className="text-[10px] text-muted-foreground">Změna se promítne všem příjemcům této notifikace.</p>
           <Button onClick={save} disabled={saving} className="w-full">Uložit</Button>
         </div>
@@ -289,12 +330,13 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
   const [target, setTarget] = useState<string>("all");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [link, setLink] = useState<string>("none");
   const [sending, setSending] = useState(false);
   const approved = profiles.filter((p) => p.status === "approved");
 
   useEffect(() => {
     if (!open) return;
-    setTitle(""); setBody(""); setTarget("all");
+    setTitle(""); setBody(""); setTarget("all"); setLink("none");
   }, [open]);
 
   const send = async () => {
@@ -308,6 +350,7 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
       body: body.trim() || null,
       type: "custom",
       created_by: me?.id ?? null,
+      link: link === "none" ? null : link,
     }));
     const { error } = await supabase.from("notifications" as any).insert(rows);
     setSending(false);
@@ -340,6 +383,18 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
           <div>
             <label className="text-xs font-medium">Zpráva (volitelné)</label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Odkaz po kliknutí (volitelné)</label>
+            <Select value={link} onValueChange={setLink}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LINK_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground mt-1">Klikatelné notifikace jsou označeny ikonou a barevným okrajem.</p>
           </div>
           <Button onClick={send} disabled={sending} className="w-full">Odeslat</Button>
         </div>
