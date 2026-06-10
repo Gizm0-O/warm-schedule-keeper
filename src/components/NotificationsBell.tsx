@@ -36,7 +36,7 @@ const LINK_OPTIONS: { value: string; label: string }[] = [
   { value: "/shopping", label: "Nákupy" },
   { value: "/gifts", label: "Dárečky" },
   { value: "/ideas", label: "Nápady" },
-  { value: "/changelog", label: "Změny" },
+  
 ];
 
 const linkLabel = (l?: string | null) => LINK_OPTIONS.find((o) => o.value === l)?.label ?? l;

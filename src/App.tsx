@@ -9,7 +9,7 @@ import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
 import TodoPage from "./pages/TodoPage";
 import ShoppingPage from "./pages/ShoppingPage";
-import ChangelogPage from "./pages/ChangelogPage";
+
 import GiftsPage from "./pages/GiftsPage";
 import IdeasPage from "./pages/IdeasPage";
 import NotFound from "./pages/NotFound";
@@ -47,7 +47,7 @@ const App = () => (
                 <Route path="/shopping" element={<ShoppingPage />} />
                 <Route path="/gifts" element={<GiftsPage />} />
                 <Route path="/ideas" element={<IdeasPage />} />
-                <Route path="/changelog" element={<ChangelogPage />} />
+                
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>
               <Route path="*" element={<NotFound />} />
