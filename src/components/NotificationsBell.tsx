@@ -330,12 +330,13 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
   const [target, setTarget] = useState<string>("all");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [link, setLink] = useState<string>("none");
   const [sending, setSending] = useState(false);
   const approved = profiles.filter((p) => p.status === "approved");
 
   useEffect(() => {
     if (!open) return;
-    setTitle(""); setBody(""); setTarget("all");
+    setTitle(""); setBody(""); setTarget("all"); setLink("none");
   }, [open]);
 
   const send = async () => {
@@ -349,6 +350,7 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
       body: body.trim() || null,
       type: "custom",
       created_by: me?.id ?? null,
+      link: link === "none" ? null : link,
     }));
     const { error } = await supabase.from("notifications" as any).insert(rows);
     setSending(false);
@@ -381,6 +383,18 @@ function ComposeDialog({ open, onOpenChange, profiles }: { open: boolean; onOpen
           <div>
             <label className="text-xs font-medium">Zpráva (volitelné)</label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Odkaz po kliknutí (volitelné)</label>
+            <Select value={link} onValueChange={setLink}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LINK_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground mt-1">Klikatelné notifikace jsou označeny ikonou a barevným okrajem.</p>
           </div>
           <Button onClick={send} disabled={sending} className="w-full">Odeslat</Button>
         </div>
