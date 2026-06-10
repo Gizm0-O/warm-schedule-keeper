@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Bell, Check, Trash2, Send, X, Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Bell, Check, Trash2, Send, X, Pencil, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,9 +24,22 @@ interface Notif {
   read_at: string | null;
   created_at: string;
   created_by?: string | null;
+  link?: string | null;
 }
 
 interface ProfileLite { user_id: string; display_name: string; email: string; status: string; created_at: string; id: string; }
+
+const LINK_OPTIONS: { value: string; label: string }[] = [
+  { value: "none", label: "Bez odkazu" },
+  { value: "/", label: "Kalendář" },
+  { value: "/todo", label: "Úkoly" },
+  { value: "/shopping", label: "Nákupy" },
+  { value: "/gifts", label: "Dárečky" },
+  { value: "/ideas", label: "Nápady" },
+  { value: "/changelog", label: "Změny" },
+];
+
+const linkLabel = (l?: string | null) => LINK_OPTIONS.find((o) => o.value === l)?.label ?? l;
 
 export default function NotificationsBell() {
   const { user } = useAuth();
