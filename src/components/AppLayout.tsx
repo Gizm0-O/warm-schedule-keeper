@@ -13,7 +13,7 @@ const navItems = [
   { to: "/shopping", icon: ShoppingCart, label: "Nákupy" },
   { to: "/gifts", icon: Gift, label: "Dárečky" },
   { to: "/ideas", icon: Lightbulb, label: "Nápady" },
-  { to: "/changelog", icon: ListChecks, label: "Změny" },
+  
 ];
 
 const AppLayout = () => {
