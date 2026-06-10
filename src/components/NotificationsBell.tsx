@@ -268,18 +268,20 @@ export default function NotificationsBell() {
 function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onClose: () => void; onSaved: () => void }) {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [link, setLink] = useState<string>("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); }
+    if (notif) { setTitle(notif.title); setBody(notif.body ?? ""); setLink(notif.link ?? "none"); }
   }, [notif?.id]);
 
   const save = async () => {
     if (!notif) return;
     if (!title.trim()) { toast.error("Vyplň nadpis"); return; }
     setSaving(true);
+    const newLink = link === "none" ? null : link;
     // Update all rows in the same batch (same sender + same created_at + original title/body)
-    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null })
+    let q = supabase.from("notifications" as any).update({ title: title.trim(), body: body.trim() || null, link: newLink })
       .eq("created_at", notif.created_at)
       .eq("title", notif.title);
     if (notif.created_by) q = q.eq("created_by", notif.created_by); else q = q.eq("id", notif.id);
@@ -304,6 +306,17 @@ function EditNotifDialog({ notif, onClose, onSaved }: { notif: Notif | null; onC
           <div>
             <label className="text-xs font-medium">Zpráva</label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} />
+          </div>
+          <div>
+            <label className="text-xs font-medium">Odkaz po kliknutí</label>
+            <Select value={link} onValueChange={setLink}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {LINK_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <p className="text-[10px] text-muted-foreground">Změna se promítne všem příjemcům této notifikace.</p>
           <Button onClick={save} disabled={saving} className="w-full">Uložit</Button>
