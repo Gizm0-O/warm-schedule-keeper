@@ -177,9 +177,8 @@ export default function NotificationsBell() {
                       <li key={n.id} className={cn("p-3 group transition-colors", !n.read_at && "bg-primary/5", clickable && "hover:bg-primary/10 cursor-pointer border-l-2 border-l-primary/60")} onClick={clickable ? openLink : undefined}>
                         <div className="flex items-start gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium leading-snug flex items-center gap-1.5">
+                            <p className="text-sm font-medium leading-snug">
                               {n.title}
-                              {clickable && <ExternalLink className="h-3 w-3 text-primary shrink-0" />}
                             </p>
                             {n.body && <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{n.body}</p>}
                             <p className="text-[10px] text-muted-foreground mt-1">
