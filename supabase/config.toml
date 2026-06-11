@@ -1,7 +1,4 @@
 project_id = "hhowbhhlzfckhzgvjsub"
 
-[functions.bootstrap-admin]
-verify_jwt = false
-
 [functions.fetch-og-image]
 verify_jwt = false
