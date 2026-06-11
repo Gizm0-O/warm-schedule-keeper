@@ -35,14 +35,10 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      let email = loginId.trim();
+      const email = loginId.trim();
       if (!email.includes("@")) {
-        const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
-        if (rpcErr || !data) {
-          toast.error("Uživatel nenalezen");
-          return;
-        }
-        email = data as string;
+        toast.error("Přihlas se prosím e-mailem");
+        return;
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
       if (error) toast.error(error.message);
@@ -122,8 +118,8 @@ export default function AuthPage() {
           <TabsContent value="login">
             <form onSubmit={handleLogin} className="space-y-4 pt-4">
               <div className="space-y-2">
-                <Label>Uživatelské jméno nebo e-mail</Label>
-                <Input required value={loginId} onChange={(e) => setLoginId(e.target.value)} autoComplete="username" />
+                <Label>E-mail</Label>
+                <Input type="email" required value={loginId} onChange={(e) => setLoginId(e.target.value)} autoComplete="email" />
               </div>
               <div className="space-y-2">
                 <Label>Heslo</Label>
