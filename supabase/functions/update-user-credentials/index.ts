@@ -51,6 +51,17 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const msg = (e as Error).message || "Chyba";
+    const lower = msg.toLowerCase();
+    let status = 500;
+    let friendly = msg;
+    if (lower.includes("weak") || lower.includes("pwned") || lower.includes("known to be")) {
+      status = 400;
+      friendly = "Heslo je příliš slabé nebo bylo nalezeno v úniku dat. Zvol prosím jiné.";
+    } else if (lower.includes("password should be at least") || lower.includes("password is too short")) {
+      status = 400;
+      friendly = "Heslo je příliš krátké.";
+    }
+    return new Response(JSON.stringify({ error: friendly }), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
