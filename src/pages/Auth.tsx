@@ -35,14 +35,10 @@ export default function AuthPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      let email = loginId.trim();
+      const email = loginId.trim();
       if (!email.includes("@")) {
-        const { data, error: rpcErr } = await supabase.rpc("get_email_by_username", { _username: email });
-        if (rpcErr || !data) {
-          toast.error("Uživatel nenalezen");
-          return;
-        }
-        email = data as string;
+        toast.error("Přihlas se prosím e-mailem");
+        return;
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
       if (error) toast.error(error.message);
