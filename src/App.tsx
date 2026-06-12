@@ -12,6 +12,7 @@ import ShoppingPage from "./pages/ShoppingPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import GiftsPage from "./pages/GiftsPage";
 import IdeasPage from "./pages/IdeasPage";
+import FinancePage from "./pages/FinancePage";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
 import ResetPasswordPage from "./pages/ResetPassword";
@@ -47,6 +48,7 @@ const App = () => (
                 <Route path="/shopping" element={<ShoppingPage />} />
                 <Route path="/gifts" element={<GiftsPage />} />
                 <Route path="/ideas" element={<IdeasPage />} />
+                <Route path="/finance" element={<FinancePage />} />
                 <Route path="/changelog" element={<ChangelogPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
               </Route>

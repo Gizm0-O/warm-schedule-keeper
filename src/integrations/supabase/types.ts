@@ -152,6 +152,51 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_entries: {
+        Row: {
+          actual: number
+          category: string | null
+          created_at: string
+          created_by: string | null
+          due_day: string | null
+          id: string
+          month: string
+          name: string
+          note: string | null
+          planned: number
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          actual?: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_day?: string | null
+          id?: string
+          month: string
+          name: string
+          note?: string | null
+          planned?: number
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          actual?: number
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          due_day?: string | null
+          id?: string
+          month?: string
+          name?: string
+          note?: string | null
+          planned?: number
+          section?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       gift_ideas: {
         Row: {
           created_at: string
