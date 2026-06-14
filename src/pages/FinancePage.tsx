@@ -146,7 +146,7 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, section, onUpdate, onRemove, positive, showDue, showCategory,
+  title, items, section, onUpdate, onRemove, positive, showDue, showCategory, paidToggle,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -156,6 +156,7 @@ function SectionCard({
   positive?: boolean;
   showDue?: boolean;
   showCategory?: boolean;
+  paidToggle?: boolean;
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
@@ -176,7 +177,7 @@ function SectionCard({
         )}
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
-               showDue={showDue} showCategory={showCategory} positive={positive} />
+               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} />
         ))}
       </div>
     </div>
