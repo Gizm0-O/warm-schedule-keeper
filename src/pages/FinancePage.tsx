@@ -171,6 +171,15 @@ function SectionCard({
           <span className="text-xs ml-2">/ {fmt(totalP)}</span>
         </div>
       </div>
+      <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
+        {paidToggle && <div className="h-5 w-5 shrink-0" />}
+        {showCategory && <div className="min-w-[80px] shrink-0 text-center" />}
+        <div className="flex-1 min-w-0">Položka</div>
+        {showDue && <div className="w-12 text-center shrink-0">Datum</div>}
+        <div className="w-20 text-right shrink-0">Plán</div>
+        <div className={cn("text-right shrink-0", paidToggle ? "w-20" : "w-24")}>Částka</div>
+        <div className="w-6 shrink-0" />
+      </div>
       <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
         {items.length === 0 && (
           <div className="px-4 py-6 text-center text-sm text-muted-foreground">Žádné položky</div>
