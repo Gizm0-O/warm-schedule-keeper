@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   useFinance, FinanceEntry, FinanceSection,
   formatMonth, currentMonth, shiftMonth,
@@ -23,7 +20,6 @@ const fmt = (n: number) => `${Math.round(n).toLocaleString("cs-CZ")} Kč`;
 export default function FinancePage() {
   const [month, setMonth] = useState(currentMonth());
   const { entries, loading, add, update, remove } = useFinance(month);
-  const [addOpen, setAddOpen] = useState(false);
 
   const bySection = useMemo(() => {
     const map: Record<FinanceSection, FinanceEntry[]> = {
@@ -46,6 +42,9 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const quickAdd = (section: FinanceSection) =>
+    add(section, "Nová položka", 0, 0);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -54,18 +53,18 @@ export default function FinancePage() {
           <Wallet className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Finance</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={() => setMonth(m => shiftMonth(m, -1))}>
-            <ChevronLeft className="h-4 w-4" />
+        <div className="flex items-center justify-center gap-3 mx-auto">
+          <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => setMonth(m => shiftMonth(m, -1))}>
+            <ChevronLeft className="h-6 w-6" />
           </Button>
-          <div className="min-w-[140px] text-center font-semibold">{formatMonth(month)}</div>
-          <Button variant="ghost" size="icon" onClick={() => setMonth(m => shiftMonth(m, 1))}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button onClick={() => setAddOpen(true)} className="ml-2">
-            <Plus className="h-4 w-4 mr-1" /> Přidat
+          <div className="min-w-[200px] text-center text-xl font-bold tracking-tight">
+            {formatMonth(month)}
+          </div>
+          <Button variant="ghost" size="icon" className="h-11 w-11" onClick={() => setMonth(m => shiftMonth(m, 1))}>
+            <ChevronRight className="h-6 w-6" />
           </Button>
         </div>
+        <div className="w-[100px]" /> {/* spacer to keep month centered */}
       </div>
 
       {/* Summary */}
@@ -102,25 +101,16 @@ export default function FinancePage() {
       ) : (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <SectionCard title={SECTION_LABELS.income} items={bySection.income} section="income" onUpdate={update} onRemove={remove} positive />
-            <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} section="subscription" onUpdate={update} onRemove={remove} paidToggle />
-            <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} section="fixed" onUpdate={update} onRemove={remove} showDue />
+            <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive />
+            <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle />
+            <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SectionCard title={SECTION_LABELS.food} items={bySection.food} section="food" onUpdate={update} onRemove={remove} />
-            <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} section="daily" onUpdate={update} onRemove={remove} showCategory />
+            <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} />
+            <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory />
           </div>
         </div>
       )}
-
-      <AddDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        onAdd={async (sec, name, planned, actual, cat, due) => {
-          const ok = await add(sec, name, planned, actual, cat, due);
-          if (ok) setAddOpen(false);
-        }}
-      />
     </div>
   );
 }
@@ -146,13 +136,13 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, section, onUpdate, onRemove, positive, showDue, showCategory, paidToggle,
+  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle,
 }: {
   title: string;
   items: FinanceEntry[];
-  section: FinanceSection;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
+  onAdd: () => void;
   positive?: boolean;
   showDue?: boolean;
   showCategory?: boolean;
@@ -161,23 +151,24 @@ function SectionCard({
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
   return (
-    <div className="rounded-2xl glass-subtle border overflow-hidden">
+    <div className="rounded-2xl glass-subtle border overflow-hidden flex flex-col">
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <h3 className="font-semibold">{title}</h3>
         <div className="text-sm text-muted-foreground">
           <span className={cn("font-semibold", positive ? "text-green-500" : "text-foreground")}>
-            {fmt(totalA)}
+            {fmt(paidToggle ? totalA : totalA)}
           </span>
-          <span className="text-xs ml-2">/ {fmt(totalP)}</span>
+          {!paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
+          {paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
         </div>
       </div>
       <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
         {paidToggle && <div className="h-5 w-5 shrink-0" />}
         {showCategory && <div className="min-w-[80px] shrink-0 text-center" />}
         <div className="flex-1 min-w-0">Položka</div>
-        {showDue && <div className="w-12 text-center shrink-0">Datum</div>}
-        <div className="w-20 text-right shrink-0">Plán</div>
-        <div className={cn("text-right shrink-0", paidToggle ? "w-20" : "w-24")}>Částka</div>
+        {showDue && <div className="w-14 text-center shrink-0">Datum</div>}
+        {!paidToggle && <div className="w-20 text-center shrink-0">Plán</div>}
+        <div className={cn("text-center shrink-0", paidToggle ? "w-24" : "w-24")}>Částka</div>
         <div className="w-6 shrink-0" />
       </div>
       <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
@@ -189,6 +180,12 @@ function SectionCard({
                showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} />
         ))}
       </div>
+      <button
+        onClick={onAdd}
+        className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-secondary/40 border-t border-border/50 transition-colors"
+      >
+        <Plus className="h-3.5 w-3.5" /> Přidat řádek
+      </button>
     </div>
   );
 }
@@ -228,7 +225,7 @@ function Row({
         onBlur={(e) => e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
         className={cn(
           "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
-          paid && "text-muted-foreground line-through"
+          paid && "text-green-500",
         )}
       />
       {showDue && (
@@ -236,22 +233,39 @@ function Row({
           defaultValue={entry.due_day ?? ""}
           placeholder="—"
           onBlur={(e) => e.target.value !== (entry.due_day ?? "") && onUpdate(entry.id, { due_day: e.target.value || null })}
-          className="w-12 bg-transparent text-xs text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1 text-center"
+          className="w-14 bg-transparent text-base font-medium outline-none focus:bg-secondary/50 rounded px-1 text-center"
         />
       )}
-      <input
-        type="number"
-        defaultValue={entry.planned}
-        onBlur={(e) => Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
-        className="w-20 bg-transparent text-xs text-right text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1"
-      />
       {!paidToggle && (
+        <input
+          type="number"
+          defaultValue={entry.planned}
+          onBlur={(e) => Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
+          className="w-20 bg-transparent text-xs text-center text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1 tabular-nums"
+        />
+      )}
+      {paidToggle ? (
+        <input
+          type="number"
+          defaultValue={entry.planned}
+          onBlur={(e) => {
+            const v = Number(e.target.value) || 0;
+            if (v !== Number(entry.planned)) {
+              onUpdate(entry.id, { planned: v, ...(paid ? { actual: v } : {}) });
+            }
+          }}
+          className={cn(
+            "w-24 bg-transparent text-center outline-none focus:bg-secondary/50 rounded px-1 tabular-nums transition-all",
+            paid ? "text-green-500 font-bold text-base" : "text-sm text-muted-foreground"
+          )}
+        />
+      ) : (
         <input
           type="number"
           defaultValue={entry.actual}
           onBlur={(e) => Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
           className={cn(
-            "w-24 bg-transparent text-sm text-right font-semibold outline-none focus:bg-secondary/50 rounded px-1",
+            "w-24 bg-transparent text-sm text-center font-semibold outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
             positive && "text-green-500",
             over && "text-red-500",
           )}
@@ -265,79 +279,5 @@ function Row({
         <Trash2 className="h-3.5 w-3.5 text-destructive" />
       </button>
     </div>
-  );
-}
-
-function AddDialog({
-  open, onOpenChange, onAdd,
-}: {
-  open: boolean;
-  onOpenChange: (b: boolean) => void;
-  onAdd: (sec: FinanceSection, name: string, planned: number, actual: number, cat?: string, due?: string) => void;
-}) {
-  const [section, setSection] = useState<FinanceSection>("daily");
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [due, setDue] = useState("");
-  const [planned, setPlanned] = useState("");
-  const [actual, setActual] = useState("");
-
-  const submit = () => {
-    if (!name.trim()) return;
-    onAdd(section, name.trim(), Number(planned) || 0, Number(actual) || 0,
-      section === "daily" ? category.trim() || undefined : undefined,
-      section === "fixed" ? due.trim() || undefined : undefined);
-    setName(""); setCategory(""); setDue(""); setPlanned(""); setActual("");
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader><DialogTitle>Přidat položku</DialogTitle></DialogHeader>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-muted-foreground">Sekce</label>
-            <Select value={section} onValueChange={(v) => setSection(v as FinanceSection)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {(Object.keys(SECTION_LABELS) as FinanceSection[]).map(s => (
-                  <SelectItem key={s} value={s}>{SECTION_LABELS[s]}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {section === "daily" && (
-            <div>
-              <label className="text-xs text-muted-foreground">Kategorie</label>
-              <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Domácnost, Tádyn, Benzín…" />
-            </div>
-          )}
-          <div>
-            <label className="text-xs text-muted-foreground">Název</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Popis položky" />
-          </div>
-          {section === "fixed" && (
-            <div>
-              <label className="text-xs text-muted-foreground">Splatnost</label>
-              <Input value={due} onChange={(e) => setDue(e.target.value)} placeholder="20." />
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Plánovaný (Kč)</label>
-              <Input type="number" value={planned} onChange={(e) => setPlanned(e.target.value)} />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Skutečný (Kč)</label>
-              <Input type="number" value={actual} onChange={(e) => setActual(e.target.value)} />
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Zrušit</Button>
-          <Button onClick={submit}>Přidat</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
