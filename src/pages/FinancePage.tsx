@@ -100,46 +100,15 @@ export default function FinancePage() {
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Načítám…</div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <SectionCard
-            title={SECTION_LABELS.income}
-            items={bySection.income}
-            section="income"
-            onUpdate={update}
-            onRemove={remove}
-            positive
-          />
-          <SectionCard
-            title={SECTION_LABELS.subscription}
-            items={bySection.subscription}
-            section="subscription"
-            onUpdate={update}
-            onRemove={remove}
-          />
-          <SectionCard
-            title={SECTION_LABELS.fixed}
-            items={bySection.fixed}
-            section="fixed"
-            onUpdate={update}
-            onRemove={remove}
-            showDue
-          />
-          <SectionCard
-            title={SECTION_LABELS.food}
-            items={bySection.food}
-            section="food"
-            onUpdate={update}
-            onRemove={remove}
-          />
-          <div className="lg:col-span-2">
-            <SectionCard
-              title={SECTION_LABELS.daily}
-              items={bySection.daily}
-              section="daily"
-              onUpdate={update}
-              onRemove={remove}
-              showCategory
-            />
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <SectionCard title={SECTION_LABELS.income} items={bySection.income} section="income" onUpdate={update} onRemove={remove} positive />
+            <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} section="subscription" onUpdate={update} onRemove={remove} paidToggle />
+            <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} section="fixed" onUpdate={update} onRemove={remove} showDue />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <SectionCard title={SECTION_LABELS.food} items={bySection.food} section="food" onUpdate={update} onRemove={remove} />
+            <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} section="daily" onUpdate={update} onRemove={remove} showCategory />
           </div>
         </div>
       )}
