@@ -185,17 +185,30 @@ function SectionCard({
 }
 
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
-  showDue?: boolean; showCategory?: boolean; positive?: boolean;
+  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean;
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
+  const paid = paidToggle && Number(entry.actual) > 0;
   return (
     <div className="px-4 py-2 flex items-center gap-2 hover:bg-secondary/30 group">
+      {paidToggle && (
+        <button
+          onClick={() => onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) })}
+          className={cn(
+            "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+            paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500"
+          )}
+          aria-label={paid ? "Zaplaceno" : "Označit jako zaplaceno"}
+        >
+          {paid && <span className="text-xs leading-none">✓</span>}
+        </button>
+      )}
       {showCategory && (
         <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[80px] text-center">
           {entry.category || "—"}
@@ -204,7 +217,10 @@ function Row({
       <input
         defaultValue={entry.name}
         onBlur={(e) => e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
-        className="flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1"
+        className={cn(
+          "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
+          paid && "text-muted-foreground line-through"
+        )}
       />
       {showDue && (
         <input
@@ -220,16 +236,18 @@ function Row({
         onBlur={(e) => Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
         className="w-20 bg-transparent text-xs text-right text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1"
       />
-      <input
-        type="number"
-        defaultValue={entry.actual}
-        onBlur={(e) => Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
-        className={cn(
-          "w-24 bg-transparent text-sm text-right font-semibold outline-none focus:bg-secondary/50 rounded px-1",
-          positive && "text-green-500",
-          over && "text-red-500",
-        )}
-      />
+      {!paidToggle && (
+        <input
+          type="number"
+          defaultValue={entry.actual}
+          onBlur={(e) => Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
+          className={cn(
+            "w-24 bg-transparent text-sm text-right font-semibold outline-none focus:bg-secondary/50 rounded px-1",
+            positive && "text-green-500",
+            over && "text-red-500",
+          )}
+        />
+      )}
       <button
         onClick={() => onRemove(entry.id)}
         className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/20"
