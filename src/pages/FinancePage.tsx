@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useFinance, FinanceEntry, FinanceSection,
   formatMonth, currentMonth, shiftMonth,
 } from "@/hooks/useFinance";
+import { useAdminMode } from "@/hooks/useAdminMode";
 import { cn } from "@/lib/utils";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
@@ -19,7 +20,16 @@ const fmt = (n: number) => `${Math.round(n).toLocaleString("cs-CZ")} Kč`;
 
 export default function FinancePage() {
   const [month, setMonth] = useState(currentMonth());
+  const [revealedMonths, setRevealedMonths] = useState<Set<string>>(new Set());
+  const isAdmin = useAdminMode();
   const { entries, loading, add, update, remove } = useFinance(month);
+
+  const isPastMonth = month < currentMonth();
+  const isLocked = isPastMonth && !isAdmin;
+  const isRevealed = revealedMonths.has(month);
+  const showOverlay = isLocked && !isRevealed;
+  const readOnly = isLocked; // even after reveal, non-admins can't edit
+
 
   const bySection = useMemo(() => {
     const map: Record<FinanceSection, FinanceEntry[]> = {
@@ -99,21 +109,42 @@ export default function FinancePage() {
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Načítám…</div>
       ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive />
-            <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle />
-            <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue />
+        <div className="relative">
+          <div className={cn("space-y-4 transition-all", showOverlay && "blur-md pointer-events-none select-none")}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue readOnly={readOnly} />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory readOnly={readOnly} />
+            </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} />
-            <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory />
-          </div>
+          {showOverlay && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-2xl glass-subtle border px-6 py-5 flex flex-col items-center gap-3 shadow-lg">
+                <div className="flex items-center gap-2 text-base font-semibold">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  Měsíc {formatMonth(month)} byl již uzavřen
+                </div>
+                <Button onClick={() => setRevealedMonths(s => new Set(s).add(month))}>
+                  Zobrazit
+                </Button>
+              </div>
+            </div>
+          )}
+          {isLocked && isRevealed && (
+            <div className="mt-3 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+              <Lock className="h-3 w-3" /> Uzavřený měsíc – pouze pro čtení
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+
 
 function SummaryCard({
   icon, label, actual, planned, overBad,
@@ -136,7 +167,7 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle,
+  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, readOnly,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -147,6 +178,7 @@ function SectionCard({
   showDue?: boolean;
   showCategory?: boolean;
   paidToggle?: boolean;
+  readOnly?: boolean;
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
@@ -177,26 +209,29 @@ function SectionCard({
         )}
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
-               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} />
+               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} readOnly={readOnly} />
         ))}
       </div>
-      <button
-        onClick={onAdd}
-        className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-secondary/40 border-t border-border/50 transition-colors"
-      >
-        <Plus className="h-3.5 w-3.5" /> Přidat řádek
-      </button>
+      {!readOnly && (
+        <button
+          onClick={onAdd}
+          className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-secondary/40 border-t border-border/50 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" /> Přidat řádek
+        </button>
+      )}
     </div>
   );
 }
 
+
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, readOnly,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
-  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean;
+  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean; readOnly?: boolean;
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
@@ -205,10 +240,12 @@ function Row({
     <div className="px-4 py-2 flex items-center gap-2 hover:bg-secondary/30 group">
       {paidToggle && (
         <button
+          disabled={readOnly}
           onClick={() => onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) })}
           className={cn(
             "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
-            paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500"
+            paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
+            readOnly && "opacity-60 cursor-not-allowed",
           )}
           aria-label={paid ? "Zaplaceno" : "Označit jako zaplaceno"}
         >
@@ -222,7 +259,8 @@ function Row({
       )}
       <input
         defaultValue={entry.name}
-        onBlur={(e) => e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
+        readOnly={readOnly}
+        onBlur={(e) => !readOnly && e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
         className={cn(
           "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
           paid && "text-green-500",
@@ -232,7 +270,8 @@ function Row({
         <input
           defaultValue={entry.due_day ?? ""}
           placeholder="—"
-          onBlur={(e) => e.target.value !== (entry.due_day ?? "") && onUpdate(entry.id, { due_day: e.target.value || null })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && e.target.value !== (entry.due_day ?? "") && onUpdate(entry.id, { due_day: e.target.value || null })}
           className="w-14 bg-transparent text-base font-medium outline-none focus:bg-secondary/50 rounded px-1 text-center"
         />
       )}
@@ -240,7 +279,8 @@ function Row({
         <input
           type="number"
           defaultValue={entry.planned}
-          onBlur={(e) => Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
           className="w-20 bg-transparent text-xs text-center text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1 tabular-nums"
         />
       )}
@@ -248,7 +288,9 @@ function Row({
         <input
           type="number"
           defaultValue={entry.planned}
+          readOnly={readOnly}
           onBlur={(e) => {
+            if (readOnly) return;
             const v = Number(e.target.value) || 0;
             if (v !== Number(entry.planned)) {
               onUpdate(entry.id, { planned: v, ...(paid ? { actual: v } : {}) });
@@ -263,7 +305,8 @@ function Row({
         <input
           type="number"
           defaultValue={entry.actual}
-          onBlur={(e) => Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
           className={cn(
             "w-24 bg-transparent text-sm text-center font-semibold outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
             positive && "text-green-500",
@@ -271,13 +314,17 @@ function Row({
           )}
         />
       )}
-      <button
-        onClick={() => onRemove(entry.id)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/20"
-        aria-label="Smazat"
-      >
-        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-      </button>
+      {!readOnly && (
+        <button
+          onClick={() => onRemove(entry.id)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/20"
+          aria-label="Smazat"
+        >
+          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+        </button>
+      )}
+      {readOnly && <div className="w-6 shrink-0" />}
     </div>
   );
 }
+
