@@ -167,7 +167,7 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle,
+  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, readOnly,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -178,6 +178,7 @@ function SectionCard({
   showDue?: boolean;
   showCategory?: boolean;
   paidToggle?: boolean;
+  readOnly?: boolean;
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
@@ -208,18 +209,21 @@ function SectionCard({
         )}
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
-               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} />
+               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} readOnly={readOnly} />
         ))}
       </div>
-      <button
-        onClick={onAdd}
-        className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-secondary/40 border-t border-border/50 transition-colors"
-      >
-        <Plus className="h-3.5 w-3.5" /> Přidat řádek
-      </button>
+      {!readOnly && (
+        <button
+          onClick={onAdd}
+          className="flex items-center justify-center gap-1.5 px-4 py-2 text-xs text-muted-foreground hover:text-primary hover:bg-secondary/40 border-t border-border/50 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" /> Přidat řádek
+        </button>
+      )}
     </div>
   );
 }
+
 
 function Row({
   entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle,
