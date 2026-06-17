@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   useFinance, FinanceEntry, FinanceSection,
   formatMonth, currentMonth, shiftMonth,
 } from "@/hooks/useFinance";
+import { useAdminMode } from "@/hooks/useAdminMode";
 import { cn } from "@/lib/utils";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
@@ -19,7 +20,16 @@ const fmt = (n: number) => `${Math.round(n).toLocaleString("cs-CZ")} Kč`;
 
 export default function FinancePage() {
   const [month, setMonth] = useState(currentMonth());
+  const [revealedMonths, setRevealedMonths] = useState<Set<string>>(new Set());
+  const isAdmin = useAdminMode();
   const { entries, loading, add, update, remove } = useFinance(month);
+
+  const isPastMonth = month < currentMonth();
+  const isLocked = isPastMonth && !isAdmin;
+  const isRevealed = revealedMonths.has(month);
+  const showOverlay = isLocked && !isRevealed;
+  const readOnly = isLocked; // even after reveal, non-admins can't edit
+
 
   const bySection = useMemo(() => {
     const map: Record<FinanceSection, FinanceEntry[]> = {
