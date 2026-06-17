@@ -226,12 +226,12 @@ function SectionCard({
 
 
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, readOnly,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
-  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean;
+  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean; readOnly?: boolean;
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
@@ -240,10 +240,12 @@ function Row({
     <div className="px-4 py-2 flex items-center gap-2 hover:bg-secondary/30 group">
       {paidToggle && (
         <button
+          disabled={readOnly}
           onClick={() => onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) })}
           className={cn(
             "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
-            paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500"
+            paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
+            readOnly && "opacity-60 cursor-not-allowed",
           )}
           aria-label={paid ? "Zaplaceno" : "Označit jako zaplaceno"}
         >
@@ -257,7 +259,8 @@ function Row({
       )}
       <input
         defaultValue={entry.name}
-        onBlur={(e) => e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
+        readOnly={readOnly}
+        onBlur={(e) => !readOnly && e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
         className={cn(
           "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
           paid && "text-green-500",
@@ -267,7 +270,8 @@ function Row({
         <input
           defaultValue={entry.due_day ?? ""}
           placeholder="—"
-          onBlur={(e) => e.target.value !== (entry.due_day ?? "") && onUpdate(entry.id, { due_day: e.target.value || null })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && e.target.value !== (entry.due_day ?? "") && onUpdate(entry.id, { due_day: e.target.value || null })}
           className="w-14 bg-transparent text-base font-medium outline-none focus:bg-secondary/50 rounded px-1 text-center"
         />
       )}
@@ -275,7 +279,8 @@ function Row({
         <input
           type="number"
           defaultValue={entry.planned}
-          onBlur={(e) => Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && Number(e.target.value) !== Number(entry.planned) && onUpdate(entry.id, { planned: Number(e.target.value) || 0 })}
           className="w-20 bg-transparent text-xs text-center text-muted-foreground outline-none focus:bg-secondary/50 rounded px-1 tabular-nums"
         />
       )}
@@ -283,7 +288,9 @@ function Row({
         <input
           type="number"
           defaultValue={entry.planned}
+          readOnly={readOnly}
           onBlur={(e) => {
+            if (readOnly) return;
             const v = Number(e.target.value) || 0;
             if (v !== Number(entry.planned)) {
               onUpdate(entry.id, { planned: v, ...(paid ? { actual: v } : {}) });
@@ -298,7 +305,8 @@ function Row({
         <input
           type="number"
           defaultValue={entry.actual}
-          onBlur={(e) => Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
+          readOnly={readOnly}
+          onBlur={(e) => !readOnly && Number(e.target.value) !== Number(entry.actual) && onUpdate(entry.id, { actual: Number(e.target.value) || 0 })}
           className={cn(
             "w-24 bg-transparent text-sm text-center font-semibold outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
             positive && "text-green-500",
@@ -306,13 +314,17 @@ function Row({
           )}
         />
       )}
-      <button
-        onClick={() => onRemove(entry.id)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/20"
-        aria-label="Smazat"
-      >
-        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-      </button>
+      {!readOnly && (
+        <button
+          onClick={() => onRemove(entry.id)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/20"
+          aria-label="Smazat"
+        >
+          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+        </button>
+      )}
+      {readOnly && <div className="w-6 shrink-0" />}
     </div>
   );
 }
+
