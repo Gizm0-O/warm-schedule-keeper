@@ -284,22 +284,26 @@ function SectionCard({
 
 
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, readOnly,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, paidCheck, readOnly, categoryOptions,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
-  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean; readOnly?: boolean;
+  showDue?: boolean; showCategory?: boolean; positive?: boolean;
+  paidToggle?: boolean; paidCheck?: boolean; readOnly?: boolean;
+  categoryOptions?: string[];
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
-  const paid = paidToggle && Number(entry.actual) > 0;
+  const paid = (paidToggle || paidCheck) && Number(entry.actual) > 0;
+  const handleTogglePaid = () =>
+    onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) });
   return (
     <div className="px-4 py-2 flex items-center gap-2 hover:bg-secondary/30 group">
-      {paidToggle && (
+      {(paidToggle || paidCheck) && (
         <button
           disabled={readOnly}
-          onClick={() => onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) })}
+          onClick={handleTogglePaid}
           className={cn(
             "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
             paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
@@ -311,9 +315,23 @@ function Row({
         </button>
       )}
       {showCategory && (
-        <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[80px] text-center">
-          {entry.category || "—"}
-        </span>
+        categoryOptions ? (
+          <select
+            value={entry.category ?? ""}
+            disabled={readOnly}
+            onChange={(e) => onUpdate(entry.id, { category: e.target.value || null })}
+            className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[100px] outline-none cursor-pointer hover:bg-primary/20 disabled:cursor-not-allowed"
+          >
+            <option value="">—</option>
+            {categoryOptions.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[100px] text-center">
+            {entry.category || "—"}
+          </span>
+        )
       )}
       <input
         defaultValue={entry.name}
@@ -321,7 +339,7 @@ function Row({
         onBlur={(e) => !readOnly && e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
         className={cn(
           "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
-          paid && "text-green-500",
+          paid && paidToggle && "text-green-500",
         )}
       />
       {showDue && (
@@ -368,7 +386,8 @@ function Row({
           className={cn(
             "w-24 bg-transparent text-sm text-center font-semibold outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
             positive && "text-green-500",
-            over && "text-red-500",
+            paid && paidCheck && "text-green-500",
+            over && !paid && "text-red-500",
           )}
         />
       )}
@@ -385,4 +404,50 @@ function Row({
     </div>
   );
 }
+
+function FoodBudgetChip({
+  entry, defaultValue, onToggle, onChangeAmount, readOnly,
+}: {
+  entry: FinanceEntry | null;
+  defaultValue: number;
+  onToggle: () => void;
+  onChangeAmount: (v: number) => void;
+  readOnly?: boolean;
+}) {
+  const planned = entry ? Number(entry.planned) : defaultValue;
+  const paid = entry ? Number(entry.actual) > 0 : false;
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <button
+        disabled={readOnly}
+        onClick={onToggle}
+        className={cn(
+          "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+          paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
+          readOnly && "opacity-60 cursor-not-allowed",
+        )}
+        aria-label={paid ? "Budget odevzdán" : "Označit budget jako odevzdaný"}
+      >
+        {paid && <span className="text-xs leading-none">✓</span>}
+      </button>
+      <span className="text-xs text-muted-foreground">Budget</span>
+      <input
+        type="number"
+        defaultValue={planned}
+        key={planned}
+        readOnly={readOnly}
+        onBlur={(e) => {
+          const v = Number(e.target.value) || 0;
+          if (v !== planned) onChangeAmount(v);
+        }}
+        className={cn(
+          "w-20 bg-transparent text-center outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
+          paid ? "text-green-500 font-bold" : "text-foreground font-medium"
+        )}
+      />
+      <span className="text-xs text-muted-foreground">Kč</span>
+    </div>
+  );
+}
+
 
