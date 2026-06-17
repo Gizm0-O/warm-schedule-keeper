@@ -39,6 +39,15 @@ export default function FinancePage() {
     return map;
   }, [entries]);
 
+  const foodBudget = useMemo(
+    () => bySection.food.find(e => e.category === "__budget__") ?? null,
+    [bySection.food]
+  );
+  const foodExtras = useMemo(
+    () => bySection.food.filter(e => e.category !== "__budget__"),
+    [bySection.food]
+  );
+
   const sum = (arr: FinanceEntry[], key: "planned" | "actual") =>
     arr.reduce((s, e) => s + Number(e[key] || 0), 0);
 
@@ -52,7 +61,28 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const FOOD_BUDGET = 15000;
+  const toggleFoodBudget = async () => {
+    if (foodBudget) {
+      const paid = Number(foodBudget.actual) > 0;
+      await update(foodBudget.id, { actual: paid ? 0 : Number(foodBudget.planned) || FOOD_BUDGET });
+    } else {
+      await add("food", "Budget jídlo", FOOD_BUDGET, FOOD_BUDGET, "__budget__");
+    }
+  };
+  const updateFoodBudgetAmount = async (v: number) => {
+    if (foodBudget) {
+      const paid = Number(foodBudget.actual) > 0;
+      await update(foodBudget.id, { planned: v, ...(paid ? { actual: v } : {}) });
+    } else {
+      await add("food", "Budget jídlo", v, 0, "__budget__");
+    }
+  };
+
+  const DAILY_CATEGORIES = ["Sebík", "3D tisk", "Tade", "Baru", "Benzín", "Domácnost", "Ostatní"];
+
   const quickAdd = (section: FinanceSection) =>
+
     add(section, "Nová položka", 0, 0);
 
   return (
