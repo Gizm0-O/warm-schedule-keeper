@@ -215,7 +215,8 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, readOnly,
+  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
+  headerExtra, emptyText, categoryOptions,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -226,38 +227,47 @@ function SectionCard({
   showDue?: boolean;
   showCategory?: boolean;
   paidToggle?: boolean;
+  paidCheck?: boolean;
   readOnly?: boolean;
+  headerExtra?: React.ReactNode;
+  emptyText?: string;
+  categoryOptions?: string[];
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
   return (
     <div className="rounded-2xl glass-subtle border overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
-        <h3 className="font-semibold">{title}</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <h3 className="font-semibold">{title}</h3>
+          {headerExtra}
+        </div>
         <div className="text-sm text-muted-foreground">
           <span className={cn("font-semibold", positive ? "text-green-500" : "text-foreground")}>
-            {fmt(paidToggle ? totalA : totalA)}
+            {fmt(totalA)}
           </span>
-          {!paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
-          {paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
+          <span className="text-xs ml-2">/ {fmt(totalP)}</span>
         </div>
       </div>
       <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
-        {paidToggle && <div className="h-5 w-5 shrink-0" />}
-        {showCategory && <div className="min-w-[80px] shrink-0 text-center" />}
+        {(paidToggle || paidCheck) && <div className="h-5 w-5 shrink-0" />}
+        {showCategory && <div className="min-w-[100px] shrink-0 text-center" />}
         <div className="flex-1 min-w-0">Položka</div>
         {showDue && <div className="w-14 text-center shrink-0">Datum</div>}
         {!paidToggle && <div className="w-20 text-center shrink-0">Plán</div>}
-        <div className={cn("text-center shrink-0", paidToggle ? "w-24" : "w-24")}>Částka</div>
+        <div className="w-24 text-center shrink-0">Částka</div>
         <div className="w-6 shrink-0" />
       </div>
       <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
         {items.length === 0 && (
-          <div className="px-4 py-6 text-center text-sm text-muted-foreground">Žádné položky</div>
+          <div className="px-4 py-6 text-center text-sm text-muted-foreground">{emptyText ?? "Žádné položky"}</div>
         )}
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
-               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} readOnly={readOnly} />
+               showDue={showDue} showCategory={showCategory} positive={positive}
+               paidToggle={paidToggle} paidCheck={paidCheck}
+               categoryOptions={categoryOptions} readOnly={readOnly} />
+
         ))}
       </div>
       {!readOnly && (
