@@ -144,12 +144,30 @@ export default function FinancePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
               <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory readOnly={readOnly} />
+              <SectionCard
+                title={SECTION_LABELS.food}
+                items={foodExtras}
+                onUpdate={update}
+                onRemove={remove}
+                onAdd={() => quickAdd("food")}
+                readOnly={readOnly}
+                headerExtra={
+                  <FoodBudgetChip
+                    entry={foodBudget}
+                    defaultValue={FOOD_BUDGET}
+                    onToggle={toggleFoodBudget}
+                    onChangeAmount={updateFoodBudgetAmount}
+                    readOnly={readOnly}
+                  />
+                }
+                emptyText="Žádné extra výdaje mimo budget"
+              />
+              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} readOnly={readOnly} />
             </div>
+
           </div>
           {showOverlay && (
             <div className="absolute inset-0 flex items-center justify-center">
