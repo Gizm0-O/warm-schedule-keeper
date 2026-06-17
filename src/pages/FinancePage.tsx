@@ -109,21 +109,42 @@ export default function FinancePage() {
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Načítám…</div>
       ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive />
-            <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle />
-            <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue />
+        <div className="relative">
+          <div className={cn("space-y-4 transition-all", showOverlay && "blur-md pointer-events-none select-none")}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue readOnly={readOnly} />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory readOnly={readOnly} />
+            </div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} />
-            <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory />
-          </div>
+          {showOverlay && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="rounded-2xl glass-subtle border px-6 py-5 flex flex-col items-center gap-3 shadow-lg">
+                <div className="flex items-center gap-2 text-base font-semibold">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  Měsíc {formatMonth(month)} byl již uzavřen
+                </div>
+                <Button onClick={() => setRevealedMonths(s => new Set(s).add(month))}>
+                  Zobrazit
+                </Button>
+              </div>
+            </div>
+          )}
+          {isLocked && isRevealed && (
+            <div className="mt-3 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+              <Lock className="h-3 w-3" /> Uzavřený měsíc – pouze pro čtení
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+
 
 function SummaryCard({
   icon, label, actual, planned, overBad,
