@@ -39,6 +39,15 @@ export default function FinancePage() {
     return map;
   }, [entries]);
 
+  const foodBudget = useMemo(
+    () => bySection.food.find(e => e.category === "__budget__") ?? null,
+    [bySection.food]
+  );
+  const foodExtras = useMemo(
+    () => bySection.food.filter(e => e.category !== "__budget__"),
+    [bySection.food]
+  );
+
   const sum = (arr: FinanceEntry[], key: "planned" | "actual") =>
     arr.reduce((s, e) => s + Number(e[key] || 0), 0);
 
@@ -52,7 +61,28 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const FOOD_BUDGET = 15000;
+  const toggleFoodBudget = async () => {
+    if (foodBudget) {
+      const paid = Number(foodBudget.actual) > 0;
+      await update(foodBudget.id, { actual: paid ? 0 : Number(foodBudget.planned) || FOOD_BUDGET });
+    } else {
+      await add("food", "Budget jídlo", FOOD_BUDGET, FOOD_BUDGET, "__budget__");
+    }
+  };
+  const updateFoodBudgetAmount = async (v: number) => {
+    if (foodBudget) {
+      const paid = Number(foodBudget.actual) > 0;
+      await update(foodBudget.id, { planned: v, ...(paid ? { actual: v } : {}) });
+    } else {
+      await add("food", "Budget jídlo", v, 0, "__budget__");
+    }
+  };
+
+  const DAILY_CATEGORIES = ["Sebík", "3D tisk", "Tade", "Baru", "Benzín", "Domácnost", "Ostatní"];
+
   const quickAdd = (section: FinanceSection) =>
+
     add(section, "Nová položka", 0, 0);
 
   return (
@@ -114,12 +144,30 @@ export default function FinancePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
               <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <SectionCard title={SECTION_LABELS.food} items={bySection.food} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("food")} readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory readOnly={readOnly} />
+              <SectionCard
+                title={SECTION_LABELS.food}
+                items={foodExtras}
+                onUpdate={update}
+                onRemove={remove}
+                onAdd={() => quickAdd("food")}
+                readOnly={readOnly}
+                headerExtra={
+                  <FoodBudgetChip
+                    entry={foodBudget}
+                    defaultValue={FOOD_BUDGET}
+                    onToggle={toggleFoodBudget}
+                    onChangeAmount={updateFoodBudgetAmount}
+                    readOnly={readOnly}
+                  />
+                }
+                emptyText="Žádné extra výdaje mimo budget"
+              />
+              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} readOnly={readOnly} />
             </div>
+
           </div>
           {showOverlay && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -167,7 +215,8 @@ function SummaryCard({
 }
 
 function SectionCard({
-  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, readOnly,
+  title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
+  headerExtra, emptyText, categoryOptions,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -178,38 +227,47 @@ function SectionCard({
   showDue?: boolean;
   showCategory?: boolean;
   paidToggle?: boolean;
+  paidCheck?: boolean;
   readOnly?: boolean;
+  headerExtra?: React.ReactNode;
+  emptyText?: string;
+  categoryOptions?: string[];
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
   return (
     <div className="rounded-2xl glass-subtle border overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
-        <h3 className="font-semibold">{title}</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <h3 className="font-semibold">{title}</h3>
+          {headerExtra}
+        </div>
         <div className="text-sm text-muted-foreground">
           <span className={cn("font-semibold", positive ? "text-green-500" : "text-foreground")}>
-            {fmt(paidToggle ? totalA : totalA)}
+            {fmt(totalA)}
           </span>
-          {!paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
-          {paidToggle && <span className="text-xs ml-2">/ {fmt(totalP)}</span>}
+          <span className="text-xs ml-2">/ {fmt(totalP)}</span>
         </div>
       </div>
       <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
-        {paidToggle && <div className="h-5 w-5 shrink-0" />}
-        {showCategory && <div className="min-w-[80px] shrink-0 text-center" />}
+        {(paidToggle || paidCheck) && <div className="h-5 w-5 shrink-0" />}
+        {showCategory && <div className="min-w-[100px] shrink-0 text-center" />}
         <div className="flex-1 min-w-0">Položka</div>
         {showDue && <div className="w-14 text-center shrink-0">Datum</div>}
         {!paidToggle && <div className="w-20 text-center shrink-0">Plán</div>}
-        <div className={cn("text-center shrink-0", paidToggle ? "w-24" : "w-24")}>Částka</div>
+        <div className="w-24 text-center shrink-0">Částka</div>
         <div className="w-6 shrink-0" />
       </div>
       <div className="max-h-[420px] overflow-y-auto divide-y divide-border/50">
         {items.length === 0 && (
-          <div className="px-4 py-6 text-center text-sm text-muted-foreground">Žádné položky</div>
+          <div className="px-4 py-6 text-center text-sm text-muted-foreground">{emptyText ?? "Žádné položky"}</div>
         )}
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
-               showDue={showDue} showCategory={showCategory} positive={positive} paidToggle={paidToggle} readOnly={readOnly} />
+               showDue={showDue} showCategory={showCategory} positive={positive}
+               paidToggle={paidToggle} paidCheck={paidCheck}
+               categoryOptions={categoryOptions} readOnly={readOnly} />
+
         ))}
       </div>
       {!readOnly && (
@@ -226,22 +284,26 @@ function SectionCard({
 
 
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, readOnly,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, paidCheck, readOnly, categoryOptions,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
   onRemove: (id: string) => void;
-  showDue?: boolean; showCategory?: boolean; positive?: boolean; paidToggle?: boolean; readOnly?: boolean;
+  showDue?: boolean; showCategory?: boolean; positive?: boolean;
+  paidToggle?: boolean; paidCheck?: boolean; readOnly?: boolean;
+  categoryOptions?: string[];
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
-  const paid = paidToggle && Number(entry.actual) > 0;
+  const paid = (paidToggle || paidCheck) && Number(entry.actual) > 0;
+  const handleTogglePaid = () =>
+    onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) });
   return (
     <div className="px-4 py-2 flex items-center gap-2 hover:bg-secondary/30 group">
-      {paidToggle && (
+      {(paidToggle || paidCheck) && (
         <button
           disabled={readOnly}
-          onClick={() => onUpdate(entry.id, { actual: paid ? 0 : Number(entry.planned) })}
+          onClick={handleTogglePaid}
           className={cn(
             "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
             paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
@@ -253,9 +315,23 @@ function Row({
         </button>
       )}
       {showCategory && (
-        <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[80px] text-center">
-          {entry.category || "—"}
-        </span>
+        categoryOptions ? (
+          <select
+            value={entry.category ?? ""}
+            disabled={readOnly}
+            onChange={(e) => onUpdate(entry.id, { category: e.target.value || null })}
+            className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[100px] outline-none cursor-pointer hover:bg-primary/20 disabled:cursor-not-allowed"
+          >
+            <option value="">—</option>
+            {categoryOptions.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary shrink-0 min-w-[100px] text-center">
+            {entry.category || "—"}
+          </span>
+        )
       )}
       <input
         defaultValue={entry.name}
@@ -263,7 +339,7 @@ function Row({
         onBlur={(e) => !readOnly && e.target.value !== entry.name && onUpdate(entry.id, { name: e.target.value })}
         className={cn(
           "flex-1 bg-transparent text-sm outline-none focus:bg-secondary/50 rounded px-1 min-w-0",
-          paid && "text-green-500",
+          paid && paidToggle && "text-green-500",
         )}
       />
       {showDue && (
@@ -310,7 +386,8 @@ function Row({
           className={cn(
             "w-24 bg-transparent text-sm text-center font-semibold outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
             positive && "text-green-500",
-            over && "text-red-500",
+            paid && paidCheck && "text-green-500",
+            over && !paid && "text-red-500",
           )}
         />
       )}
@@ -327,4 +404,50 @@ function Row({
     </div>
   );
 }
+
+function FoodBudgetChip({
+  entry, defaultValue, onToggle, onChangeAmount, readOnly,
+}: {
+  entry: FinanceEntry | null;
+  defaultValue: number;
+  onToggle: () => void;
+  onChangeAmount: (v: number) => void;
+  readOnly?: boolean;
+}) {
+  const planned = entry ? Number(entry.planned) : defaultValue;
+  const paid = entry ? Number(entry.actual) > 0 : false;
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <button
+        disabled={readOnly}
+        onClick={onToggle}
+        className={cn(
+          "h-5 w-5 rounded border flex items-center justify-center shrink-0 transition-colors",
+          paid ? "bg-green-500 border-green-500 text-white" : "border-muted-foreground/40 hover:border-green-500",
+          readOnly && "opacity-60 cursor-not-allowed",
+        )}
+        aria-label={paid ? "Budget odevzdán" : "Označit budget jako odevzdaný"}
+      >
+        {paid && <span className="text-xs leading-none">✓</span>}
+      </button>
+      <span className="text-xs text-muted-foreground">Budget</span>
+      <input
+        type="number"
+        defaultValue={planned}
+        key={planned}
+        readOnly={readOnly}
+        onBlur={(e) => {
+          const v = Number(e.target.value) || 0;
+          if (v !== planned) onChangeAmount(v);
+        }}
+        className={cn(
+          "w-20 bg-transparent text-center outline-none focus:bg-secondary/50 rounded px-1 tabular-nums",
+          paid ? "text-green-500 font-bold" : "text-foreground font-medium"
+        )}
+      />
+      <span className="text-xs text-muted-foreground">Kč</span>
+    </div>
+  );
+}
+
 
