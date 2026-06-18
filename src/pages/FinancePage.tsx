@@ -496,3 +496,100 @@ function FoodBudgetChip({
 }
 
 
+
+const CHART_COLORS = ["#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#0ea5e9", "#ec4899", "#14b8a6", "#a78bfa"];
+
+function CategoryChartCard({
+  food, foodBudget, daily, foodCategories, dailyCategories,
+}: {
+  food: FinanceEntry[];
+  foodBudget: FinanceEntry | null;
+  daily: FinanceEntry[];
+  foodCategories: string[];
+  dailyCategories: string[];
+}) {
+  const [tab, setTab] = useState<"food" | "daily">("food");
+
+  const data = useMemo(() => {
+    const source = tab === "food" ? food : daily;
+    const cats = tab === "food" ? foodCategories : dailyCategories;
+    const totals = new Map<string, number>();
+    cats.forEach(c => totals.set(c, 0));
+    source.forEach(e => {
+      const c = e.category || "—";
+      totals.set(c, (totals.get(c) || 0) + Number(e.actual || 0));
+    });
+    const arr = Array.from(totals.entries())
+      .map(([name, value]) => ({ name, value }))
+      .filter(d => d.value > 0);
+    if (tab === "food" && foodBudget) {
+      const v = Number(foodBudget.actual) || 0;
+      if (v > 0) arr.unshift({ name: "Budget", value: v });
+    }
+    return arr;
+  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories]);
+
+  const total = data.reduce((s, d) => s + d.value, 0);
+
+  return (
+    <div className="rounded-2xl p-4 glass-subtle border h-full flex flex-col">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div className="text-sm text-muted-foreground">Rozložení výdajů</div>
+        <div className="inline-flex rounded-lg border border-border/60 p-0.5 text-xs">
+          <button
+            onClick={() => setTab("food")}
+            className={cn("px-3 py-1 rounded-md transition-colors", tab === "food" ? "bg-rose-500/20 text-rose-400 font-medium" : "text-muted-foreground hover:text-foreground")}
+          >
+            Jídlo & Domácnost
+          </button>
+          <button
+            onClick={() => setTab("daily")}
+            className={cn("px-3 py-1 rounded-md transition-colors", tab === "daily" ? "bg-sky-500/20 text-sky-400 font-medium" : "text-muted-foreground hover:text-foreground")}
+          >
+            Každodenní
+          </button>
+        </div>
+      </div>
+      {data.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground py-8">
+          Žádná data k zobrazení
+        </div>
+      ) : (
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center min-h-[200px]">
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={2}>
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(v: number) => fmt(v)}
+                  contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            {data.map((d, i) => {
+              const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+              return (
+                <div key={d.name} className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                  <span className="flex-1 truncate">{d.name}</span>
+                  <span className="tabular-nums text-muted-foreground">{pct}%</span>
+                  <span className="tabular-nums font-medium w-20 text-right">{fmt(d.value)}</span>
+                </div>
+              );
+            })}
+            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-border/50">
+              <span className="flex-1 font-semibold">Celkem</span>
+              <span className="tabular-nums font-bold">{fmt(total)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
