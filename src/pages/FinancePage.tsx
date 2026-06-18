@@ -61,6 +61,20 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const unpaidSum = (arr: FinanceEntry[]) =>
+    arr.reduce((s, e) => {
+      const unpaid = Number(e.planned || 0) - Number(e.actual || 0);
+      return s + (unpaid > 0 ? unpaid : 0);
+    }, 0);
+  const unpaidSubs = unpaidSum(bySection.subscription);
+  const unpaidFixed = unpaidSum(bySection.fixed);
+  const foodBudgetUnpaid = (() => {
+    const fb = bySection.food.find(e => e.category === "__budget__");
+    if (!fb) return 15000;
+    return Number(fb.actual) > 0 ? 0 : Number(fb.planned) || 15000;
+  })();
+  const remaining = balance - unpaidSubs - unpaidFixed - foodBudgetUnpaid;
+
   const FOOD_BUDGET = 15000;
   const toggleFoodBudget = async () => {
     if (foodBudget) {
