@@ -123,35 +123,47 @@ export default function FinancePage() {
         <div className="w-[100px]" /> {/* spacer to keep month centered */}
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryCard
-          icon={<TrendingUp className="h-5 w-5 text-green-500" />}
-          label="Příjmy"
-          actual={totalIncomeAct}
-          planned={totalIncomePlan}
-        />
-        <SummaryCard
-          icon={<TrendingDown className="h-5 w-5 text-red-500" />}
-          label="Výdaje"
-          actual={totalExpensesAct}
-          planned={totalExpensesPlan}
-          overBad
-        />
-        <div className={cn(
-          "rounded-2xl p-4 glass-subtle border",
-          balance >= 0 ? "border-green-500/30" : "border-red-500/30"
-        )}>
-          <div className="text-sm text-muted-foreground">Zůstatek</div>
-          <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
-            {fmt(balance)}
+      {/* Summary + Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="space-y-3">
+          <SummaryCard
+            icon={<TrendingUp className="h-5 w-5 text-green-500" />}
+            label="Příjmy"
+            actual={totalIncomeAct}
+            planned={totalIncomePlan}
+          />
+          <SummaryCard
+            icon={<TrendingDown className="h-5 w-5 text-red-500" />}
+            label="Výdaje"
+            actual={totalExpensesAct}
+            planned={totalExpensesPlan}
+            overBad
+          />
+          <div className={cn(
+            "rounded-2xl p-4 glass-subtle border",
+            balance >= 0 ? "border-green-500/30" : "border-red-500/30"
+          )}>
+            <div className="text-sm text-muted-foreground">Zůstatek</div>
+            <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
+              {fmt(balance)}
+            </div>
+            <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
+              Po zaplacení: {fmt(remaining)}
+            </div>
           </div>
-          <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
-            Po zaplacení: {fmt(remaining)}
-          </div>
-
+        </div>
+        <div className="lg:col-span-2">
+          <CategoryChartCard
+            food={foodExtras}
+            foodBudget={foodBudget}
+            daily={bySection.daily}
+            foodCategories={FOOD_CATEGORIES}
+            dailyCategories={DAILY_CATEGORIES}
+          />
         </div>
       </div>
+
+
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Načítám…</div>
