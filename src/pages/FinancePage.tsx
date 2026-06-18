@@ -171,12 +171,13 @@ export default function FinancePage() {
         <div className="relative">
           <div className={cn("space-y-4 transition-all", showOverlay && "blur-md pointer-events-none select-none")}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
+              <SectionCard accent="emerald" title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
+              <SectionCard accent="violet" title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
+              <SectionCard accent="amber" title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <SectionCard
+                accent="rose"
                 title={SECTION_LABELS.food}
                 items={foodExtras}
                 onUpdate={update}
@@ -197,7 +198,7 @@ export default function FinancePage() {
                 }
                 emptyText="Žádné extra výdaje mimo budget"
               />
-              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
+              <SectionCard accent="sky" title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
             </div>
 
           </div>
