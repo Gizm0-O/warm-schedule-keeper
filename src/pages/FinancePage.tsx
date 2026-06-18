@@ -145,9 +145,10 @@ export default function FinancePage() {
           <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
             {fmt(balance)}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Plán: {fmt(totalIncomePlan - totalExpensesPlan)}
+          <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
+            Po zaplacení: {fmt(remaining)}
           </div>
+
         </div>
       </div>
 
