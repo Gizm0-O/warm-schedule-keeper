@@ -249,7 +249,7 @@ function SummaryCard({
 
 function SectionCard({
   title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
-  headerExtra, emptyText, categoryOptions, hidePlan,
+  headerExtra, emptyText, categoryOptions, hidePlan, accent,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -266,13 +266,23 @@ function SectionCard({
   emptyText?: string;
   categoryOptions?: string[];
   hidePlan?: boolean;
+  accent?: "emerald" | "violet" | "amber" | "rose" | "sky";
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
+  const accentMap: Record<string, { border: string; header: string; dot: string }> = {
+    emerald: { border: "border-emerald-500/30", header: "bg-emerald-500/5", dot: "bg-emerald-500" },
+    violet:  { border: "border-violet-500/30",  header: "bg-violet-500/5",  dot: "bg-violet-500" },
+    amber:   { border: "border-amber-500/30",   header: "bg-amber-500/5",   dot: "bg-amber-500" },
+    rose:    { border: "border-rose-500/30",    header: "bg-rose-500/5",    dot: "bg-rose-500" },
+    sky:     { border: "border-sky-500/30",     header: "bg-sky-500/5",     dot: "bg-sky-500" },
+  };
+  const a = accent ? accentMap[accent] : null;
   return (
-    <div className="rounded-2xl glass-subtle border overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap">
+    <div className={cn("rounded-2xl glass-subtle border overflow-hidden flex flex-col", a?.border)}>
+      <div className={cn("flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap", a?.header)}>
         <div className="flex items-center gap-3 min-w-0">
+          {a && <span className={cn("h-2 w-2 rounded-full", a.dot)} />}
           <h3 className="font-semibold">{title}</h3>
           {headerExtra}
         </div>
