@@ -61,6 +61,20 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const unpaidSum = (arr: FinanceEntry[]) =>
+    arr.reduce((s, e) => {
+      const unpaid = Number(e.planned || 0) - Number(e.actual || 0);
+      return s + (unpaid > 0 ? unpaid : 0);
+    }, 0);
+  const unpaidSubs = unpaidSum(bySection.subscription);
+  const unpaidFixed = unpaidSum(bySection.fixed);
+  const foodBudgetUnpaid = (() => {
+    const fb = bySection.food.find(e => e.category === "__budget__");
+    if (!fb) return 15000;
+    return Number(fb.actual) > 0 ? 0 : Number(fb.planned) || 15000;
+  })();
+  const remaining = balance - unpaidSubs - unpaidFixed - foodBudgetUnpaid;
+
   const FOOD_BUDGET = 15000;
   const toggleFoodBudget = async () => {
     if (foodBudget) {
@@ -131,9 +145,10 @@ export default function FinancePage() {
           <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
             {fmt(balance)}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            Plán: {fmt(totalIncomePlan - totalExpensesPlan)}
+          <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
+            Po zaplacení: {fmt(remaining)}
           </div>
+
         </div>
       </div>
 
