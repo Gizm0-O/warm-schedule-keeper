@@ -43,14 +43,14 @@ export function useFinance(month: string) {
     category?: string | null,
     due_day?: string | null
   ) => {
-    const { error } = await supabase.from("finance_entries").insert({
+    const { data, error } = await supabase.from("finance_entries").insert({
       month, section, name, planned, actual,
       category: category ?? null, due_day: due_day ?? null,
-    });
+    }).select().single();
     if (error) { console.error("[finance] add", error); return false; }
-    await fetch();
+    if (data) setEntries(prev => [...prev, data as FinanceEntry]);
     return true;
-  }, [month, fetch]);
+  }, [month]);
 
   const update = useCallback(async (id: string, patch: Partial<FinanceEntry>) => {
     const { error } = await supabase.from("finance_entries").update(patch).eq("id", id);

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Button } from "@/components/ui/button";
 import {
   useFinance, FinanceEntry, FinanceSection,
@@ -122,35 +123,47 @@ export default function FinancePage() {
         <div className="w-[100px]" /> {/* spacer to keep month centered */}
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SummaryCard
-          icon={<TrendingUp className="h-5 w-5 text-green-500" />}
-          label="Příjmy"
-          actual={totalIncomeAct}
-          planned={totalIncomePlan}
-        />
-        <SummaryCard
-          icon={<TrendingDown className="h-5 w-5 text-red-500" />}
-          label="Výdaje"
-          actual={totalExpensesAct}
-          planned={totalExpensesPlan}
-          overBad
-        />
-        <div className={cn(
-          "rounded-2xl p-4 glass-subtle border",
-          balance >= 0 ? "border-green-500/30" : "border-red-500/30"
-        )}>
-          <div className="text-sm text-muted-foreground">Zůstatek</div>
-          <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
-            {fmt(balance)}
+      {/* Summary + Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="space-y-3">
+          <SummaryCard
+            icon={<TrendingUp className="h-5 w-5 text-green-500" />}
+            label="Příjmy"
+            actual={totalIncomeAct}
+            planned={totalIncomePlan}
+          />
+          <SummaryCard
+            icon={<TrendingDown className="h-5 w-5 text-red-500" />}
+            label="Výdaje"
+            actual={totalExpensesAct}
+            planned={totalExpensesPlan}
+            overBad
+          />
+          <div className={cn(
+            "rounded-2xl p-4 glass-subtle border",
+            balance >= 0 ? "border-green-500/30" : "border-red-500/30"
+          )}>
+            <div className="text-sm text-muted-foreground">Zůstatek</div>
+            <div className={cn("text-2xl font-bold mt-1", balance >= 0 ? "text-green-500" : "text-red-500")}>
+              {fmt(balance)}
+            </div>
+            <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
+              Po zaplacení: {fmt(remaining)}
+            </div>
           </div>
-          <div className={cn("text-xs mt-1", remaining >= 0 ? "text-muted-foreground" : "text-red-500")}>
-            Po zaplacení: {fmt(remaining)}
-          </div>
-
+        </div>
+        <div className="lg:col-span-2">
+          <CategoryChartCard
+            food={foodExtras}
+            foodBudget={foodBudget}
+            daily={bySection.daily}
+            foodCategories={FOOD_CATEGORIES}
+            dailyCategories={DAILY_CATEGORIES}
+          />
         </div>
       </div>
+
+
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Načítám…</div>
@@ -158,12 +171,13 @@ export default function FinancePage() {
         <div className="relative">
           <div className={cn("space-y-4 transition-all", showOverlay && "blur-md pointer-events-none select-none")}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <SectionCard title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
-              <SectionCard title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
+              <SectionCard accent="emerald" title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive readOnly={readOnly} />
+              <SectionCard accent="violet" title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle readOnly={readOnly} />
+              <SectionCard accent="amber" title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidCheck readOnly={readOnly} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <SectionCard
+                accent="rose"
                 title={SECTION_LABELS.food}
                 items={foodExtras}
                 onUpdate={update}
@@ -184,7 +198,7 @@ export default function FinancePage() {
                 }
                 emptyText="Žádné extra výdaje mimo budget"
               />
-              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
+              <SectionCard accent="sky" title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
             </div>
 
           </div>
@@ -235,7 +249,7 @@ function SummaryCard({
 
 function SectionCard({
   title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
-  headerExtra, emptyText, categoryOptions, hidePlan,
+  headerExtra, emptyText, categoryOptions, hidePlan, accent,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -252,13 +266,23 @@ function SectionCard({
   emptyText?: string;
   categoryOptions?: string[];
   hidePlan?: boolean;
+  accent?: "emerald" | "violet" | "amber" | "rose" | "sky";
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
+  const accentMap: Record<string, { border: string; header: string; dot: string }> = {
+    emerald: { border: "border-emerald-500/30", header: "bg-emerald-500/5", dot: "bg-emerald-500" },
+    violet:  { border: "border-violet-500/30",  header: "bg-violet-500/5",  dot: "bg-violet-500" },
+    amber:   { border: "border-amber-500/30",   header: "bg-amber-500/5",   dot: "bg-amber-500" },
+    rose:    { border: "border-rose-500/30",    header: "bg-rose-500/5",    dot: "bg-rose-500" },
+    sky:     { border: "border-sky-500/30",     header: "bg-sky-500/5",     dot: "bg-sky-500" },
+  };
+  const a = accent ? accentMap[accent] : null;
   return (
-    <div className="rounded-2xl glass-subtle border overflow-hidden flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap">
+    <div className={cn("rounded-2xl glass-subtle border overflow-hidden flex flex-col", a?.border)}>
+      <div className={cn("flex items-center justify-between px-4 py-3 border-b gap-3 flex-wrap", a?.header)}>
         <div className="flex items-center gap-3 min-w-0">
+          {a && <span className={cn("h-2 w-2 rounded-full", a.dot)} />}
           <h3 className="font-semibold">{title}</h3>
           {headerExtra}
         </div>
@@ -472,3 +496,100 @@ function FoodBudgetChip({
 }
 
 
+
+const CHART_COLORS = ["#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#0ea5e9", "#ec4899", "#14b8a6", "#a78bfa"];
+
+function CategoryChartCard({
+  food, foodBudget, daily, foodCategories, dailyCategories,
+}: {
+  food: FinanceEntry[];
+  foodBudget: FinanceEntry | null;
+  daily: FinanceEntry[];
+  foodCategories: string[];
+  dailyCategories: string[];
+}) {
+  const [tab, setTab] = useState<"food" | "daily">("food");
+
+  const data = useMemo(() => {
+    const source = tab === "food" ? food : daily;
+    const cats = tab === "food" ? foodCategories : dailyCategories;
+    const totals = new Map<string, number>();
+    cats.forEach(c => totals.set(c, 0));
+    source.forEach(e => {
+      const c = e.category || "—";
+      totals.set(c, (totals.get(c) || 0) + Number(e.actual || 0));
+    });
+    const arr = Array.from(totals.entries())
+      .map(([name, value]) => ({ name, value }))
+      .filter(d => d.value > 0);
+    if (tab === "food" && foodBudget) {
+      const v = Number(foodBudget.actual) || 0;
+      if (v > 0) arr.unshift({ name: "Budget", value: v });
+    }
+    return arr;
+  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories]);
+
+  const total = data.reduce((s, d) => s + d.value, 0);
+
+  return (
+    <div className="rounded-2xl p-4 glass-subtle border h-full flex flex-col">
+      <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
+        <div className="text-sm text-muted-foreground">Rozložení výdajů</div>
+        <div className="inline-flex rounded-lg border border-border/60 p-0.5 text-xs">
+          <button
+            onClick={() => setTab("food")}
+            className={cn("px-3 py-1 rounded-md transition-colors", tab === "food" ? "bg-rose-500/20 text-rose-400 font-medium" : "text-muted-foreground hover:text-foreground")}
+          >
+            Jídlo & Domácnost
+          </button>
+          <button
+            onClick={() => setTab("daily")}
+            className={cn("px-3 py-1 rounded-md transition-colors", tab === "daily" ? "bg-sky-500/20 text-sky-400 font-medium" : "text-muted-foreground hover:text-foreground")}
+          >
+            Každodenní
+          </button>
+        </div>
+      </div>
+      {data.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground py-8">
+          Žádná data k zobrazení
+        </div>
+      ) : (
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 items-center min-h-[200px]">
+          <div className="h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data} dataKey="value" nameKey="name" innerRadius={50} outerRadius={80} paddingAngle={2}>
+                  {data.map((_, i) => (
+                    <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(v: number) => fmt(v)}
+                  contentStyle={{ background: "hsl(var(--background))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-1.5 text-xs">
+            {data.map((d, i) => {
+              const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+              return (
+                <div key={d.name} className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm shrink-0" style={{ background: CHART_COLORS[i % CHART_COLORS.length] }} />
+                  <span className="flex-1 truncate">{d.name}</span>
+                  <span className="tabular-nums text-muted-foreground">{pct}%</span>
+                  <span className="tabular-nums font-medium w-20 text-right">{fmt(d.value)}</span>
+                </div>
+              );
+            })}
+            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-border/50">
+              <span className="flex-1 font-semibold">Celkem</span>
+              <span className="tabular-nums font-bold">{fmt(total)}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
