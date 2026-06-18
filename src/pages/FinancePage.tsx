@@ -80,7 +80,7 @@ export default function FinancePage() {
   };
 
   const DAILY_CATEGORIES = ["Sebík", "3D tisk", "Tade", "Baru", "Benzín", "Domácnost", "Ostatní"];
-  const FOOD_CATEGORIES = ["Potraviny", "Sebík", "Kočky", "Restaurace", "Dobrůtky"];
+  const FOOD_CATEGORIES = ["Potraviny", "Sebík", "Kočky", "Restaurace", "Dobrůtky", "Drogerie"];
 
   const quickAdd = (section: FinanceSection) =>
 
