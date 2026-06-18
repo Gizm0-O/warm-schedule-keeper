@@ -13,7 +13,7 @@ const SECTION_LABELS: Record<FinanceSection, string> = {
   subscription: "Předplatné",
   fixed: "Fixní náklady",
   daily: "Každodenní výdaje",
-  food: "Jídlo",
+  food: "Jídlo & Domácnost",
 };
 
 const fmt = (n: number) => `${Math.round(n).toLocaleString("cs-CZ")} Kč`;
@@ -80,6 +80,7 @@ export default function FinancePage() {
   };
 
   const DAILY_CATEGORIES = ["Sebík", "3D tisk", "Tade", "Baru", "Benzín", "Domácnost", "Ostatní"];
+  const FOOD_CATEGORIES = ["Potraviny", "Sebík", "Kočky", "Restaurace", "Dobrůtky"];
 
   const quickAdd = (section: FinanceSection) =>
 
@@ -154,6 +155,9 @@ export default function FinancePage() {
                 onRemove={remove}
                 onAdd={() => quickAdd("food")}
                 readOnly={readOnly}
+                showCategory
+                categoryOptions={FOOD_CATEGORIES}
+                hidePlan
                 headerExtra={
                   <FoodBudgetChip
                     entry={foodBudget}
@@ -165,7 +169,7 @@ export default function FinancePage() {
                 }
                 emptyText="Žádné extra výdaje mimo budget"
               />
-              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} readOnly={readOnly} />
+              <SectionCard title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
             </div>
 
           </div>
@@ -216,7 +220,7 @@ function SummaryCard({
 
 function SectionCard({
   title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
-  headerExtra, emptyText, categoryOptions,
+  headerExtra, emptyText, categoryOptions, hidePlan,
 }: {
   title: string;
   items: FinanceEntry[];
@@ -232,6 +236,7 @@ function SectionCard({
   headerExtra?: React.ReactNode;
   emptyText?: string;
   categoryOptions?: string[];
+  hidePlan?: boolean;
 }) {
   const totalP = items.reduce((s, e) => s + Number(e.planned || 0), 0);
   const totalA = items.reduce((s, e) => s + Number(e.actual || 0), 0);
@@ -251,10 +256,10 @@ function SectionCard({
       </div>
       <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
         {(paidToggle || paidCheck) && <div className="h-5 w-5 shrink-0" />}
-        {showCategory && <div className="min-w-[100px] shrink-0 text-center" />}
+        {showCategory && <div className="min-w-[100px] shrink-0 text-center">Kategorie</div>}
         <div className="flex-1 min-w-0">Položka</div>
         {showDue && <div className="w-14 text-center shrink-0">Datum</div>}
-        {!paidToggle && <div className="w-20 text-center shrink-0">Plán</div>}
+        {!paidToggle && !hidePlan && <div className="w-20 text-center shrink-0">Plán</div>}
         <div className="w-24 text-center shrink-0">Částka</div>
         <div className="w-6 shrink-0" />
       </div>
@@ -265,7 +270,7 @@ function SectionCard({
         {items.map(e => (
           <Row key={e.id} entry={e} onUpdate={onUpdate} onRemove={onRemove}
                showDue={showDue} showCategory={showCategory} positive={positive}
-               paidToggle={paidToggle} paidCheck={paidCheck}
+               paidToggle={paidToggle} paidCheck={paidCheck} hidePlan={hidePlan}
                categoryOptions={categoryOptions} readOnly={readOnly} />
 
         ))}
@@ -284,7 +289,7 @@ function SectionCard({
 
 
 function Row({
-  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, paidCheck, readOnly, categoryOptions,
+  entry, onUpdate, onRemove, showDue, showCategory, positive, paidToggle, paidCheck, readOnly, categoryOptions, hidePlan,
 }: {
   entry: FinanceEntry;
   onUpdate: (id: string, patch: Partial<FinanceEntry>) => Promise<boolean>;
@@ -292,6 +297,7 @@ function Row({
   showDue?: boolean; showCategory?: boolean; positive?: boolean;
   paidToggle?: boolean; paidCheck?: boolean; readOnly?: boolean;
   categoryOptions?: string[];
+  hidePlan?: boolean;
 }) {
   const diff = Number(entry.actual) - Number(entry.planned);
   const over = !positive && diff > 0 && Number(entry.planned) > 0;
@@ -351,7 +357,7 @@ function Row({
           className="w-14 bg-transparent text-base font-medium outline-none focus:bg-secondary/50 rounded px-1 text-center"
         />
       )}
-      {!paidToggle && (
+      {!paidToggle && !hidePlan && (
         <input
           type="number"
           defaultValue={entry.planned}
