@@ -193,12 +193,44 @@ export function useShiftOverrides() {
     });
   }, []);
 
+  // ---- Switch break overrides ----
+  const setSwitchBreak = useCallback(async (dateKey: string, start: number, end: number) => {
+    setSwitchBreakOverrides((prev) => ({ ...prev, [dateKey]: { start, end } }));
+    await upsertOverride(dateKey, "switch_break_time", { start, end });
+  }, []);
+
+  const updateSwitchBreakLocal = useCallback((dateKey: string, brk: SwitchBreakOverride) => {
+    setSwitchBreakOverrides((prev) => ({ ...prev, [dateKey]: brk }));
+  }, []);
+
+  const hideSwitchBreak = useCallback(async (dateKey: string) => {
+    setHiddenSwitchBreaks((prev) => new Set(prev).add(dateKey));
+    await upsertOverride(dateKey, "switch_break_hidden", { hidden: true });
+  }, []);
+
+  const restoreSwitchBreak = useCallback(async (dateKey: string) => {
+    setHiddenSwitchBreaks((prev) => {
+      const next = new Set(prev);
+      next.delete(dateKey);
+      return next;
+    });
+    setSwitchBreakOverrides((prev) => {
+      const next = { ...prev };
+      delete next[dateKey];
+      return next;
+    });
+    await deleteOverride(dateKey, "switch_break_hidden");
+    await deleteOverride(dateKey, "switch_break_time");
+  }, []);
+
   return {
     swappedDays,
     locationOverrides,
     shiftTimeOverrides,
     shiftDayOverrides,
     hiddenShifts,
+    switchBreakOverrides,
+    hiddenSwitchBreaks,
     loading,
     toggleSwapDay,
     toggleLocation,
@@ -211,5 +243,9 @@ export function useShiftOverrides() {
     deleteShiftOverrides,
     hideShift,
     unhideShift,
+    setSwitchBreak,
+    updateSwitchBreakLocal,
+    hideSwitchBreak,
+    restoreSwitchBreak,
   };
 }
