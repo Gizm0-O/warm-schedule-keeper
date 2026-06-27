@@ -685,6 +685,83 @@ const Index = () => {
     window.addEventListener("mouseup", onUp);
   }, [hourFromY, dayIdxFromX, currentWeekStart, shiftTimeOverrides, shiftDayOverrides, saveDragResult, setShiftTime, setShiftDay, deleteShiftOverrides, pushAction]);
 
+  // Switch break drag — admin only. Moves separator vertically (within day).
+  const onSwitchBreakDragStart = useCallback((e: React.MouseEvent, dateKey: string, brk: { start: number; end: number }) => {
+    if (!isAdmin) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedSwitchBreak(dateKey);
+    const duration = brk.end - brk.start;
+    const cursorHour = snapQuarter(hourFromY(e.clientY));
+    const offsetHour = cursorHour - brk.start;
+    let didDrag = false;
+    const startPos = { x: e.clientX, y: e.clientY };
+    const origBrk = { ...brk };
+
+    const onMove = (me: MouseEvent) => {
+      if (!didDrag) {
+        const dx = me.clientX - startPos.x;
+        const dy = me.clientY - startPos.y;
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        didDrag = true;
+      }
+      const newHour = snapQuarter(hourFromY(me.clientY));
+      const newStart = Math.max(0, Math.min(newHour - offsetHour, 24 - duration));
+      updateSwitchBreakLocal(dateKey, { start: newStart, end: newStart + duration });
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      if (didDrag) {
+        setSwitchBreakOverrides((prev) => {
+          const cur = prev[dateKey];
+          if (cur) {
+            setSwitchBreak(dateKey, cur.start, cur.end);
+            pushAction({
+              undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
+              redo: () => setSwitchBreak(dateKey, cur.start, cur.end),
+            });
+          }
+          return prev;
+        });
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [isAdmin, hourFromY, updateSwitchBreakLocal, setSwitchBreak, pushAction]);
+
+  // Delete key removes selected separator
+  useEffect(() => {
+    if (!selectedSwitchBreak || !isAdmin) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const target = e.target as HTMLElement | null;
+        if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+        if (target && target.isContentEditable) return;
+        e.preventDefault();
+        hideSwitchBreak(selectedSwitchBreak);
+        setSelectedSwitchBreak(null);
+      } else if (e.key === "Escape") {
+        setSelectedSwitchBreak(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSwitchBreak, isAdmin, hideSwitchBreak]);
+
+  // Click outside deselects
+  useEffect(() => {
+    if (!selectedSwitchBreak) return;
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-switch-break]")) return;
+      setSelectedSwitchBreak(null);
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [selectedSwitchBreak]);
+
+
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(interval);
