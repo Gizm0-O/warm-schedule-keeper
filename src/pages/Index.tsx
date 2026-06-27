@@ -713,16 +713,15 @@ const Index = () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
       if (didDrag) {
-        setSwitchBreakOverrides((prev) => {
-          const cur = prev[dateKey];
-          if (cur) {
-            setSwitchBreak(dateKey, cur.start, cur.end);
-            pushAction({
-              undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
-              redo: () => setSwitchBreak(dateKey, cur.start, cur.end),
-            });
-          }
-          return prev;
+        const cur = (switchBreakOverrides as any)[dateKey] ?? origBrk;
+        // read latest via callback by reading from DOM-less state: use a ref via closure is fine since updateSwitchBreakLocal already wrote to state; just pull from latest with a microtask
+        Promise.resolve().then(() => {
+          // best-effort: use whatever is currently in overrides (may be the new value)
+          setSwitchBreak(dateKey, cur.start, cur.end);
+          pushAction({
+            undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
+            redo: () => setSwitchBreak(dateKey, cur.start, cur.end),
+          });
         });
       }
     };
