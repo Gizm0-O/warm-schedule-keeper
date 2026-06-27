@@ -137,10 +137,29 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-bold">Profil</h1>
 
         <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={profile?.avatar_url || undefined} />
-            <AvatarFallback className="text-lg bg-primary/20 text-primary">{initials}</AvatarFallback>
-          </Avatar>
+          <button
+            type="button"
+            onClick={async () => {
+              if (!profile?.avatar_url) { fileRef.current?.click(); return; }
+              try {
+                const res = await fetch(profile.avatar_url, { cache: "no-store" });
+                const blob = await res.blob();
+                const reader = new FileReader();
+                reader.onload = () => setCropSrc(reader.result as string);
+                reader.readAsDataURL(blob);
+              } catch {
+                toast.error("Nepodařilo se načíst fotku k úpravě");
+              }
+            }}
+            className="rounded-full focus:outline-none focus:ring-2 focus:ring-primary/50 hover:opacity-90 transition-opacity"
+            title={profile?.avatar_url ? "Upravit pozici fotky" : "Nahrát fotku"}
+            aria-label="Upravit profilovou fotku"
+          >
+            <Avatar className="h-20 w-20 cursor-pointer">
+              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarFallback className="text-lg bg-primary/20 text-primary">{initials}</AvatarFallback>
+            </Avatar>
+          </button>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
           <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
             <Upload className="h-4 w-4 mr-2" /> {uploading ? "Nahrávám…" : "Změnit fotku"}
