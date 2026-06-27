@@ -697,6 +697,7 @@ const Index = () => {
     let didDrag = false;
     const startPos = { x: e.clientX, y: e.clientY };
     const origBrk = { ...brk };
+    let latest = { ...brk };
 
     const onMove = (me: MouseEvent) => {
       if (!didDrag) {
@@ -707,21 +708,17 @@ const Index = () => {
       }
       const newHour = snapQuarter(hourFromY(me.clientY));
       const newStart = Math.max(0, Math.min(newHour - offsetHour, 24 - duration));
-      updateSwitchBreakLocal(dateKey, { start: newStart, end: newStart + duration });
+      latest = { start: newStart, end: newStart + duration };
+      updateSwitchBreakLocal(dateKey, latest);
     };
     const onUp = () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
       if (didDrag) {
-        const cur = (switchBreakOverrides as any)[dateKey] ?? origBrk;
-        // read latest via callback by reading from DOM-less state: use a ref via closure is fine since updateSwitchBreakLocal already wrote to state; just pull from latest with a microtask
-        Promise.resolve().then(() => {
-          // best-effort: use whatever is currently in overrides (may be the new value)
-          setSwitchBreak(dateKey, cur.start, cur.end);
-          pushAction({
-            undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
-            redo: () => setSwitchBreak(dateKey, cur.start, cur.end),
-          });
+        setSwitchBreak(dateKey, latest.start, latest.end);
+        pushAction({
+          undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
+          redo: () => setSwitchBreak(dateKey, latest.start, latest.end),
         });
       }
     };
