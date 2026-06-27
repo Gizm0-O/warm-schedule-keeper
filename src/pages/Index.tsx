@@ -421,10 +421,13 @@ const Index = () => {
   const isAnniversaryDay = new Date().getDate() === 20;
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
+    switchBreakOverrides, hiddenSwitchBreaks,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
     hideShift, unhideShift,
+    setSwitchBreak, updateSwitchBreakLocal, hideSwitchBreak, restoreSwitchBreak,
   } = useShiftOverrides();
+  const [selectedSwitchBreak, setSelectedSwitchBreak] = useState<string | null>(null);
   
 
   // Edit event dialog
