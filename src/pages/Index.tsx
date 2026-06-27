@@ -421,10 +421,13 @@ const Index = () => {
   const isAnniversaryDay = new Date().getDate() === 20;
   const {
     swappedDays, locationOverrides, shiftTimeOverrides, shiftDayOverrides, hiddenShifts,
+    switchBreakOverrides, hiddenSwitchBreaks,
     toggleSwapDay, toggleLocation, setShiftTime, setShiftDay,
     setShiftTimeOverrides, setShiftDayOverrides, saveDragResult, deleteShiftOverrides,
     hideShift, unhideShift,
+    setSwitchBreak, updateSwitchBreakLocal, hideSwitchBreak, restoreSwitchBreak,
   } = useShiftOverrides();
+  const [selectedSwitchBreak, setSelectedSwitchBreak] = useState<string | null>(null);
   
 
   // Edit event dialog
@@ -681,6 +684,79 @@ const Index = () => {
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mouseup", onUp);
   }, [hourFromY, dayIdxFromX, currentWeekStart, shiftTimeOverrides, shiftDayOverrides, saveDragResult, setShiftTime, setShiftDay, deleteShiftOverrides, pushAction]);
+
+  // Switch break drag — admin only. Moves separator vertically (within day).
+  const onSwitchBreakDragStart = useCallback((e: React.MouseEvent, dateKey: string, brk: { start: number; end: number }) => {
+    if (!isAdmin) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedSwitchBreak(dateKey);
+    const duration = brk.end - brk.start;
+    const cursorHour = snapQuarter(hourFromY(e.clientY));
+    const offsetHour = cursorHour - brk.start;
+    let didDrag = false;
+    const startPos = { x: e.clientX, y: e.clientY };
+    const origBrk = { ...brk };
+    let latest = { ...brk };
+
+    const onMove = (me: MouseEvent) => {
+      if (!didDrag) {
+        const dx = me.clientX - startPos.x;
+        const dy = me.clientY - startPos.y;
+        if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+        didDrag = true;
+      }
+      const newHour = snapQuarter(hourFromY(me.clientY));
+      const newStart = Math.max(0, Math.min(newHour - offsetHour, 24 - duration));
+      latest = { start: newStart, end: newStart + duration };
+      updateSwitchBreakLocal(dateKey, latest);
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      if (didDrag) {
+        setSwitchBreak(dateKey, latest.start, latest.end);
+        pushAction({
+          undo: () => setSwitchBreak(dateKey, origBrk.start, origBrk.end),
+          redo: () => setSwitchBreak(dateKey, latest.start, latest.end),
+        });
+      }
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }, [isAdmin, hourFromY, updateSwitchBreakLocal, setSwitchBreak, pushAction]);
+
+  // Delete key removes selected separator
+  useEffect(() => {
+    if (!selectedSwitchBreak || !isAdmin) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const target = e.target as HTMLElement | null;
+        if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return;
+        if (target && target.isContentEditable) return;
+        e.preventDefault();
+        hideSwitchBreak(selectedSwitchBreak);
+        setSelectedSwitchBreak(null);
+      } else if (e.key === "Escape") {
+        setSelectedSwitchBreak(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSwitchBreak, isAdmin, hideSwitchBreak]);
+
+  // Click outside deselects
+  useEffect(() => {
+    if (!selectedSwitchBreak) return;
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest("[data-switch-break]")) return;
+      setSelectedSwitchBreak(null);
+    };
+    window.addEventListener("mousedown", onDown);
+    return () => window.removeEventListener("mousedown", onDown);
+  }, [selectedSwitchBreak]);
+
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60_000);
@@ -1542,27 +1618,45 @@ const Index = () => {
                   });
                 })}
 
-                {/* SWITCH BREAK – per day, podle aktuálního rozvrhu */}
+                {/* SWITCH BREAK – per day, podle aktuálního rozvrhu (s admin overrides) */}
                 {weekDays.map((day, dayIdx) => {
-                  const brk = getSwitchBreakForIsoDay(isoDayOf(day));
+                  const dateKey = format(day, "yyyy-MM-dd");
+                  if (hiddenSwitchBreaks.has(dateKey)) return null;
+                  const defaultBrk = getSwitchBreakForIsoDay(isoDayOf(day));
+                  const override = switchBreakOverrides[dateKey];
+                  const brk = override ?? defaultBrk;
                   if (!brk) return null;
-                  const top = timeToY(brk.start);
-                  const height = timeToY(brk.end) - top;
+                  const start = (brk as any).start ?? (brk as any).startHour ?? (brk as any).start;
+                  const end = (brk as any).end ?? (brk as any).endHour ?? (brk as any).end;
+                  const top = timeToY(start);
+                  const height = timeToY(end) - top;
                   const colWidth = `calc((100% - 60px) / 7)`;
                   const left = `calc(60px + ${dayIdx} * ${colWidth})`;
+                  const isSelected = selectedSwitchBreak === dateKey;
                   return (
                     <div
                       key={`switch-break-${dayIdx}`}
-                      className="absolute pointer-events-none z-[6] flex items-center justify-center"
+                      data-switch-break={dateKey}
+                      className={`absolute z-[6] flex items-center justify-center ${isAdmin ? "cursor-move pointer-events-auto" : "pointer-events-none"}`}
                       style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
+                      onMouseDown={(e) => {
+                        if (!isAdmin) return;
+                        onSwitchBreakDragStart(e, dateKey, { start, end });
+                      }}
+                      onClick={(e) => {
+                        if (!isAdmin) return;
+                        e.stopPropagation();
+                        setSelectedSwitchBreak(dateKey);
+                      }}
                     >
                       {/* Thin dashed divider with brand gradient */}
                       <div
                         className="absolute left-2 right-2 top-1/2 -translate-y-px h-px"
                         style={{
-                          backgroundImage:
-                            "linear-gradient(90deg, hsl(265 80% 60% / 0.6), hsl(330 75% 60% / 0.6), hsl(200 80% 55% / 0.6))",
+                          backgroundImage: isSelected
+                            ? "linear-gradient(90deg, hsl(265 90% 55%), hsl(330 85% 55%), hsl(200 90% 50%))"
+                            : "linear-gradient(90deg, hsl(265 80% 60% / 0.6), hsl(330 75% 60% / 0.6), hsl(200 80% 55% / 0.6))",
                           maskImage:
                             "repeating-linear-gradient(90deg, #000 0 4px, transparent 4px 8px)",
                           WebkitMaskImage:
@@ -1572,20 +1666,56 @@ const Index = () => {
                       {/* Center swap badge — light circle with two-tone diagonal arrows */}
                       <div
                         className="relative z-[1] flex items-center justify-center w-6 h-6 rounded-full bg-background shadow-sm"
-                        style={{ border: "1.5px solid hsl(265 70% 78%)" }}
+                        style={{
+                          border: isSelected ? "2px solid hsl(265 80% 55%)" : "1.5px solid hsl(265 70% 78%)",
+                          boxShadow: isSelected ? "0 0 0 3px hsl(265 80% 55% / 0.25)" : undefined,
+                        }}
                       >
                         <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                          {/* Blue arrow: top arc right→left, head at left end */}
                           <path d="M18 9 C 15 4, 9 4, 6 9" stroke="hsl(215 85% 55%)" />
                           <path d="M6 9 L9.5 8 M6 9 L7 5.5" stroke="hsl(215 85% 55%)" />
-                          {/* Purple arrow: bottom arc left→right, head at right end */}
                           <path d="M6 15 C 9 20, 15 20, 18 15" stroke="hsl(270 65% 55%)" />
                           <path d="M18 15 L14.5 16 M18 15 L17 18.5" stroke="hsl(270 65% 55%)" />
                         </svg>
                       </div>
+                      {isAdmin && isSelected && (
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            hideSwitchBreak(dateKey);
+                            setSelectedSwitchBreak(null);
+                          }}
+                          className="absolute -top-2 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-none flex items-center justify-center shadow hover:scale-110 transition-transform z-[2]"
+                          title="Odstranit separátor (Delete)"
+                          aria-label="Odstranit separátor"
+                        >
+                          ×
+                        </button>
+                      )}
                     </div>
                   );
                 })}
+
+                {/* Tlačítko obnovit skryté separátory – pouze admin */}
+                {isAdmin && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
+                  <div className="absolute top-1 right-1 z-[7] pointer-events-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        weekDays.forEach((d) => {
+                          const k = format(d, "yyyy-MM-dd");
+                          if (hiddenSwitchBreaks.has(k)) restoreSwitchBreak(k);
+                        });
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/80 hover:bg-secondary border border-border shadow-sm"
+                    >
+                      Obnovit separátory
+                    </button>
+                  </div>
+                )}
+
 
                 {/* TRIP DAY – sobotní pozadí */}
                 {weekDays.map((day, dayIdx) => {

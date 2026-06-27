@@ -6,12 +6,19 @@ interface ShiftTimeOverride {
   endHour: number;
 }
 
+export interface SwitchBreakOverride {
+  start: number;
+  end: number;
+}
+
 export function useShiftOverrides() {
   const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
   const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, ShiftTimeOverride>>({});
   const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
   const [hiddenShifts, setHiddenShifts] = useState<Set<string>>(new Set());
+  const [switchBreakOverrides, setSwitchBreakOverrides] = useState<Record<string, SwitchBreakOverride>>({});
+  const [hiddenSwitchBreaks, setHiddenSwitchBreaks] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   // Load all overrides from DB
@@ -24,6 +31,8 @@ export function useShiftOverrides() {
         const times: Record<string, ShiftTimeOverride> = {};
         const days: Record<string, string> = {};
         const hidden = new Set<string>();
+        const sbreaks: Record<string, SwitchBreakOverride> = {};
+        const sbreakHidden = new Set<string>();
 
         for (const row of data) {
           const val = row.value as any;
@@ -43,6 +52,12 @@ export function useShiftOverrides() {
             case "hidden":
               hidden.add(row.shift_key);
               break;
+            case "switch_break_time":
+              sbreaks[row.shift_key] = { start: val.start, end: val.end };
+              break;
+            case "switch_break_hidden":
+              sbreakHidden.add(row.shift_key);
+              break;
           }
         }
 
@@ -51,6 +66,8 @@ export function useShiftOverrides() {
         setShiftTimeOverrides(times);
         setShiftDayOverrides(days);
         setHiddenShifts(hidden);
+        setSwitchBreakOverrides(sbreaks);
+        setHiddenSwitchBreaks(sbreakHidden);
       }
       setLoading(false);
     };
@@ -176,12 +193,44 @@ export function useShiftOverrides() {
     });
   }, []);
 
+  // ---- Switch break overrides ----
+  const setSwitchBreak = useCallback(async (dateKey: string, start: number, end: number) => {
+    setSwitchBreakOverrides((prev) => ({ ...prev, [dateKey]: { start, end } }));
+    await upsertOverride(dateKey, "switch_break_time", { start, end });
+  }, []);
+
+  const updateSwitchBreakLocal = useCallback((dateKey: string, brk: SwitchBreakOverride) => {
+    setSwitchBreakOverrides((prev) => ({ ...prev, [dateKey]: brk }));
+  }, []);
+
+  const hideSwitchBreak = useCallback(async (dateKey: string) => {
+    setHiddenSwitchBreaks((prev) => new Set(prev).add(dateKey));
+    await upsertOverride(dateKey, "switch_break_hidden", { hidden: true });
+  }, []);
+
+  const restoreSwitchBreak = useCallback(async (dateKey: string) => {
+    setHiddenSwitchBreaks((prev) => {
+      const next = new Set(prev);
+      next.delete(dateKey);
+      return next;
+    });
+    setSwitchBreakOverrides((prev) => {
+      const next = { ...prev };
+      delete next[dateKey];
+      return next;
+    });
+    await deleteOverride(dateKey, "switch_break_hidden");
+    await deleteOverride(dateKey, "switch_break_time");
+  }, []);
+
   return {
     swappedDays,
     locationOverrides,
     shiftTimeOverrides,
     shiftDayOverrides,
     hiddenShifts,
+    switchBreakOverrides,
+    hiddenSwitchBreaks,
     loading,
     toggleSwapDay,
     toggleLocation,
@@ -194,5 +243,9 @@ export function useShiftOverrides() {
     deleteShiftOverrides,
     hideShift,
     unhideShift,
+    setSwitchBreak,
+    updateSwitchBreakLocal,
+    hideSwitchBreak,
+    restoreSwitchBreak,
   };
 }
