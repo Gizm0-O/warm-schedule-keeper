@@ -6,12 +6,19 @@ interface ShiftTimeOverride {
   endHour: number;
 }
 
+export interface SwitchBreakOverride {
+  start: number;
+  end: number;
+}
+
 export function useShiftOverrides() {
   const [swappedDays, setSwappedDays] = useState<Set<string>>(new Set());
   const [locationOverrides, setLocationOverrides] = useState<Record<string, boolean>>({});
   const [shiftTimeOverrides, setShiftTimeOverrides] = useState<Record<string, ShiftTimeOverride>>({});
   const [shiftDayOverrides, setShiftDayOverrides] = useState<Record<string, string>>({});
   const [hiddenShifts, setHiddenShifts] = useState<Set<string>>(new Set());
+  const [switchBreakOverrides, setSwitchBreakOverrides] = useState<Record<string, SwitchBreakOverride>>({});
+  const [hiddenSwitchBreaks, setHiddenSwitchBreaks] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   // Load all overrides from DB
