@@ -31,6 +31,8 @@ export function useShiftOverrides() {
         const times: Record<string, ShiftTimeOverride> = {};
         const days: Record<string, string> = {};
         const hidden = new Set<string>();
+        const sbreaks: Record<string, SwitchBreakOverride> = {};
+        const sbreakHidden = new Set<string>();
 
         for (const row of data) {
           const val = row.value as any;
@@ -50,6 +52,12 @@ export function useShiftOverrides() {
             case "hidden":
               hidden.add(row.shift_key);
               break;
+            case "switch_break_time":
+              sbreaks[row.shift_key] = { start: val.start, end: val.end };
+              break;
+            case "switch_break_hidden":
+              sbreakHidden.add(row.shift_key);
+              break;
           }
         }
 
@@ -58,6 +66,8 @@ export function useShiftOverrides() {
         setShiftTimeOverrides(times);
         setShiftDayOverrides(days);
         setHiddenShifts(hidden);
+        setSwitchBreakOverrides(sbreaks);
+        setHiddenSwitchBreaks(sbreakHidden);
       }
       setLoading(false);
     };
