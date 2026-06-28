@@ -1637,7 +1637,7 @@ const Index = () => {
                     <div
                       key={`switch-break-${dayIdx}`}
                       data-switch-break={dateKey}
-                      className={`absolute z-[6] flex items-center justify-center ${isAdmin ? "cursor-move pointer-events-auto" : "pointer-events-none"}`}
+                      className={`absolute z-[30] flex items-center justify-center ${isAdmin ? "cursor-move pointer-events-auto" : "pointer-events-none"}`}
                       style={{ top, height, left, width: colWidth }}
                       aria-label="SWITCH BREAK"
                       onMouseDown={(e) => {
