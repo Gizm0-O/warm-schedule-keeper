@@ -1700,7 +1700,7 @@ const Index = () => {
 
                 {/* Tlačítko obnovit skryté separátory – pouze admin */}
                 {isAdmin && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
-                  <div className="absolute top-1 right-1 z-[7] pointer-events-auto">
+                  <div className="absolute top-1 right-1 z-[31] pointer-events-auto">
                     <button
                       type="button"
                       onClick={() => {
