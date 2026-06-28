@@ -1238,7 +1238,25 @@ const Index = () => {
           <div className="glass rounded-2xl overflow-hidden animate-fade-in">
             <div className="overflow-y-auto scrollbar-hidden max-h-[600px] 2xl:max-h-[900px] relative" ref={timelineRef}>
             <div className="grid border-b border-border sticky top-0 z-20 bg-background/80 backdrop-blur-md" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
-              <div className="border-r border-border" />
+              <div className="border-r border-border flex items-center justify-center relative">
+                {isAdmin && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Obnovit separátory"
+                    aria-label="Obnovit separátory"
+                    className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground hover:bg-accent"
+                    onClick={() => {
+                      weekDays.forEach((d) => {
+                        const k = format(d, "yyyy-MM-dd");
+                        if (hiddenSwitchBreaks.has(k)) restoreSwitchBreak(k);
+                      });
+                    }}
+                  >
+                    <RefreshCcw className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+              </div>
               {weekDays.map((day) => (
                 <button
                   key={day.toISOString()}
