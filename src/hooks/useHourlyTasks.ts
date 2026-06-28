@@ -211,7 +211,7 @@ export function useHourlyTasks() {
       }
     }
     // Bonusy za dosažené milníky (jen pokud je milník nastaven a nese bonus)
-    if (task.milestone_hours > 0 && task.milestone_bonus_percent > 0) {
+    if (contributesToEarnings && task.milestone_hours > 0 && task.milestone_bonus_percent > 0) {
       const milestonesReached = Math.floor(newHours / task.milestone_hours);
       for (let m = 1; m <= milestonesReached; m++) {
         rows.push({
