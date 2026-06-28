@@ -20,7 +20,7 @@ import {
   addDays,
 } from "date-fns";
 import { cs } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake, Shuffle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, CalendarDays, CalendarRange, Briefcase, Home, ArrowLeftRight, Pencil, AlertCircle, Repeat, Check, Trash2, Clock, Cake, Shuffle, RefreshCcw } from "lucide-react";
 import { useCalendarEvents, type CalendarEvent } from "@/hooks/useCalendarEvents";
 import { useBirthdays, getBirthdaysForDate } from "@/hooks/useBirthdays";
 import { BirthdayManagerDialog } from "@/components/BirthdayManagerDialog";
