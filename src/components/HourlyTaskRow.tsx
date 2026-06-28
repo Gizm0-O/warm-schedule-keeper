@@ -44,10 +44,11 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
   const [confirmDelete, setConfirmDelete] = useState(false);
   const isProgressive = task.kind === 'progressive';
   const totalEarned = isProgressive ? Number(task.hours_worked) * task.unit_amount : task.hours_worked * task.rate_per_hour;
-  const milestonesReached = Math.floor(task.hours_worked / task.milestone_hours);
+  const hasMilestone = task.milestone_hours > 0 && task.milestone_bonus_percent > 0;
+  const milestonesReached = hasMilestone ? Math.floor(task.hours_worked / task.milestone_hours) : 0;
   const totalBonus = milestonesReached * task.milestone_bonus_percent;
-  const hoursToNext = task.milestone_hours - (task.hours_worked % task.milestone_hours);
-  const isOnMilestone = task.hours_worked > 0 && task.hours_worked % task.milestone_hours === 0;
+  const hoursToNext = hasMilestone ? task.milestone_hours - (task.hours_worked % task.milestone_hours) : 0;
+  const isOnMilestone = hasMilestone && task.hours_worked > 0 && task.hours_worked % task.milestone_hours === 0;
   const totalXpEarned = Math.round(Number(task.hours_worked) * (task.xp_per_hour ?? 10));
 
   const borderClass = task.person === "Tadeáš" ? "border-shift-office/30" : "border-shift-partner/30";
@@ -107,7 +108,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
               ⚡ {totalXpEarned} XP
             </span>
           )}
-          {!isProgressive && (
+          {!isProgressive && hasMilestone && (
             isOnMilestone ? (
               <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium whitespace-nowrap">
                 <Sparkles className="h-3 w-3" /> Milník!

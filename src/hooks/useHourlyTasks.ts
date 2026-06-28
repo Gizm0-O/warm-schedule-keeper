@@ -208,18 +208,20 @@ export function useHourlyTasks() {
         });
       }
     }
-    // Bonusy za dosažené milníky
-    const milestonesReached = Math.floor(newHours / task.milestone_hours);
-    for (let m = 1; m <= milestonesReached; m++) {
-      rows.push({
-        todo_id: `${todoIdBonusPrefix}${m}`,
-        todo_text: `${task.name} – bonus za ${m * task.milestone_hours}h`,
-        amount: 0,
-        bonus_type: 'on_time',
-        bonus_percent: task.milestone_bonus_percent,
-        deadline: null,
-        completed_at: new Date().toISOString(),
-      });
+    // Bonusy za dosažené milníky (jen pokud je milník nastaven a nese bonus)
+    if (task.milestone_hours > 0 && task.milestone_bonus_percent > 0) {
+      const milestonesReached = Math.floor(newHours / task.milestone_hours);
+      for (let m = 1; m <= milestonesReached; m++) {
+        rows.push({
+          todo_id: `${todoIdBonusPrefix}${m}`,
+          todo_text: `${task.name} – bonus za ${m * task.milestone_hours}h`,
+          amount: 0,
+          bonus_type: 'on_time',
+          bonus_percent: task.milestone_bonus_percent,
+          deadline: null,
+          completed_at: new Date().toISOString(),
+        });
+      }
     }
 
     if (rows.length > 0) {
