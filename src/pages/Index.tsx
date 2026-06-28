@@ -1716,25 +1716,6 @@ const Index = () => {
                   );
                 })}
 
-                {/* Tlačítko obnovit skryté separátory – pouze admin */}
-                {isAdmin && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
-                  <div className="absolute top-1 right-1 z-[31] pointer-events-auto">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        weekDays.forEach((d) => {
-                          const k = format(d, "yyyy-MM-dd");
-                          if (hiddenSwitchBreaks.has(k)) restoreSwitchBreak(k);
-                        });
-                      }}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-secondary/80 hover:bg-secondary border border-border shadow-sm"
-                    >
-                      Obnovit separátory
-                    </button>
-                  </div>
-                )}
-
-
                 {/* TRIP DAY – sobotní pozadí */}
                 {weekDays.map((day, dayIdx) => {
                   if (isoDayOf(day) !== 6) return null;
