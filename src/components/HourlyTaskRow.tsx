@@ -108,7 +108,7 @@ export function HourlyTaskRow({ task, compact = false }: { task: HourlyTask; com
               ⚡ {totalXpEarned} XP
             </span>
           )}
-          {!isProgressive && (
+          {!isProgressive && hasMilestone && (
             isOnMilestone ? (
               <span className="inline-flex items-center gap-1 text-[10px] text-success font-medium whitespace-nowrap">
                 <Sparkles className="h-3 w-3" /> Milník!
