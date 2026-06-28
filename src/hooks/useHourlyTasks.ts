@@ -193,9 +193,11 @@ export function useHourlyTasks() {
     await supabase.from('task_earnings').delete().like('todo_id', `hourly:${task.id}:%`);
 
     // 3) Vytvoř nové earningy pro každou hodinu (jen pokud má sazbu > 0; progresivní úkoly přeskočí)
+    // Úkoly přiřazené Tadeášovi nepřispívají do panelu „Vyděláno" (ten je pro Barču).
     const rows: any[] = [];
     const perUnitAmount = task.kind === 'progressive' ? task.unit_amount : task.rate_per_hour;
-    if (perUnitAmount > 0) {
+    const contributesToEarnings = task.person !== 'Tadeáš';
+    if (contributesToEarnings && perUnitAmount > 0) {
       for (let h = 1; h <= newHours; h++) {
         rows.push({
           todo_id: `${todoIdHourPrefix}${h}`,
@@ -209,7 +211,7 @@ export function useHourlyTasks() {
       }
     }
     // Bonusy za dosažené milníky (jen pokud je milník nastaven a nese bonus)
-    if (task.milestone_hours > 0 && task.milestone_bonus_percent > 0) {
+    if (contributesToEarnings && task.milestone_hours > 0 && task.milestone_bonus_percent > 0) {
       const milestonesReached = Math.floor(newHours / task.milestone_hours);
       for (let m = 1; m <= milestonesReached; m++) {
         rows.push({
