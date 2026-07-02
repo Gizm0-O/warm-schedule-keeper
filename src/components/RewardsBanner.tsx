@@ -5,12 +5,15 @@ import { useTodos } from '../contexts/TodoContext';
 import type { RewardsConfig } from '../hooks/useRewards';
 import { useArchivedMonths, useMonthlyArchive, useMonthlyAutoArchive } from '../hooks/useMonthlyArchive';
 import { cn } from '../lib/utils';
-import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
+import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History, ChevronLeft, ChevronRight, Archive, Undo2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useEarnedRewards } from '@/hooks/useCustomRewards';
+import { toast } from 'sonner';
 
 const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
 const formatMonthLabel = (month: string) => {
@@ -24,7 +27,7 @@ import { useMonthlyXp } from '@/hooks/useMonthlyXp';
 import { useTaskXp } from '@/hooks/useTaskXp';
 
 export function RewardsBanner() {
-  const { todos } = useTodos();
+  const { todos, setTodos } = useTodos();
   const completedTodoIds = (() => {
     const s = new Set<string>();
     todos.forEach(t => { if (t.completed) s.add(t.id); });
@@ -32,6 +35,7 @@ export function RewardsBanner() {
   })();
   const rewards = useRewards(completedTodoIds);
   const { earnings: liveEarnings, totalEarned: liveTotalEarned, removeEarning: removeLiveEarning, updateEarning: updateLiveEarning } = useTaskEarnings();
+  const { revokeForTodo } = useEarnedRewards();
 
   // Auto-archivace předchozích měsíců při prvním otevření v novém měsíci
   useMonthlyAutoArchive();
@@ -95,6 +99,36 @@ export function RewardsBanner() {
   const earnings = isArchiveView ? (archive?.earnings_snapshot ?? []) : liveEarnings;
   const removeEarning = isArchiveView ? removeArchiveEarning : removeLiveEarning;
   const updateEarning = isArchiveView ? updateArchiveEarning : updateLiveEarning;
+
+  // Vrátit odevzdaný úkol zpět mezi neodevzdané. Smaže earnings (hlavní + bonus),
+  // odvolá udělené custom odměny, přepne todo na completed=false. Zachová:
+  // - task_bonuses (přepínač včas/pozdě/zmeškáno)
+  // - task_bonus_amounts (částky bonusů)
+  // - task_custom_rewards konfiguraci
+  // - story linkování (story_number/story_month) → blokování dalších příběhů zůstane
+  const undoCompletion = async (earning: any) => {
+    const todoId: string = earning.todo_id;
+    // Ignoruj bonusové/hodinové řádky - undo je jen pro hlavní odevzdání
+    if (!todoId || todoId.endsWith('__bonus') || todoId.startsWith('hourly:')) return;
+    try {
+      // 1) Smaž earning + případný bonus companion
+      await supabase.from('task_earnings').delete().or(`todo_id.eq.${todoId},todo_id.eq.${todoId}__bonus`);
+      // 2) Odvolej udělené custom odměny (pokud fce dostupná - jen pro live view)
+      if (!isArchiveView) {
+        try { await revokeForTodo(todoId); } catch (e) { console.error('[undoCompletion] revokeForTodo', e); }
+      }
+      // 3) Přepni todo zpět na neodevzdaný (jen pro live view - archiv necháváme)
+      if (!isArchiveView) {
+        await supabase.from('todos').update({ completed: false }).eq('id', todoId);
+        setTodos(prev => prev.map(t => t.id === todoId ? { ...t, completed: false, completed_at: undefined } : t));
+      }
+      toast.success('Úkol vrácen mezi neodevzdané');
+      window.dispatchEvent(new CustomEvent('task-earnings-changed'));
+    } catch (e) {
+      console.error('[undoCompletion] failed', e);
+      toast.error('Vrácení úkolu selhalo');
+    }
+  };
 
   const startEditEarning = (e: any) => {
     setEditingEarningId(e.id);
@@ -660,6 +694,15 @@ export function RewardsBanner() {
                       <span className="text-sm font-bold text-success shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
                       {adminMode && (
                         <div className="flex gap-1 shrink-0">
+                          {!isArchiveView && !e.todo_id?.endsWith('__bonus') && !e.todo_id?.startsWith('hourly:') && (
+                            <button
+                              onClick={() => undoCompletion(e)}
+                              className="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                              title="Vrátit mezi neodevzdané (smaže odměny, zachová nastavení)"
+                            >
+                              <Undo2 className="h-3.5 w-3.5 text-amber-600" />
+                            </button>
+                          )}
                           <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                           </button>
