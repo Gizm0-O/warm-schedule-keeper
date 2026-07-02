@@ -694,6 +694,15 @@ export function RewardsBanner() {
                       <span className="text-sm font-bold text-success shrink-0">+{e.amount.toLocaleString('cs')} Kč</span>
                       {adminMode && (
                         <div className="flex gap-1 shrink-0">
+                          {!isArchiveView && !e.todo_id?.endsWith('__bonus') && !e.todo_id?.startsWith('hourly:') && (
+                            <button
+                              onClick={() => undoCompletion(e)}
+                              className="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                              title="Vrátit mezi neodevzdané (smaže odměny, zachová nastavení)"
+                            >
+                              <Undo2 className="h-3.5 w-3.5 text-amber-600" />
+                            </button>
+                          )}
                           <button onClick={() => startEditEarning(e)} className="p-1 rounded hover:bg-muted">
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                           </button>
