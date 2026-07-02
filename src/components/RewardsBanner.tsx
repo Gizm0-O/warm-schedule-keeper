@@ -27,7 +27,7 @@ import { useMonthlyXp } from '@/hooks/useMonthlyXp';
 import { useTaskXp } from '@/hooks/useTaskXp';
 
 export function RewardsBanner() {
-  const { todos } = useTodos();
+  const { todos, setTodos } = useTodos();
   const completedTodoIds = (() => {
     const s = new Set<string>();
     todos.forEach(t => { if (t.completed) s.add(t.id); });
@@ -35,6 +35,7 @@ export function RewardsBanner() {
   })();
   const rewards = useRewards(completedTodoIds);
   const { earnings: liveEarnings, totalEarned: liveTotalEarned, removeEarning: removeLiveEarning, updateEarning: updateLiveEarning } = useTaskEarnings();
+  const { revokeForTodo } = useCustomRewards();
 
   // Auto-archivace předchozích měsíců při prvním otevření v novém měsíci
   useMonthlyAutoArchive();
