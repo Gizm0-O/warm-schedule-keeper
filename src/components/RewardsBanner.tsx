@@ -5,12 +5,15 @@ import { useTodos } from '../contexts/TodoContext';
 import type { RewardsConfig } from '../hooks/useRewards';
 import { useArchivedMonths, useMonthlyArchive, useMonthlyAutoArchive } from '../hooks/useMonthlyArchive';
 import { cn } from '../lib/utils';
-import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
+import { Coins, Star, Lock, ChevronDown, ChevronUp, Settings, Trash2, Pencil, History, ChevronLeft, ChevronRight, Archive, Undo2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from './ui/dialog';
 import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { useCustomRewards } from '@/hooks/useCustomRewards';
+import { toast } from 'sonner';
 
 const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
 const formatMonthLabel = (month: string) => {
