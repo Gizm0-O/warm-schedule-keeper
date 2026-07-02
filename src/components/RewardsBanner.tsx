@@ -35,7 +35,7 @@ export function RewardsBanner() {
   })();
   const rewards = useRewards(completedTodoIds);
   const { earnings: liveEarnings, totalEarned: liveTotalEarned, removeEarning: removeLiveEarning, updateEarning: updateLiveEarning } = useTaskEarnings();
-  const { revokeForTodo } = useCustomRewards();
+  const { revokeForTodo } = useEarnedRewards();
 
   // Auto-archivace předchozích měsíců při prvním otevření v novém měsíci
   useMonthlyAutoArchive();
