@@ -100,6 +100,36 @@ export function RewardsBanner() {
   const removeEarning = isArchiveView ? removeArchiveEarning : removeLiveEarning;
   const updateEarning = isArchiveView ? updateArchiveEarning : updateLiveEarning;
 
+  // Vrátit odevzdaný úkol zpět mezi neodevzdané. Smaže earnings (hlavní + bonus),
+  // odvolá udělené custom odměny, přepne todo na completed=false. Zachová:
+  // - task_bonuses (přepínač včas/pozdě/zmeškáno)
+  // - task_bonus_amounts (částky bonusů)
+  // - task_custom_rewards konfiguraci
+  // - story linkování (story_number/story_month) → blokování dalších příběhů zůstane
+  const undoCompletion = async (earning: any) => {
+    const todoId: string = earning.todo_id;
+    // Ignoruj bonusové/hodinové řádky - undo je jen pro hlavní odevzdání
+    if (!todoId || todoId.endsWith('__bonus') || todoId.startsWith('hourly:')) return;
+    try {
+      // 1) Smaž earning + případný bonus companion
+      await supabase.from('task_earnings').delete().or(`todo_id.eq.${todoId},todo_id.eq.${todoId}__bonus`);
+      // 2) Odvolej udělené custom odměny (pokud fce dostupná - jen pro live view)
+      if (!isArchiveView) {
+        try { await revokeForTodo(todoId); } catch (e) { console.error('[undoCompletion] revokeForTodo', e); }
+      }
+      // 3) Přepni todo zpět na neodevzdaný (jen pro live view - archiv necháváme)
+      if (!isArchiveView) {
+        await supabase.from('todos').update({ completed: false }).eq('id', todoId);
+        setTodos(prev => prev.map(t => t.id === todoId ? { ...t, completed: false, completed_at: undefined } : t));
+      }
+      toast.success('Úkol vrácen mezi neodevzdané');
+      window.dispatchEvent(new CustomEvent('task-earnings-changed'));
+    } catch (e) {
+      console.error('[undoCompletion] failed', e);
+      toast.error('Vrácení úkolu selhalo');
+    }
+  };
+
   const startEditEarning = (e: any) => {
     setEditingEarningId(e.id);
     setEditEarningAmount(e.amount.toString());
