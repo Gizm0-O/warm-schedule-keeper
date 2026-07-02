@@ -12,7 +12,7 @@ import { Input } from './ui/input';
 import { format, parseISO } from 'date-fns';
 import { cs } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
-import { useCustomRewards, useEarnedRewards } from '@/hooks/useCustomRewards';
+import { useEarnedRewards } from '@/hooks/useCustomRewards';
 import { toast } from 'sonner';
 
 const CURRENT_MONTH = () => new Date().toISOString().slice(0, 7);
