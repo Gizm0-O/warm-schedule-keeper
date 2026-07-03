@@ -215,6 +215,140 @@ export function useMonthlyArchive(month: string | null) {
 }
 
 /**
+ * Standalone helper: přidá earning(y) do už existujícího archivu daného měsíce
+ * a přepočítá souhrnná čísla. Vrací pole ID vytvořených earnings (nebo null když archiv neexistuje).
+ * Používá se, když se pozdě odevzdaný úkol (např. story z minulého měsíce)
+ * má započítat do měsíce, ke kterému patří.
+ */
+export async function addEarningsToArchivedMonth(
+  month: string,
+  items: Array<Omit<ArchivedEarning, 'id' | 'created_at' | 'completed_at'> & { completed_at?: string }>
+): Promise<string[] | null> {
+  const { data: archive } = await supabase
+    .from('monthly_archives')
+    .select('*')
+    .eq('month', month)
+    .maybeSingle();
+  if (!archive) return null;
+
+  const [y, m] = month.split('-').map(Number);
+  const lastDay = new Date(y, m, 0).getDate();
+  const defaultCompletedAt = new Date(y, m - 1, lastDay, 12, 0, 0).toISOString();
+
+  const newIds: string[] = [];
+  const newEarnings: ArchivedEarning[] = items.map((it) => {
+    const id = (crypto as any).randomUUID ? crypto.randomUUID() : `manual-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
+    newIds.push(id);
+    return {
+      id,
+      todo_id: it.todo_id,
+      todo_text: it.todo_text,
+      amount: it.amount,
+      bonus_type: it.bonus_type ?? null,
+      bonus_percent: it.bonus_percent ?? null,
+      deadline: it.deadline ?? null,
+      completed_at: it.completed_at || defaultCompletedAt,
+      created_at: new Date().toISOString(),
+    };
+  });
+
+  const merged = [...newEarnings, ...(((archive as any).earnings_snapshot as ArchivedEarning[]) || [])];
+  const cfg = (archive as any).config_snapshot || { monthlyEarnings: 0, basePercent: 0, bonusPerTask: 0, bonusLate: 0, maxTasks: 10, month };
+  const taskEarnings = merged.filter(e => !String(e.todo_id).endsWith('__bonus'));
+  const totalEarned = merged.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
+  const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
+  const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
+  const rawBonusPercent = taskEarnings.reduce((sum, e) => {
+    if (e.bonus_type === 'on_time') return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : cfg.bonusPerTask);
+    if (e.bonus_type === 'late') return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : cfg.bonusLate);
+    return sum;
+  }, 0);
+  const totalBonusPercent = Math.min(rawBonusPercent, cfg.maxTasks * cfg.bonusPerTask);
+  const totalPercent = cfg.basePercent + totalBonusPercent;
+  const allowanceAmount = Math.round(totalEarned * totalPercent / 100);
+  const baseAmount = Math.round(totalEarned * cfg.basePercent / 100);
+  const bonusAmount = allowanceAmount - baseAmount;
+  const toHandOver = totalEarned - allowanceAmount;
+
+  // XP: přičti default XP za každý nový hlavní (ne-__bonus) earning
+  const { defaultXpFor } = await import('@/lib/xp');
+  let xpDelta = 0;
+  for (const e of newEarnings) {
+    if (String(e.todo_id).endsWith('__bonus')) continue;
+    if (String(e.todo_id).startsWith('hourly:')) continue;
+    // pokusit se získat konkrétní XP z task_xp
+    const { data: xpRow } = await supabase.from('task_xp').select('xp').eq('todo_id', e.todo_id).maybeSingle();
+    xpDelta += xpRow?.xp != null ? Number(xpRow.xp) : defaultXpFor(e.todo_text);
+  }
+  const newTotalXp = Number((archive as any).total_xp || 0) + xpDelta;
+
+  await supabase.from('monthly_archives').update({
+    earnings_snapshot: merged as any,
+    total_earned: totalEarned,
+    allowance_amount: allowanceAmount,
+    base_amount: baseAmount,
+    bonus_amount: bonusAmount,
+    to_hand_over: toHandOver,
+    total_percent: totalPercent,
+    total_bonus_percent: totalBonusPercent,
+    completed_on_time: completedOnTime,
+    completed_late: completedLate,
+    completed_missed: completedMissed,
+    total_xp: newTotalXp,
+  } as any).eq('id', (archive as any).id);
+
+  window.dispatchEvent(new CustomEvent(ARCHIVE_CHANGED));
+  return newIds;
+}
+
+/** Standalone opak k addEarningsToArchivedMonth – odstraní zvolené earning ID a přepočítá totals. */
+export async function removeEarningsFromArchivedMonth(month: string, ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+  const { data: archive } = await supabase
+    .from('monthly_archives')
+    .select('*')
+    .eq('month', month)
+    .maybeSingle();
+  if (!archive) return;
+  const idSet = new Set(ids);
+  const filtered = ((archive as any).earnings_snapshot as ArchivedEarning[] || []).filter(e => !idSet.has(e.id));
+  const cfg = (archive as any).config_snapshot || { monthlyEarnings: 0, basePercent: 0, bonusPerTask: 0, bonusLate: 0, maxTasks: 10, month };
+  const taskEarnings = filtered.filter(e => !String(e.todo_id).endsWith('__bonus'));
+  const totalEarned = filtered.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const completedOnTime = taskEarnings.filter(e => e.bonus_type === 'on_time').length;
+  const completedLate = taskEarnings.filter(e => e.bonus_type === 'late').length;
+  const completedMissed = taskEarnings.filter(e => e.bonus_type === 'missed').length;
+  const rawBonusPercent = taskEarnings.reduce((sum, e) => {
+    if (e.bonus_type === 'on_time') return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : cfg.bonusPerTask);
+    if (e.bonus_type === 'late') return sum + (e.bonus_percent != null ? Number(e.bonus_percent) : cfg.bonusLate);
+    return sum;
+  }, 0);
+  const totalBonusPercent = Math.min(rawBonusPercent, cfg.maxTasks * cfg.bonusPerTask);
+  const totalPercent = cfg.basePercent + totalBonusPercent;
+  const allowanceAmount = Math.round(totalEarned * totalPercent / 100);
+  const baseAmount = Math.round(totalEarned * cfg.basePercent / 100);
+  const bonusAmount = allowanceAmount - baseAmount;
+  const toHandOver = totalEarned - allowanceAmount;
+
+  await supabase.from('monthly_archives').update({
+    earnings_snapshot: filtered as any,
+    total_earned: totalEarned,
+    allowance_amount: allowanceAmount,
+    base_amount: baseAmount,
+    bonus_amount: bonusAmount,
+    to_hand_over: toHandOver,
+    total_percent: totalPercent,
+    total_bonus_percent: totalBonusPercent,
+    completed_on_time: completedOnTime,
+    completed_late: completedLate,
+    completed_missed: completedMissed,
+  } as any).eq('id', (archive as any).id);
+
+  window.dispatchEvent(new CustomEvent(ARCHIVE_CHANGED));
+}
+
+/**
  * Při prvním otevření v novém měsíci automaticky archivuje předchozí měsíce
  * a smaže jejich originály z task_earnings, task_bonuses, hourly_tasks.
  */
