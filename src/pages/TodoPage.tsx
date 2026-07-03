@@ -272,6 +272,64 @@ const TodoPage = () => {
       const bonusPercent =
         bonus === 'on_time' ? rewardsConfig.bonusPerTask :
         bonus === 'late' ? rewardsConfig.bonusLate : 0;
+
+      // Pokud jde o pozdě odevzdaný story-úkol z minulého měsíce,
+      // připiš earning přímo do archivu toho měsíce (a přeskoč task_earnings).
+      const currentMonthStr = new Date().toISOString().slice(0, 7);
+      const bonusAmt = getBonusAmount(id);
+      const targetArchiveMonth = todo.storyMonth && todo.storyMonth < currentMonthStr ? todo.storyMonth : null;
+
+      if (targetArchiveMonth) {
+        const { addEarningsToArchivedMonth, removeEarningsFromArchivedMonth } = await import('@/hooks/useMonthlyArchive');
+        const items: any[] = [{
+          todo_id: id,
+          todo_text: todo.text,
+          amount: todo.amount!,
+          bonus_type: bonus === 'pending' ? null : bonus,
+          bonus_percent: bonusPercent,
+          deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+        }];
+        if (bonusAmt > 0) {
+          items.push({
+            todo_id: `${id}__bonus`,
+            todo_text: `🎁 Bonus: ${todo.text}`,
+            amount: bonusAmt,
+            bonus_type: 'bonus',
+            bonus_percent: null,
+            deadline: null,
+          });
+        }
+        let createdIds = await addEarningsToArchivedMonth(targetArchiveMonth, items);
+        if (createdIds && createdIds.length > 0) {
+          toast.success(`💰 Připsáno do měsíce ${targetArchiveMonth}`, { position: 'top-center', duration: 3000 });
+          pushAction({
+            undo: async () => {
+              try {
+                await supabase.from("todos").update({ completed: false }).eq("id", id);
+                setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: false, completed_at: undefined } : t));
+                if (createdIds && createdIds.length > 0) {
+                  await removeEarningsFromArchivedMonth(targetArchiveMonth, createdIds);
+                }
+                await revokeGrantedRewards();
+              } catch (e) {
+                console.error('[undo archived earn] failed', e);
+                toast.error('Vrácení změny selhalo.');
+              }
+            },
+            redo: async () => {
+              try {
+                const nowIso = new Date().toISOString();
+                await supabase.from("todos").update({ completed: true }).eq("id", id);
+                setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true, completed_at: nowIso } : t));
+                createdIds = await addEarningsToArchivedMonth(targetArchiveMonth, items);
+                await regrantRewards();
+              } catch (e) {
+                console.error('[redo archived earn] failed', e);
+              }
+            },
+          });
+        }
+      } else {
       let earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
@@ -283,7 +341,6 @@ const TodoPage = () => {
       });
 
       // Bonus záznam (samostatný), pokud je bonus přiřazen k úkolu
-      const bonusAmt = getBonusAmount(id);
       let bonusEarning: Awaited<ReturnType<typeof addEarning>> | null = null;
       if (bonusAmt > 0) {
         bonusEarning = await addEarning({
@@ -347,6 +404,7 @@ const TodoPage = () => {
             }
           },
         });
+      }
       }
     } else {
       // Generic undo for plain toggle (no earning)
