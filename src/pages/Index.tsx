@@ -320,7 +320,40 @@ const Index = () => {
     const bonusAmt = getBonusAmount(id);
     let createdEarningId: string | null = null;
     let createdBonusEarningId: string | null = null;
+    let archiveMonth: string | null = null;
+    let archiveCreatedIds: string[] = [];
+    const currentMonthStr = new Date().toISOString().slice(0, 7);
+    const targetArchiveMonth = todo.storyMonth && todo.storyMonth < currentMonthStr ? todo.storyMonth : null;
+
     const recordTaskEarnings = async () => {
+      if (targetArchiveMonth) {
+        const { addEarningsToArchivedMonth } = await import('@/hooks/useMonthlyArchive');
+        const items: any[] = [{
+          todo_id: id,
+          todo_text: todo.text,
+          amount: todo.amount!,
+          bonus_type: bonus === 'pending' ? null : bonus,
+          bonus_percent: bonusPercent,
+          deadline: todo.deadline ? format(todo.deadline, "yyyy-MM-dd") : null,
+        }];
+        if (bonusAmt > 0) {
+          items.push({
+            todo_id: `${id}__bonus`,
+            todo_text: `🎁 Bonus: ${todo.text}`,
+            amount: bonusAmt,
+            bonus_type: 'bonus',
+            bonus_percent: null,
+            deadline: null,
+          });
+        }
+        const ids = await addEarningsToArchivedMonth(targetArchiveMonth, items);
+        if (ids && ids.length > 0) {
+          archiveMonth = targetArchiveMonth;
+          archiveCreatedIds = ids;
+          toast.success(`💰 Připsáno do měsíce ${targetArchiveMonth}`, { position: 'top-center', duration: 3000 });
+        }
+        return;
+      }
       const earning = await addEarning({
         todo_id: id,
         todo_text: todo.text,
@@ -348,6 +381,7 @@ const Index = () => {
     if (completing && isBarCaWork && hasAmount) {
       await recordTaskEarnings();
     }
+
 
     const customRewards = todo.person === 'Barča' ? getRewardsForTodo(id) : [];
     const isRecurring = todo.recurrence !== 'none';
@@ -392,6 +426,11 @@ const Index = () => {
           await removeEarning(createdBonusEarningId);
           createdBonusEarningId = null;
         }
+        if (archiveMonth && archiveCreatedIds.length > 0) {
+          const { removeEarningsFromArchivedMonth } = await import('@/hooks/useMonthlyArchive');
+          await removeEarningsFromArchivedMonth(archiveMonth, archiveCreatedIds);
+          archiveCreatedIds = [];
+        }
         if (completing && todo.person === 'Barča') await revokeForTodo(id);
       },
       redo: async () => {
@@ -400,6 +439,7 @@ const Index = () => {
         if (completing && todo.person === 'Barča') await grantCustomRewards();
       },
     });
+
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [sidePanelTab, setSidePanelTab] = useState<"todos" | "vouchers">("todos");
