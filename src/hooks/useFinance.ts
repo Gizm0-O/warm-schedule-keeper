@@ -29,9 +29,52 @@ export function useFinance(month: string) {
       .eq("month", month)
       .order("created_at", { ascending: true });
     if (error) console.error("[finance] fetch", error);
-    setEntries((data as FinanceEntry[]) ?? []);
+    let list = (data as FinanceEntry[]) ?? [];
+
+    // Auto-template: pokud je tento měsíc >= aktuální a je úplně prázdný,
+    // zkopíruj Příjmy + Předplatné (kromě „(rok)") + Fixní náklady z posledního
+    // předchozího měsíce, který data má. Actual = 0 (přičte se až po odkliknutí).
+    const now = currentMonth();
+    if (list.length === 0 && month >= now) {
+      const { data: prevRows } = await supabase
+        .from("finance_entries")
+        .select("month")
+        .lt("month", month)
+        .order("month", { ascending: false })
+        .limit(1);
+      const sourceMonth = prevRows?.[0]?.month as string | undefined;
+      if (sourceMonth) {
+        const { data: src } = await supabase
+          .from("finance_entries")
+          .select("*")
+          .eq("month", sourceMonth)
+          .in("section", ["income", "subscription", "fixed"]);
+        const toInsert = ((src as FinanceEntry[]) ?? [])
+          .filter(e => !(e.section === "subscription" && /\(rok\)/i.test(e.name)))
+          .map(e => ({
+            month,
+            section: e.section,
+            category: e.category,
+            name: e.name,
+            planned: e.planned,
+            actual: 0,
+            due_day: e.due_day,
+            note: null,
+          }));
+        if (toInsert.length > 0) {
+          const { data: inserted } = await supabase
+            .from("finance_entries")
+            .insert(toInsert)
+            .select();
+          if (inserted) list = inserted as FinanceEntry[];
+        }
+      }
+    }
+
+    setEntries(list);
     setLoading(false);
   }, [month]);
+
 
   useEffect(() => { fetch(); }, [fetch]);
 
