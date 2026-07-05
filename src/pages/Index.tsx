@@ -426,6 +426,11 @@ const Index = () => {
           await removeEarning(createdBonusEarningId);
           createdBonusEarningId = null;
         }
+        if (archiveMonth && archiveCreatedIds.length > 0) {
+          const { removeEarningsFromArchivedMonth } = await import('@/hooks/useMonthlyArchive');
+          await removeEarningsFromArchivedMonth(archiveMonth, archiveCreatedIds);
+          archiveCreatedIds = [];
+        }
         if (completing && todo.person === 'Barča') await revokeForTodo(id);
       },
       redo: async () => {
@@ -434,6 +439,7 @@ const Index = () => {
         if (completing && todo.person === 'Barča') await grantCustomRewards();
       },
     });
+
   };
   const [viewMode, setViewMode] = useState<ViewMode>("week");
   const [sidePanelTab, setSidePanelTab] = useState<"todos" | "vouchers">("todos");
