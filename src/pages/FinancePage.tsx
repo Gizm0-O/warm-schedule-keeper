@@ -235,15 +235,10 @@ function SummaryCard({
     ? diff > 0 ? "text-red-500" : "text-green-500"
     : diff >= 0 ? "text-green-500" : "text-red-500";
   return (
-    <div className="rounded-2xl p-4 glass-subtle border">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}{label}</div>
-      <div className="text-2xl font-bold mt-1">{fmt(actual)}</div>
-      <div className="text-xs text-muted-foreground mt-1">
-        Plán: {fmt(planned)} <span className={cn("ml-2 font-medium", diffColor)}>
-          {diff >= 0 ? "+" : ""}{fmt(diff)}
-        </span>
+      <div className="rounded-2xl p-4 glass-subtle border">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}{label}</div>
+        <div className="text-2xl font-bold mt-1">{fmt(actual)}</div>
       </div>
-    </div>
   );
 }
 
