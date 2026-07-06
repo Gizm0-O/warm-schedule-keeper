@@ -235,6 +235,9 @@ function SummaryCard({
       <div className="rounded-2xl p-4 glass-subtle border">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}{label}</div>
         <div className="text-2xl font-bold mt-1">{fmt(actual)}</div>
+        <div className="text-xs text-muted-foreground mt-1">
+          Plán: {fmt(planned)}
+        </div>
       </div>
   );
 }
