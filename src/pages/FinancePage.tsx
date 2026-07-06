@@ -62,12 +62,15 @@ export default function FinancePage() {
     sum(bySection.daily, "actual") + sum(bySection.food, "actual");
   const balance = totalIncomeAct - totalExpensesAct;
 
+  const foodBudgetAmount = Number(foodBudget?.planned) || 15000;
   const remaining =
     totalIncomePlan
     - sum(bySection.subscription, "planned")
     - sum(bySection.fixed, "planned")
     - sum(bySection.daily, "actual")
-    - sum(bySection.food, "actual");
+    - sum(foodExtras, "actual")
+    - foodBudgetAmount;
+
 
 
   const FOOD_BUDGET = 15000;
