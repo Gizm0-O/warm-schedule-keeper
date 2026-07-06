@@ -226,7 +226,7 @@ export default function FinancePage() {
 
 function SummaryCard({
   icon, label, actual, planned, overBad,
-}: { icon: React.ReactNode; label: string; actual: number; planned: number; overBad?: boolean }) {
+}: { icon: React.ReactNode; label: string; actual: number; planned?: number; overBad?: boolean }) {
   const diff = actual - planned;
   const diffColor = overBad
     ? diff > 0 ? "text-red-500" : "text-green-500"
