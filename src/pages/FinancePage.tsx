@@ -130,11 +130,13 @@ export default function FinancePage() {
             icon={<TrendingUp className="h-5 w-5 text-green-500" />}
             label="Příjmy"
             actual={totalIncomeAct}
+            planned={totalIncomePlan}
           />
           <SummaryCard
             icon={<TrendingDown className="h-5 w-5 text-red-500" />}
             label="Výdaje"
             actual={totalExpensesAct}
+            planned={totalExpensesPlan}
           />
           <div className={cn(
             "rounded-2xl p-4 glass-subtle border",
