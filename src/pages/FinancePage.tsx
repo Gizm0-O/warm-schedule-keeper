@@ -130,11 +130,13 @@ export default function FinancePage() {
             icon={<TrendingUp className="h-5 w-5 text-green-500" />}
             label="Příjmy"
             actual={totalIncomeAct}
+            planned={totalIncomePlan}
           />
           <SummaryCard
             icon={<TrendingDown className="h-5 w-5 text-red-500" />}
             label="Výdaje"
             actual={totalExpensesAct}
+            planned={totalExpensesPlan}
           />
           <div className={cn(
             "rounded-2xl p-4 glass-subtle border",
@@ -235,6 +237,9 @@ function SummaryCard({
       <div className="rounded-2xl p-4 glass-subtle border">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">{icon}{label}</div>
         <div className="text-2xl font-bold mt-1">{fmt(actual)}</div>
+        <div className="text-xs text-muted-foreground mt-1">
+          Plán: {fmt(planned)}
+        </div>
       </div>
   );
 }
