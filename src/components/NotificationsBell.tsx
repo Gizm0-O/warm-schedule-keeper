@@ -46,6 +46,8 @@ export default function NotificationsBell() {
   const isAdmin = useAdminMode();
   const navigate = useNavigate();
   const [items, setItems] = useState<Notif[]>([]);
+  const [barcaItems, setBarcaItems] = useState<Notif[]>([]);
+  const [barcaUid, setBarcaUid] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<ProfileLite[]>([]);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("notif");
@@ -61,6 +63,16 @@ export default function NotificationsBell() {
       .order("created_at", { ascending: false })
       .limit(50);
     if (data) setItems(data as any);
+  };
+
+  const loadBarca = async (uid: string) => {
+    const { data } = await supabase
+      .from("notifications" as any)
+      .select("id,title,body,type,read_at,created_at,created_by,link")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (data) setBarcaItems(data as any);
   };
 
   const loadProfiles = async () => {
@@ -84,11 +96,28 @@ export default function NotificationsBell() {
   useEffect(() => {
     if (!isAdmin) return;
     loadProfiles();
+    (async () => {
+      const { data } = await supabase.from("profiles").select("user_id").eq("person_key", "Barca").maybeSingle();
+      const uid = (data as any)?.user_id ?? null;
+      setBarcaUid(uid);
+      if (uid) loadBarca(uid);
+    })();
     const ch = supabase.channel("profiles-watch-bell")
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, loadProfiles)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin || !barcaUid) return;
+    const ch = supabase
+      .channel("notifications_rt_barca_" + barcaUid)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${barcaUid}` }, () => loadBarca(barcaUid))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, barcaUid]);
+
+
 
   const unread = items.filter((n) => !n.read_at).length;
   const pending = profiles.filter((p) => p.status === "pending");
