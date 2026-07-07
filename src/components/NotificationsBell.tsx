@@ -46,6 +46,8 @@ export default function NotificationsBell() {
   const isAdmin = useAdminMode();
   const navigate = useNavigate();
   const [items, setItems] = useState<Notif[]>([]);
+  const [barcaItems, setBarcaItems] = useState<Notif[]>([]);
+  const [barcaUid, setBarcaUid] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<ProfileLite[]>([]);
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState("notif");
@@ -61,6 +63,16 @@ export default function NotificationsBell() {
       .order("created_at", { ascending: false })
       .limit(50);
     if (data) setItems(data as any);
+  };
+
+  const loadBarca = async (uid: string) => {
+    const { data } = await supabase
+      .from("notifications" as any)
+      .select("id,title,body,type,read_at,created_at,created_by,link")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (data) setBarcaItems(data as any);
   };
 
   const loadProfiles = async () => {
@@ -84,11 +96,28 @@ export default function NotificationsBell() {
   useEffect(() => {
     if (!isAdmin) return;
     loadProfiles();
+    (async () => {
+      const { data } = await supabase.from("profiles").select("user_id").eq("person_key", "Barca").maybeSingle();
+      const uid = (data as any)?.user_id ?? null;
+      setBarcaUid(uid);
+      if (uid) loadBarca(uid);
+    })();
     const ch = supabase.channel("profiles-watch-bell")
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, loadProfiles)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin || !barcaUid) return;
+    const ch = supabase
+      .channel("notifications_rt_barca_" + barcaUid)
+      .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${barcaUid}` }, () => loadBarca(barcaUid))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [isAdmin, barcaUid]);
+
+
 
   const unread = items.filter((n) => !n.read_at).length;
   const pending = profiles.filter((p) => p.status === "pending");
@@ -138,10 +167,14 @@ export default function NotificationsBell() {
                   Notifikace {unread > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{unread}</Badge>}
                 </TabsTrigger>
                 {isAdmin && (
+                  <TabsTrigger value="barca" className="text-xs h-7">Barča</TabsTrigger>
+                )}
+                {isAdmin && (
                   <TabsTrigger value="users" className="text-xs h-7">
                     Uživatelé {pending.length > 0 && <Badge className="ml-1 h-4 px-1 text-[10px]">{pending.length}</Badge>}
                   </TabsTrigger>
                 )}
+
               </TabsList>
               {tab === "notif" && (
                 <div className="flex items-center gap-1">
@@ -202,6 +235,32 @@ export default function NotificationsBell() {
                 )}
               </div>
             </TabsContent>
+
+            {isAdmin && (
+              <TabsContent value="barca" className="m-0">
+                <div className="max-h-96 overflow-y-auto">
+                  <p className="px-3 pt-2 text-[10px] text-muted-foreground">Náhled notifikací uživatele Brambul (jen pro testování)</p>
+                  {barcaItems.length === 0 ? (
+                    <p className="p-4 text-xs text-muted-foreground text-center">Žádné notifikace</p>
+                  ) : (
+                    <ul className="divide-y">
+                      {barcaItems.map((n) => (
+                        <li key={n.id} className={cn("p-3", !n.read_at && "bg-primary/5", n.link && "border-l-2 border-l-primary/60")}>
+                          <p className="text-sm font-medium leading-snug">{n.title}</p>
+                          {n.body && <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{n.body}</p>}
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {new Date(n.created_at).toLocaleString("cs-CZ")}
+                            {n.link && <span className="ml-1 text-primary">· {linkLabel(n.link)}</span>}
+                            {!n.read_at && <span className="ml-1">· nepřečteno</span>}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
 
             {isAdmin && (
               <TabsContent value="users" className="m-0">
