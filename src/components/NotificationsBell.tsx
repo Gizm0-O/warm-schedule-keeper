@@ -167,10 +167,14 @@ export default function NotificationsBell() {
                   Notifikace {unread > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{unread}</Badge>}
                 </TabsTrigger>
                 {isAdmin && (
+                  <TabsTrigger value="barca" className="text-xs h-7">Barča</TabsTrigger>
+                )}
+                {isAdmin && (
                   <TabsTrigger value="users" className="text-xs h-7">
                     Uživatelé {pending.length > 0 && <Badge className="ml-1 h-4 px-1 text-[10px]">{pending.length}</Badge>}
                   </TabsTrigger>
                 )}
+
               </TabsList>
               {tab === "notif" && (
                 <div className="flex items-center gap-1">
