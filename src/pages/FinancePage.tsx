@@ -19,6 +19,13 @@ const SECTION_LABELS: Record<FinanceSection, string> = {
 
 const fmt = (n: number) => `${Math.round(n).toLocaleString("cs-CZ")} Kč`;
 
+const sortByDueDay = (a: FinanceEntry, b: FinanceEntry) => {
+  const da = a.due_day ? Number(a.due_day) : Infinity;
+  const db = b.due_day ? Number(b.due_day) : Infinity;
+  return da - db;
+};
+
+
 export default function FinancePage() {
   const [month, setMonth] = useState(currentMonth());
   const [revealedMonths, setRevealedMonths] = useState<Set<string>>(new Set());
@@ -37,6 +44,8 @@ export default function FinancePage() {
       income: [], subscription: [], fixed: [], daily: [], food: [],
     };
     entries.forEach(e => map[e.section]?.push(e));
+    map.subscription.sort((a, b) => sortByDueDay(a, b));
+    map.fixed.sort((a, b) => sortByDueDay(a, b));
     return map;
   }, [entries]);
 
