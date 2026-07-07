@@ -1045,6 +1045,8 @@ export type Database = {
         Args: { p_month: string }
         Returns: undefined
       }
+      get_admin_uid: { Args: never; Returns: string }
+      get_barca_uid: { Args: never; Returns: string }
       get_email_by_username: { Args: { _username: string }; Returns: string }
       has_role: {
         Args: {
