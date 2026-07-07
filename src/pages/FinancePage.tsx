@@ -37,6 +37,8 @@ export default function FinancePage() {
       income: [], subscription: [], fixed: [], daily: [], food: [],
     };
     entries.forEach(e => map[e.section]?.push(e));
+    map.subscription.sort((a, b) => sortByDueDay(a, b));
+    map.fixed.sort((a, b) => sortByDueDay(a, b));
     return map;
   }, [entries]);
 
