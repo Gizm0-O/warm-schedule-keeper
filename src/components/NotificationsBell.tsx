@@ -237,6 +237,32 @@ export default function NotificationsBell() {
             </TabsContent>
 
             {isAdmin && (
+              <TabsContent value="barca" className="m-0">
+                <div className="max-h-96 overflow-y-auto">
+                  <p className="px-3 pt-2 text-[10px] text-muted-foreground">Náhled notifikací uživatele Brambul (jen pro testování)</p>
+                  {barcaItems.length === 0 ? (
+                    <p className="p-4 text-xs text-muted-foreground text-center">Žádné notifikace</p>
+                  ) : (
+                    <ul className="divide-y">
+                      {barcaItems.map((n) => (
+                        <li key={n.id} className={cn("p-3", !n.read_at && "bg-primary/5", n.link && "border-l-2 border-l-primary/60")}>
+                          <p className="text-sm font-medium leading-snug">{n.title}</p>
+                          {n.body && <p className="text-xs text-muted-foreground mt-0.5 whitespace-pre-wrap">{n.body}</p>}
+                          <p className="text-[10px] text-muted-foreground mt-1">
+                            {new Date(n.created_at).toLocaleString("cs-CZ")}
+                            {n.link && <span className="ml-1 text-primary">· {linkLabel(n.link)}</span>}
+                            {!n.read_at && <span className="ml-1">· nepřečteno</span>}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+
+
+            {isAdmin && (
               <TabsContent value="users" className="m-0">
                 <div className="max-h-96 overflow-y-auto p-3 space-y-4">
                   {pending.length > 0 && (
