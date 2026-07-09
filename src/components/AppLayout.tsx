@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
 import NotificationsBell from "@/components/NotificationsBell";
+import ActiveVouchersIndicator from "@/components/ActiveVouchersIndicator";
 import UserMenu from "@/components/UserMenu";
 
 const navItems = [
@@ -110,6 +111,7 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
+            <ActiveVouchersIndicator />
             <NotificationsBell />
             <Button
               variant="ghost"
