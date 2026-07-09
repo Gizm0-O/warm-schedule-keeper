@@ -513,6 +513,7 @@ function CategoryChartCard({
   dailyCategories: string[];
 }) {
   const [tab, setTab] = useState<"food" | "daily">("food");
+  const [includeBudget, setIncludeBudget] = useState(true);
 
   const data = useMemo(() => {
     const source = tab === "food" ? food : daily;
@@ -526,12 +527,12 @@ function CategoryChartCard({
     const arr = Array.from(totals.entries())
       .map(([name, value]) => ({ name, value }))
       .filter(d => d.value > 0);
-    if (tab === "food" && foodBudget) {
+    if (tab === "food" && foodBudget && includeBudget) {
       const v = Number(foodBudget.actual) || 0;
       if (v > 0) arr.unshift({ name: "Budget", value: v });
     }
     return arr;
-  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories]);
+  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories, includeBudget]);
 
   const total = data.reduce((s, d) => s + d.value, 0);
 
@@ -554,6 +555,17 @@ function CategoryChartCard({
           </button>
         </div>
       </div>
+      {tab === "food" && foodBudget && Number(foodBudget.actual) > 0 && (
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={includeBudget}
+            onChange={(e) => setIncludeBudget(e.target.checked)}
+            className="h-3.5 w-3.5 accent-rose-500"
+          />
+          Zahrnout Budget do koláče
+        </label>
+      )}
       {data.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground py-8">
           Žádná data k zobrazení
