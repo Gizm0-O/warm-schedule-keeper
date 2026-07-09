@@ -71,6 +71,29 @@ export function useFinance(month: string) {
       }
     }
 
+    // Auto-mark subscriptions as paid when their due day arrives (or month is in the past)
+    const nowD = new Date();
+    const curMonth = `${nowD.getFullYear()}-${String(nowD.getMonth() + 1).padStart(2, "0")}`;
+    const today = nowD.getDate();
+    const toPay = list.filter(e => {
+      if (e.section !== "subscription") return false;
+      if (Number(e.actual) > 0) return false;
+      if (!e.planned || Number(e.planned) <= 0) return false;
+      if (e.month < curMonth) return true;
+      if (e.month === curMonth) {
+        const d = e.due_day ? Number(e.due_day) : NaN;
+        return Number.isFinite(d) && today >= d;
+      }
+      return false;
+    });
+    if (toPay.length > 0) {
+      await Promise.all(toPay.map(e =>
+        supabase.from("finance_entries").update({ actual: Number(e.planned) }).eq("id", e.id)
+      ));
+      const paidIds = new Set(toPay.map(p => p.id));
+      list = list.map(e => paidIds.has(e.id) ? { ...e, actual: Number(e.planned) } : e);
+    }
+
     setEntries(list);
     setLoading(false);
   }, [month]);
