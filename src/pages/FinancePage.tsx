@@ -513,6 +513,7 @@ function CategoryChartCard({
   dailyCategories: string[];
 }) {
   const [tab, setTab] = useState<"food" | "daily">("food");
+  const [includeBudget, setIncludeBudget] = useState(true);
 
   const data = useMemo(() => {
     const source = tab === "food" ? food : daily;
@@ -526,12 +527,12 @@ function CategoryChartCard({
     const arr = Array.from(totals.entries())
       .map(([name, value]) => ({ name, value }))
       .filter(d => d.value > 0);
-    if (tab === "food" && foodBudget) {
+    if (tab === "food" && foodBudget && includeBudget) {
       const v = Number(foodBudget.actual) || 0;
       if (v > 0) arr.unshift({ name: "Budget", value: v });
     }
     return arr;
-  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories]);
+  }, [tab, food, daily, foodBudget, foodCategories, dailyCategories, includeBudget]);
 
   const total = data.reduce((s, d) => s + d.value, 0);
 
