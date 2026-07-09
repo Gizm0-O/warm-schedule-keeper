@@ -555,6 +555,17 @@ function CategoryChartCard({
           </button>
         </div>
       </div>
+      {tab === "food" && foodBudget && Number(foodBudget.actual) > 0 && (
+        <label className="flex items-center gap-2 text-xs text-muted-foreground mb-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={includeBudget}
+            onChange={(e) => setIncludeBudget(e.target.checked)}
+            className="h-3.5 w-3.5 accent-rose-500"
+          />
+          Zahrnout Budget do koláče
+        </label>
+      )}
       {data.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground py-8">
           Žádná data k zobrazení
