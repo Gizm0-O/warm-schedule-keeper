@@ -111,6 +111,7 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
+            <ActiveVouchersIndicator />
             <NotificationsBell />
             <Button
               variant="ghost"
