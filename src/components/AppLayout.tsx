@@ -44,51 +44,29 @@ const AppLayout = () => {
     localStorage.setItem("theme", dark ? "dark" : "light");
   }, [dark]);
 
+  const reducedMotion = useReducedMotion();
+  const animate = (name: string, duration: string) =>
+    reducedMotion ? undefined : `${name} ${duration} ease-in-out infinite`;
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated gradient blobs */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        {/* Large purple blob - top left */}
+      <OfflineIndicator />
+      {/* Animated gradient blobs (reduced count for perf, disabled on reduced-motion) */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div
           className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full opacity-70 dark:opacity-50 blur-3xl"
-          style={{
-            background: "hsl(var(--blob-1))",
-            animation: "blob-float-1 20s ease-in-out infinite",
-          }}
+          style={{ background: "hsl(var(--blob-1))", animation: animate("blob-float-1", "20s") }}
         />
-        {/* Blue blob - top right */}
         <div
           className="absolute -top-20 right-0 w-[400px] h-[400px] rounded-full opacity-60 dark:opacity-40 blur-3xl"
-          style={{
-            background: "hsl(var(--blob-2))",
-            animation: "blob-float-2 25s ease-in-out infinite",
-          }}
+          style={{ background: "hsl(var(--blob-2))", animation: animate("blob-float-2", "25s") }}
         />
-        {/* Orange/coral blob - bottom right */}
         <div
           className="absolute bottom-0 right-20 w-[450px] h-[450px] rounded-full opacity-60 dark:opacity-40 blur-3xl"
-          style={{
-            background: "hsl(var(--blob-3))",
-            animation: "blob-float-3 22s ease-in-out infinite",
-          }}
-        />
-        {/* Pink blob - bottom left */}
-        <div
-          className="absolute bottom-20 -left-20 w-[350px] h-[350px] rounded-full opacity-50 dark:opacity-35 blur-3xl"
-          style={{
-            background: "hsl(var(--blob-4))",
-            animation: "blob-float-4 18s ease-in-out infinite",
-          }}
-        />
-        {/* Center subtle nebula */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-20 dark:opacity-15 blur-3xl"
-          style={{
-            background: "hsl(var(--cosmic-nebula))",
-            animation: "blob-float-2 30s ease-in-out infinite",
-          }}
+          style={{ background: "hsl(var(--blob-3))", animation: animate("blob-float-3", "22s") }}
         />
       </div>
+
 
       <header className="group/header sticky top-0 z-50 glass-strong">
         <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
