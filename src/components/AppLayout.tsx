@@ -7,6 +7,19 @@ import AdminToggle from "@/components/AdminToggle";
 import NotificationsBell from "@/components/NotificationsBell";
 import ActiveVouchersIndicator from "@/components/ActiveVouchersIndicator";
 import UserMenu from "@/components/UserMenu";
+import OfflineIndicator from "@/components/OfflineIndicator";
+
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduced(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return reduced;
+}
 
 const navItems = [
   { to: "/", icon: Calendar, label: "Kalendář" },
