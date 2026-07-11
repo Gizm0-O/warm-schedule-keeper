@@ -455,6 +455,8 @@ const Index = () => {
   const [newEventColor, setNewEventColor] = useState(EVENT_COLORS[0].value);
   const [newEventAllDay, setNewEventAllDay] = useState(false);
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [newEventRecurrence, setNewEventRecurrence] = useState<"none" | "daily" | "weekly" | "biweekly" | "monthly">("none");
+  const [newEventRecurrenceEnd, setNewEventRecurrenceEnd] = useState<string>(format(addMonths(new Date(), 3), "yyyy-MM-dd"));
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
   const [now, setNow] = useState(new Date());
