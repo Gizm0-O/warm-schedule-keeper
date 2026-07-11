@@ -872,14 +872,25 @@ const Index = () => {
       endHour: newEventAllDay ? undefined : newEventEndHour,
       allDay: newEventAllDay,
     };
-    const added = await addEventToDb(evData);
-    if (added) {
-      pushAction({
-        undo: () => removeEventFromDb(added.id),
-        redo: () => addEventToDb({ ...evData, id: added.id }),
-      });
+    if (newEventRecurrence !== "none") {
+      const seriesId = await addRecurringSeries(evData, newEventRecurrence, newEventRecurrenceEnd);
+      if (seriesId) {
+        pushAction({
+          undo: () => removeSeries(seriesId),
+          redo: () => addRecurringSeries(evData, newEventRecurrence, newEventRecurrenceEnd),
+        });
+      }
+    } else {
+      const added = await addEventToDb(evData);
+      if (added) {
+        pushAction({
+          undo: () => removeEventFromDb(added.id),
+          redo: () => addEventToDb({ ...evData, id: added.id }),
+        });
+      }
     }
     setNewEventTitle("");
+    setNewEventRecurrence("none");
     setShowNewEventDialog(false);
   };
 
@@ -889,6 +900,8 @@ const Index = () => {
     setNewEventEndHour(10);
     setNewEventColor(EVENT_COLORS[0].value);
     setNewEventDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
+    setNewEventRecurrence("none");
+    setNewEventRecurrenceEnd(format(addMonths(selectedDate ?? new Date(), 3), "yyyy-MM-dd"));
     setShowNewEventDialog(true);
   };
 
