@@ -2519,6 +2519,32 @@ const Index = () => {
                 </label>
               </div>
             </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Opakování</label>
+              <select
+                value={newEventRecurrence}
+                onChange={(e) => setNewEventRecurrence(e.target.value as typeof newEventRecurrence)}
+                className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="none">Bez opakování</option>
+                <option value="daily">Denně</option>
+                <option value="weekly">Týdně</option>
+                <option value="biweekly">Každé 2 týdny</option>
+                <option value="monthly">Měsíčně</option>
+              </select>
+              {newEventRecurrence !== "none" && (
+                <div className="mt-2">
+                  <label className="text-xs text-muted-foreground">Opakovat do</label>
+                  <Input
+                    type="date"
+                    value={newEventRecurrenceEnd}
+                    min={newEventDate}
+                    onChange={(e) => setNewEventRecurrenceEnd(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewEventDialog(false)}>Zrušit</Button>
