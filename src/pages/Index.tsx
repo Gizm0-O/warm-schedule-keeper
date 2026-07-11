@@ -2321,20 +2321,39 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                if (editingEvent) {
-                  removeEvent(editingEvent.id);
-                  setEditingEvent(null);
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Smazat
-            </Button>
+          <DialogFooter className="flex flex-wrap justify-between gap-2 sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (editingEvent) {
+                    removeEvent(editingEvent.id);
+                    setEditingEvent(null);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Smazat
+              </Button>
+              {editingEvent?.seriesId && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (editingEvent?.seriesId) {
+                      if (confirm("Opravdu smazat celou sérii opakující se události?")) {
+                        removeSeries(editingEvent.seriesId);
+                        setEditingEvent(null);
+                      }
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Smazat celou sérii
+                </Button>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
               <Button onClick={saveEditEvent}>Uložit</Button>
