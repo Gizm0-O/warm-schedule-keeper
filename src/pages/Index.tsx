@@ -253,7 +253,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 };
 
 const Index = () => {
-  const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
+  const { events, setEvents, addEvent: addEventToDb, addRecurringSeries, updateEvent: updateEventInDb, removeEvent: removeEventFromDb, removeSeries } = useCalendarEvents();
   const { todos, toggleTodo, loading: todosLoading } = useTodos();
   const { tasks: hourlyTasks, loading: hourlyLoading } = useHourlyTasks();
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
