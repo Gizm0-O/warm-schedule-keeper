@@ -95,6 +95,9 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addTodo = useCallback(async (todo: Omit<Todo, "id">) => {
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const optimistic: Todo = { ...todo, id: tempId };
+    setTodos((prev) => [...prev, optimistic]);
     const row = {
       text: todo.text,
       completed: todo.completed,
@@ -105,11 +108,21 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       recurrence_days: todo.recurrenceDays ?? null,
       amount: todo.amount ?? null,
     };
-    const { data } = await supabase.from("todos").insert(row).select().single();
-    if (data) setTodos((prev) => [...prev, rowToTodo(data)]);
+    const { data, error } = await supabase.from("todos").insert(row).select().single();
+    if (error || !data) {
+      console.error("[addTodo] failed, rolling back", error);
+      setTodos((prev) => prev.filter((t) => t.id !== tempId));
+      return;
+    }
+    setTodos((prev) => prev.map((t) => (t.id === tempId ? rowToTodo(data) : t)));
   }, []);
 
   const updateTodo = useCallback(async (id: string, updates: Partial<Omit<Todo, "id">>) => {
+    let prevSnapshot: Todo | undefined;
+    setTodos((prev) => {
+      prevSnapshot = prev.find((t) => t.id === id);
+      return prev.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    });
     const row: any = { ...updates };
     if (updates.deadline !== undefined) {
       row.deadline = updates.deadline ? format(updates.deadline, "yyyy-MM-dd") : null;
@@ -118,34 +131,41 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
       row.recurrence_days = updates.recurrenceDays ?? null;
       delete row.recurrenceDays;
     }
-    // Strip undefined values – supabase-js posílá `null` pro explicitní vymazání,
-    // ale `undefined` ponechané v payloadu může způsobit, že PostgREST přepíše sloupec na NULL.
     Object.keys(row).forEach((k) => row[k] === undefined && delete row[k]);
     delete row.id;
     const { error } = await supabase.from("todos").update(row).eq("id", id);
     if (error) {
-      console.error("[updateTodo] failed", error, { id, row });
-      return;
+      console.error("[updateTodo] failed, rolling back", error, { id, row });
+      if (prevSnapshot) setTodos((prev) => prev.map((t) => (t.id === id ? prevSnapshot! : t)));
     }
-    setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
   }, []);
 
   const toggleTodo = useCallback(async (id: string) => {
     const todo = todos.find((t) => t.id === id);
     if (!todo) return;
+    const nowIso = new Date().toISOString();
 
     if (!todo.completed && todo.recurrence !== "none") {
-      // Mark current as completed
-      const nowIso = new Date().toISOString();
-      await supabase.from("todos").update({ completed: true }).eq("id", id);
-
-      // Create next recurrence
       const baseDate = todo.deadline ?? startOfDay(new Date());
       let nextDeadline = getNextDeadline(baseDate, todo.recurrence, todo.recurrenceDays);
       const today = startOfDay(new Date());
       while (isBefore(nextDeadline, today)) {
         nextDeadline = getNextDeadline(nextDeadline, todo.recurrence, todo.recurrenceDays);
       }
+      const tempId = `temp-${Date.now()}`;
+      const placeholder: Todo = {
+        ...todo,
+        id: tempId,
+        completed: false,
+        deadline: nextDeadline,
+        completed_at: undefined,
+      };
+      setTodos((prev) => [
+        ...prev.map((t) => (t.id === id ? { ...t, completed: true, completed_at: nowIso } : t)),
+        placeholder,
+      ]);
+
+      const { error: updErr } = await supabase.from("todos").update({ completed: true }).eq("id", id);
       const newRow = {
         text: todo.text,
         completed: false,
@@ -155,24 +175,54 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
         recurrence: todo.recurrence,
         recurrence_days: todo.recurrenceDays ?? null,
       };
-      const { data: newData } = await supabase.from("todos").insert(newRow).select().single();
+      const { data: newData, error: insErr } = await supabase.from("todos").insert(newRow).select().single();
 
-      setTodos((prev) => {
-        const updated = prev.map((t) => (t.id === id ? { ...t, completed: true, completed_at: nowIso } : t));
-        if (newData) updated.push(rowToTodo(newData));
-        return updated;
-      });
+      if (updErr || insErr) {
+        console.error("[toggleTodo recurrence] rollback", updErr || insErr);
+        setTodos((prev) =>
+          prev
+            .filter((t) => t.id !== tempId)
+            .map((t) => (t.id === id ? { ...t, completed: false, completed_at: undefined } : t))
+        );
+        return;
+      }
+      if (newData) {
+        setTodos((prev) => prev.map((t) => (t.id === tempId ? rowToTodo(newData) : t)));
+      }
     } else {
       const newCompleted = !todo.completed;
-      const nowIso = new Date().toISOString();
-      await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
-      setTodos((prev) => prev.map((t) => (t.id === id ? { ...t, completed: newCompleted, completed_at: newCompleted ? nowIso : undefined } : t)));
+      setTodos((prev) =>
+        prev.map((t) =>
+          t.id === id
+            ? { ...t, completed: newCompleted, completed_at: newCompleted ? nowIso : undefined }
+            : t
+        )
+      );
+      const { error } = await supabase.from("todos").update({ completed: newCompleted }).eq("id", id);
+      if (error) {
+        console.error("[toggleTodo] rollback", error);
+        setTodos((prev) =>
+          prev.map((t) =>
+            t.id === id
+              ? { ...t, completed: todo.completed, completed_at: todo.completed_at }
+              : t
+          )
+        );
+      }
     }
   }, [todos]);
 
   const removeTodo = useCallback(async (id: string) => {
-    await supabase.from("todos").delete().eq("id", id);
-    setTodos((prev) => prev.filter((t) => t.id !== id));
+    let removed: Todo | undefined;
+    setTodos((prev) => {
+      removed = prev.find((t) => t.id === id);
+      return prev.filter((t) => t.id !== id);
+    });
+    const { error } = await supabase.from("todos").delete().eq("id", id);
+    if (error && removed) {
+      console.error("[removeTodo] rollback", error);
+      setTodos((prev) => [...prev, removed!]);
+    }
   }, []);
 
   const restoreTodo = useCallback(async (todo: Todo) => {
