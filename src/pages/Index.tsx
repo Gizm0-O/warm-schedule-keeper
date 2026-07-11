@@ -253,7 +253,7 @@ const swapShifts = (shifts: Shift[]): Shift[] => {
 };
 
 const Index = () => {
-  const { events, setEvents, addEvent: addEventToDb, updateEvent: updateEventInDb, removeEvent: removeEventFromDb } = useCalendarEvents();
+  const { events, setEvents, addEvent: addEventToDb, addRecurringSeries, updateEvent: updateEventInDb, removeEvent: removeEventFromDb, removeSeries } = useCalendarEvents();
   const { todos, toggleTodo, loading: todosLoading } = useTodos();
   const { tasks: hourlyTasks, loading: hourlyLoading } = useHourlyTasks();
   const { getTaskBonus, setTaskBonus, config: rewardsConfig } = useRewards();
@@ -455,6 +455,8 @@ const Index = () => {
   const [newEventColor, setNewEventColor] = useState(EVENT_COLORS[0].value);
   const [newEventAllDay, setNewEventAllDay] = useState(false);
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  const [newEventRecurrence, setNewEventRecurrence] = useState<"none" | "daily" | "weekly" | "biweekly" | "monthly">("none");
+  const [newEventRecurrenceEnd, setNewEventRecurrenceEnd] = useState<string>(format(addMonths(new Date(), 3), "yyyy-MM-dd"));
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -870,14 +872,25 @@ const Index = () => {
       endHour: newEventAllDay ? undefined : newEventEndHour,
       allDay: newEventAllDay,
     };
-    const added = await addEventToDb(evData);
-    if (added) {
-      pushAction({
-        undo: () => removeEventFromDb(added.id),
-        redo: () => addEventToDb({ ...evData, id: added.id }),
-      });
+    if (newEventRecurrence !== "none") {
+      const seriesId = await addRecurringSeries(evData, newEventRecurrence, newEventRecurrenceEnd);
+      if (seriesId) {
+        pushAction({
+          undo: () => removeSeries(seriesId),
+          redo: () => addRecurringSeries(evData, newEventRecurrence, newEventRecurrenceEnd),
+        });
+      }
+    } else {
+      const added = await addEventToDb(evData);
+      if (added) {
+        pushAction({
+          undo: () => removeEventFromDb(added.id),
+          redo: () => addEventToDb({ ...evData, id: added.id }),
+        });
+      }
     }
     setNewEventTitle("");
+    setNewEventRecurrence("none");
     setShowNewEventDialog(false);
   };
 
@@ -887,6 +900,8 @@ const Index = () => {
     setNewEventEndHour(10);
     setNewEventColor(EVENT_COLORS[0].value);
     setNewEventDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
+    setNewEventRecurrence("none");
+    setNewEventRecurrenceEnd(format(addMonths(selectedDate ?? new Date(), 3), "yyyy-MM-dd"));
     setShowNewEventDialog(true);
   };
 
@@ -2306,20 +2321,39 @@ const Index = () => {
               </div>
             </div>
           </div>
-          <DialogFooter className="flex justify-between sm:justify-between">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                if (editingEvent) {
-                  removeEvent(editingEvent.id);
-                  setEditingEvent(null);
-                }
-              }}
-            >
-              <Trash2 className="h-4 w-4 mr-1" />
-              Smazat
-            </Button>
+          <DialogFooter className="flex flex-wrap justify-between gap-2 sm:justify-between">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  if (editingEvent) {
+                    removeEvent(editingEvent.id);
+                    setEditingEvent(null);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-1" />
+                Smazat
+              </Button>
+              {editingEvent?.seriesId && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (editingEvent?.seriesId) {
+                      if (confirm("Opravdu smazat celou sérii opakující se události?")) {
+                        removeSeries(editingEvent.seriesId);
+                        setEditingEvent(null);
+                      }
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Smazat celou sérii
+                </Button>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setEditingEvent(null)}>Zrušit</Button>
               <Button onClick={saveEditEvent}>Uložit</Button>
@@ -2503,6 +2537,32 @@ const Index = () => {
                   />
                 </label>
               </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground">Opakování</label>
+              <select
+                value={newEventRecurrence}
+                onChange={(e) => setNewEventRecurrence(e.target.value as typeof newEventRecurrence)}
+                className="mt-1 w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+              >
+                <option value="none">Bez opakování</option>
+                <option value="daily">Denně</option>
+                <option value="weekly">Týdně</option>
+                <option value="biweekly">Každé 2 týdny</option>
+                <option value="monthly">Měsíčně</option>
+              </select>
+              {newEventRecurrence !== "none" && (
+                <div className="mt-2">
+                  <label className="text-xs text-muted-foreground">Opakovat do</label>
+                  <Input
+                    type="date"
+                    value={newEventRecurrenceEnd}
+                    min={newEventDate}
+                    onChange={(e) => setNewEventRecurrenceEnd(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

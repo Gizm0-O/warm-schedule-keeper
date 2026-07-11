@@ -50,6 +50,9 @@ export type Database = {
           end_hour: number | null
           hour: number | null
           id: string
+          recurrence: string
+          recurrence_end_date: string | null
+          series_id: string | null
           title: string
         }
         Insert: {
@@ -60,6 +63,9 @@ export type Database = {
           end_hour?: number | null
           hour?: number | null
           id?: string
+          recurrence?: string
+          recurrence_end_date?: string | null
+          series_id?: string | null
           title: string
         }
         Update: {
@@ -70,6 +76,9 @@ export type Database = {
           end_hour?: number | null
           hour?: number | null
           id?: string
+          recurrence?: string
+          recurrence_end_date?: string | null
+          series_id?: string | null
           title?: string
         }
         Relationships: []
