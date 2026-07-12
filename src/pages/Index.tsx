@@ -1978,6 +1978,29 @@ const Index = () => {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                <div className="flex gap-2 items-center">
+                  <select
+                    value={newEventRecurrence}
+                    onChange={(e) => setNewEventRecurrence(e.target.value as typeof newEventRecurrence)}
+                    className="flex-1 h-9 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="none">Neopakovat</option>
+                    <option value="daily">Denně</option>
+                    <option value="weekly">Týdně</option>
+                    <option value="biweekly">Každé 2 týdny</option>
+                    <option value="monthly">Měsíčně</option>
+                  </select>
+                  {newEventRecurrence !== "none" && (
+                    <Input
+                      type="date"
+                      value={newEventRecurrenceEnd}
+                      min={newEventDate}
+                      onChange={(e) => setNewEventRecurrenceEnd(e.target.value)}
+                      className="flex-1 h-9 text-xs"
+                      title="Opakovat do"
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Event list */}
