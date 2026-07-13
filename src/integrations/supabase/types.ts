@@ -578,6 +578,7 @@ export type Database = {
           note: string | null
           price: number
           quantity: number
+          store: string | null
           unit: string
           updated_at: string
         }
@@ -588,6 +589,7 @@ export type Database = {
           note?: string | null
           price: number
           quantity?: number
+          store?: string | null
           unit?: string
           updated_at?: string
         }
@@ -598,6 +600,7 @@ export type Database = {
           note?: string | null
           price?: number
           quantity?: number
+          store?: string | null
           unit?: string
           updated_at?: string
         }

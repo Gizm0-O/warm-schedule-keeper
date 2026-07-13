@@ -13,6 +13,7 @@ interface PriceTag {
   unit: string;
   quantity: number;
   note: string | null;
+  store: string | null;
 }
 
 const UNITS = ["ks", "balení", "kg", "g", "l", "ml", "m"] as const;
@@ -34,16 +35,19 @@ export default function PriceTagsPanel() {
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [unit, setUnit] = useState<string>("ks");
+  const [store, setStore] = useState("");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [addingFor, setAddingFor] = useState<string | null>(null);
   const [variantPrice, setVariantPrice] = useState("");
   const [variantQty, setVariantQty] = useState("1");
   const [variantUnit, setVariantUnit] = useState("ks");
+  const [variantStore, setVariantStore] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
   const [editQty, setEditQty] = useState("1");
   const [editUnit, setEditUnit] = useState("ks");
+  const [editStore, setEditStore] = useState("");
 
   const load = async () => {
     const { data } = await supabase
@@ -81,9 +85,9 @@ export default function PriceTagsPanel() {
     const p = parseFloat(price.replace(",", "."));
     const q = parseFloat(quantity.replace(",", ".")) || 1;
     if (!name.trim() || isNaN(p)) { toast.error("Vyplň název i cenu"); return; }
-    const { error } = await supabase.from("price_tags" as any).insert({ name: name.trim(), price: p, unit, quantity: q });
+    const { error } = await supabase.from("price_tags" as any).insert({ name: name.trim(), price: p, unit, quantity: q, store: store.trim() || null });
     if (error) { toast.error(error.message); return; }
-    setName(""); setPrice(""); setQuantity("1");
+    setName(""); setPrice(""); setQuantity("1"); setStore("");
     load();
   };
 
@@ -91,9 +95,9 @@ export default function PriceTagsPanel() {
     const p = parseFloat(variantPrice.replace(",", "."));
     const q = parseFloat(variantQty.replace(",", ".")) || 1;
     if (isNaN(p)) { toast.error("Vyplň cenu"); return; }
-    const { error } = await supabase.from("price_tags" as any).insert({ name: groupName, price: p, unit: variantUnit, quantity: q });
+    const { error } = await supabase.from("price_tags" as any).insert({ name: groupName, price: p, unit: variantUnit, quantity: q, store: variantStore.trim() || null });
     if (error) { toast.error(error.message); return; }
-    setAddingFor(null); setVariantPrice(""); setVariantQty("1"); setVariantUnit("ks");
+    setAddingFor(null); setVariantPrice(""); setVariantQty("1"); setVariantUnit("ks"); setVariantStore("");
     load();
   };
 
@@ -107,6 +111,7 @@ export default function PriceTagsPanel() {
     setEditPrice(String(t.price));
     setEditQty(String(t.quantity ?? 1));
     setEditUnit(t.unit);
+    setEditStore(t.store ?? "");
   };
 
   const saveEdit = async () => {
@@ -114,7 +119,7 @@ export default function PriceTagsPanel() {
     const p = parseFloat(editPrice.replace(",", "."));
     const q = parseFloat(editQty.replace(",", ".")) || 1;
     if (isNaN(p)) { toast.error("Neplatné údaje"); return; }
-    await supabase.from("price_tags" as any).update({ price: p, unit: editUnit, quantity: q }).eq("id", editingId);
+    await supabase.from("price_tags" as any).update({ price: p, unit: editUnit, quantity: q, store: editStore.trim() || null }).eq("id", editingId);
     setEditingId(null);
     load();
   };
@@ -160,6 +165,12 @@ export default function PriceTagsPanel() {
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+        <Input
+          placeholder="Obchod (např. DM) – nepovinné"
+          value={store}
+          onChange={(e) => setStore(e.target.value)}
+          className="h-8 text-sm"
+        />
       </div>
 
       <div className="divide-y divide-border/50 -mx-2">
@@ -187,7 +198,7 @@ export default function PriceTagsPanel() {
                   size="icon"
                   variant="ghost"
                   className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                  onClick={() => { setAddingFor(g.name); setVariantPrice(""); setVariantQty("1"); setVariantUnit(g.variants[0].unit); }}
+                  onClick={() => { setAddingFor(g.name); setVariantPrice(""); setVariantQty("1"); setVariantUnit(g.variants[0].unit); setVariantStore(""); }}
                   title="Přidat variantu"
                 >
                   <Plus className="h-3 w-3" />
@@ -199,7 +210,7 @@ export default function PriceTagsPanel() {
                   {g.variants.map((t) => (
                     <div key={t.id} className="flex items-center gap-2 group/v">
                       {editingId === t.id ? (
-                        <div className="flex gap-1 flex-1">
+                        <div className="flex flex-wrap gap-1 flex-1">
                           <Input value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="h-7 text-xs w-14" />
                           <Input value={editQty} onChange={(e) => setEditQty(e.target.value)} className="h-7 text-xs w-10" />
                           <Select value={editUnit} onValueChange={setEditUnit}>
@@ -208,6 +219,12 @@ export default function PriceTagsPanel() {
                               {UNITS.map((u) => <SelectItem key={u} value={u} className="text-xs">{u}</SelectItem>)}
                             </SelectContent>
                           </Select>
+                          <Input
+                            placeholder="Obchod"
+                            value={editStore}
+                            onChange={(e) => setEditStore(e.target.value)}
+                            className="h-7 text-xs w-full"
+                          />
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={saveEdit}><Check className="h-3 w-3" /></Button>
                           <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setEditingId(null)}><X className="h-3 w-3" /></Button>
                         </div>
@@ -216,6 +233,9 @@ export default function PriceTagsPanel() {
                           <div className="flex-1 text-xs">
                             <span className="text-primary font-semibold">{formatPrice(t.price)} Kč</span>
                             <span className="text-muted-foreground">{formatQty(t.quantity ?? 1, t.unit)}</span>
+                            {t.store && (
+                              <span className="ml-1 text-muted-foreground">– {t.store}</span>
+                            )}
                           </div>
                           <div className="flex opacity-0 group-hover/v:opacity-100 transition-opacity">
                             <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => startEdit(t)}>
@@ -231,7 +251,7 @@ export default function PriceTagsPanel() {
                   ))}
 
                   {addingFor === g.name && (
-                    <div className="flex gap-1 pt-1">
+                    <div className="flex flex-wrap gap-1 pt-1">
                       <Input
                         placeholder="Cena"
                         inputMode="decimal"
@@ -257,6 +277,13 @@ export default function PriceTagsPanel() {
                       </Select>
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => addVariant(g.name)}><Check className="h-3 w-3" /></Button>
                       <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setAddingFor(null)}><X className="h-3 w-3" /></Button>
+                      <Input
+                        placeholder="Obchod (nepovinné)"
+                        value={variantStore}
+                        onChange={(e) => setVariantStore(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && addVariant(g.name)}
+                        className="h-7 text-xs w-full"
+                      />
                     </div>
                   )}
                 </div>
