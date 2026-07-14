@@ -8,6 +8,7 @@ import NotificationsBell from "@/components/NotificationsBell";
 import ActiveVouchersIndicator from "@/components/ActiveVouchersIndicator";
 import UserMenu from "@/components/UserMenu";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import bgImage from "@/assets/bckg_malkovice.asset.json";
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
