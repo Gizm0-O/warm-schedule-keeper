@@ -2037,35 +2037,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Tab switcher */}
-              <div className="flex rounded-lg border border-border bg-muted p-0.5">
-                <button
-                  onClick={() => setSidePanelTab("todos")}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                    sidePanelTab === "todos"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <CalendarDays className="h-3.5 w-3.5" /> Dnešní úkoly
-                </button>
-                <button
-                  onClick={() => setSidePanelTab("vouchers")}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                    sidePanelTab === "vouchers"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Gift className="h-3.5 w-3.5" /> Poukázky
-                </button>
-              </div>
-
-              {sidePanelTab === "vouchers" ? (
-                <RewardsVouchersPanel />
-              ) : (todosLoading || hourlyLoading) ? (
+              {(todosLoading || hourlyLoading) ? (
                 <div className="space-y-2">
                   <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 24, width: '40%' }} />
                   <div className="rounded-lg bg-muted/40 animate-pulse" style={{ height: 48 }} />
