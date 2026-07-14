@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
 import NotificationsBell from "@/components/NotificationsBell";
-import ActiveVouchersIndicator from "@/components/ActiveVouchersIndicator";
+import VouchersButton from "@/components/VouchersButton";
 import UserMenu from "@/components/UserMenu";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import bgImage from "@/assets/bckg_malkovice.asset.json";
@@ -109,7 +109,7 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
-            <ActiveVouchersIndicator />
+            <VouchersButton />
             <NotificationsBell />
             <Button
               variant="ghost"
