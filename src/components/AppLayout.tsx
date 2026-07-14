@@ -8,6 +8,7 @@ import NotificationsBell from "@/components/NotificationsBell";
 import ActiveVouchersIndicator from "@/components/ActiveVouchersIndicator";
 import UserMenu from "@/components/UserMenu";
 import OfflineIndicator from "@/components/OfflineIndicator";
+import bgImage from "@/assets/bckg_malkovice.asset.json";
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -51,6 +52,12 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <OfflineIndicator />
+      {/* Background image (Malkovice) */}
+      <div
+        className="fixed inset-0 -z-20 pointer-events-none bg-center bg-cover bg-no-repeat opacity-[0.05] dark:opacity-[0.07]"
+        style={{ backgroundImage: `url(${bgImage.url})` }}
+        aria-hidden="true"
+      />
       {/* Animated gradient blobs (reduced count for perf, disabled on reduced-motion) */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div
