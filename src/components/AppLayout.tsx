@@ -54,7 +54,7 @@ const AppLayout = () => {
       <OfflineIndicator />
       {/* Background image (Malkovice) - fixed to viewport */}
       <div
-        className="fixed inset-0 pointer-events-none bg-center bg-cover bg-no-repeat opacity-30"
+        className="fixed inset-0 pointer-events-none bg-center bg-cover bg-no-repeat opacity-20"
         style={{ backgroundImage: `url(${bgImage.url})`, zIndex: 0 }}
         aria-hidden="true"
       />
