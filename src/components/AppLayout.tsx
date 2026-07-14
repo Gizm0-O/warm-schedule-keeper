@@ -50,12 +50,12 @@ const AppLayout = () => {
     reducedMotion ? undefined : `${name} ${duration} ease-in-out infinite`;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden">
       <OfflineIndicator />
-      {/* Background image (Malkovice) */}
+      {/* Background image (Malkovice) - fixed to viewport */}
       <div
-        className="fixed inset-0 -z-20 pointer-events-none bg-center bg-cover bg-no-repeat opacity-[0.05] dark:opacity-[0.07]"
-        style={{ backgroundImage: `url(${bgImage.url})` }}
+        className="fixed inset-0 pointer-events-none bg-center bg-cover bg-no-repeat opacity-30"
+        style={{ backgroundImage: `url(${bgImage.url})`, zIndex: 0 }}
         aria-hidden="true"
       />
       {/* Animated gradient blobs (reduced count for perf, disabled on reduced-motion) */}
