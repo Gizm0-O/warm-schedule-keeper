@@ -75,12 +75,7 @@ const AppLayout = () => {
       </div>
 
 
-      <header className="group/header sticky top-0 z-50 glass-strong">
-        {/* Fixed top strip fills the overscroll gap above the header so only the panel color shows, not the background image. */}
-        <div
-          className="fixed inset-x-0 top-0 h-16 bg-card/95 backdrop-blur-xl border-b border-border/10 pointer-events-none"
-          style={{ zIndex: -1 }}
-        />
+      <header className="group/header fixed inset-x-0 top-0 z-50 glass-strong">
         <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer shrink-0">
@@ -129,7 +124,7 @@ const AppLayout = () => {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6 animate-fade-in relative z-10">
+      <main className="mx-auto max-w-[1400px] px-4 sm:px-6 pb-6 pt-20 animate-fade-in relative z-10">
         <Outlet />
       </main>
     </div>
