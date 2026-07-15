@@ -1,5 +1,6 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift, Lightbulb, Wallet } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift, Lightbulb, Wallet, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
