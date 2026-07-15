@@ -1,5 +1,6 @@
 import { NavLink as RouterNavLink, Outlet } from "react-router-dom";
-import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift, Lightbulb, Wallet } from "lucide-react";
+import { Calendar, CheckSquare, ShoppingCart, Sun, Moon, Orbit, ListChecks, Gift, Lightbulb, Wallet, Menu } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -76,12 +77,50 @@ const AppLayout = () => {
 
 
       <header className="group/header fixed inset-x-0 top-0 z-50 glass-strong">
-        <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-3">
-          <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer shrink-0">
-            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
-              <Orbit className="h-5 w-5 text-primary animate-twinkle" />
-              <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent">
+        <div className="relative mx-auto flex h-16 max-w-[1400px] items-center justify-between gap-2 px-3 sm:px-6">
+        <div className="flex items-center gap-2 min-w-0">
+          {/* Mobile hamburger */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden rounded-xl hover:glass-subtle shrink-0"
+                aria-label="Otevřít menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-0">
+              <SheetHeader className="p-4 border-b">
+                <SheetTitle className="text-left">Navigace</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col p-2">
+                {navItems.map((item) => (
+                  <RouterNavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.to === "/"}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "glass text-primary glow-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                      )
+                    }
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </RouterNavLink>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
+          <RouterNavLink to="/" className="hover:opacity-80 transition-opacity cursor-pointer shrink-0 min-w-0">
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2 min-w-0">
+              <Orbit className="h-5 w-5 text-primary animate-twinkle shrink-0" />
+              <span className="bg-gradient-to-r from-[hsl(280,90%,65%)] via-[hsl(265,80%,65%)] to-[hsl(200,90%,55%)] bg-clip-text text-transparent truncate">
                 Bambuls Universe
               </span>
             </h1>
@@ -89,15 +128,16 @@ const AppLayout = () => {
           <AdminToggle />
         </div>
         <div className="flex items-center gap-1">
-            <nav className="flex gap-1">
+            <nav className="hidden md:flex gap-1">
               {navItems.map((item) => (
                 <RouterNavLink
                   key={item.to}
                   to={item.to}
                   end={item.to === "/"}
+                  title={item.label}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-transform transition-colors duration-200",
+                      "flex items-center gap-2 rounded-xl px-2.5 lg:px-4 py-2 text-sm font-medium transition-transform transition-colors duration-200",
                       isActive
                         ? "glass text-primary glow-primary"
                         : "text-muted-foreground hover:text-foreground hover:scale-105 hover:bg-secondary/50"
@@ -105,7 +145,7 @@ const AppLayout = () => {
                   }
                 >
                   <item.icon className="h-4 w-4" />
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className="hidden lg:inline">{item.label}</span>
                 </RouterNavLink>
               ))}
             </nav>
