@@ -35,6 +35,7 @@ import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
+import StepsCard from "@/components/StepsCard";
 import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
 import { useHourlyTasks } from "@/hooks/useHourlyTasks";
 import { useRewards } from "@/hooks/useRewards";
@@ -1109,6 +1110,8 @@ const Index = () => {
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
         <RewardsBanner />
+      <StepsCard />
+
       {/* Header */}
       <div>
         <h2

@@ -732,6 +732,24 @@ export type Database = {
         }
         Relationships: []
       }
+      steps: {
+        Row: {
+          count: number
+          day: string
+          updated_at: string
+        }
+        Insert: {
+          count: number
+          day: string
+          updated_at?: string
+        }
+        Update: {
+          count?: number
+          day?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       task_bonus_amounts: {
         Row: {
           amount: number
