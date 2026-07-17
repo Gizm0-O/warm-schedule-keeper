@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { cs } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -8,7 +7,7 @@ const DAILY_GOAL = 8000;
 
 type StepRow = { day: string; count: number };
 
-export default function StepsCard() {
+export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: boolean }) {
   const [rows, setRows] = useState<StepRow[]>([]);
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export default function StepsCard() {
     const key = format(d, "yyyy-MM-dd");
     const count = byDay.get(key) ?? 0;
     return {
-      date: d,
       key,
       count,
       isToday: isSameDay(d, today),
@@ -57,10 +55,14 @@ export default function StepsCard() {
     };
   });
 
+  const grid = leadingSpacer
+    ? { display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)" }
+    : undefined;
+
   return (
-    <div className="grid grid-cols-7 gap-1 px-1">
+    <div className={leadingSpacer ? "" : "grid grid-cols-7 gap-1"} style={grid}>
+      {leadingSpacer && <div />}
       {days.map((d) => {
-        const label = format(d.date, "EEEEEE", { locale: cs });
         const color = d.isToday
           ? "text-primary"
           : d.reached
@@ -75,14 +77,11 @@ export default function StepsCard() {
           <div
             key={d.key}
             className={cn(
-              "flex flex-col items-center gap-0.5 rounded-md py-1",
+              "flex flex-col items-center gap-0.5 rounded-md py-1 px-1",
               d.isToday && "bg-primary/10"
             )}
             title={`${d.count.toLocaleString("cs-CZ")} / ${DAILY_GOAL.toLocaleString("cs-CZ")} kroků`}
           >
-            <div className={cn("text-[10px] font-semibold uppercase tracking-wider", d.isToday ? "text-primary" : "text-muted-foreground/70")}>
-              {label}
-            </div>
             <div className={cn("text-[11px] font-semibold tabular-nums leading-none", color)}>
               {d.count.toLocaleString("cs-CZ")}
             </div>
