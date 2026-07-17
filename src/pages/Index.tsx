@@ -1110,7 +1110,6 @@ const Index = () => {
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
         <RewardsBanner />
-      <StepsCard />
 
       {/* Header */}
       <div>
@@ -1183,6 +1182,8 @@ const Index = () => {
         {/* Calendar */}
         {viewMode === "month" ? (
           <div className="glass rounded-2xl p-4 animate-fade-in">
+            <StepsCard />
+            <div className="h-2" />
             <div className="mb-2 grid grid-cols-7 gap-1">
               {WEEKDAYS.map((day) => (
                 <div key={day} className="py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -1294,6 +1295,7 @@ const Index = () => {
         ) : (
           /* Weekly timeline view */
           <div className="glass rounded-2xl overflow-hidden animate-fade-in">
+            <div className="p-3 border-b border-border"><StepsCard /></div>
             <div className="overflow-y-auto scrollbar-hidden max-h-[600px] 2xl:max-h-[900px] relative" ref={timelineRef}>
             <div className="grid border-b border-border sticky top-0 z-20 bg-background/80 backdrop-blur-md" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
               <div className="border-r border-border flex items-center justify-center relative">
