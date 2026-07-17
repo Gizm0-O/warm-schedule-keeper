@@ -1110,7 +1110,6 @@ const Index = () => {
       {/* Italy Savings Banner */}
       <ItalySavingsBanner />
         <RewardsBanner />
-      <StepsCard />
 
       {/* Header */}
       <div>
