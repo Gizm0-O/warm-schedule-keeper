@@ -1182,6 +1182,8 @@ const Index = () => {
         {/* Calendar */}
         {viewMode === "month" ? (
           <div className="glass rounded-2xl p-4 animate-fade-in">
+            <StepsCard />
+            <div className="h-2" />
             <div className="mb-2 grid grid-cols-7 gap-1">
               {WEEKDAYS.map((day) => (
                 <div key={day} className="py-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
