@@ -76,7 +76,7 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
   return (
     <div
       className={cn(
-        "rounded-md bg-muted/30 p-1.5",
+        "rounded-md",
         leadingSpacer ? "" : "grid grid-cols-7 gap-1"
       )}
       style={grid}
