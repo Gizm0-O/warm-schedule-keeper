@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { Footprints } from "lucide-react";
 
 const DAILY_GOAL = 8000;
 
