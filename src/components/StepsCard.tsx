@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { format, startOfWeek, addDays, isSameDay } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -7,23 +6,37 @@ const DAILY_GOAL = 8000;
 
 type StepRow = { day: string; count: number };
 
+const toLocalYmd = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const normalizeDay = (v: string) => (v || "").slice(0, 10);
+
 export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: boolean }) {
-  const [rows, setRows] = useState<StepRow[]>([]);
+  const [byDay, setByDay] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-      const since = format(weekStart, "yyyy-MM-dd");
-      const until = format(addDays(weekStart, 6), "yyyy-MM-dd");
-      const { data } = await supabase
+      const today = new Date();
+      const start = new Date();
+      start.setDate(today.getDate() - 6);
+      const since = toLocalYmd(start);
+      const until = toLocalYmd(today);
+      const { data, error } = await supabase
         .from("steps")
         .select("day,count")
         .gte("day", since)
         .lte("day", until)
         .order("day", { ascending: true });
+      console.log("[StepsCard] range", since, "→", until, "rows:", data, "error:", error);
       if (!alive) return;
-      setRows((data as StepRow[] | null) ?? []);
+      const map = new Map<string, number>();
+      ((data as StepRow[] | null) ?? []).forEach((r) => map.set(normalizeDay(r.day), r.count));
+      setByDay(map);
     };
     load();
 
@@ -38,18 +51,18 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
     };
   }, []);
 
-  const byDay = new Map(rows.map((r) => [r.day, r.count]));
   const today = new Date();
-  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const todayKey = toLocalYmd(today);
 
   const days = Array.from({ length: 7 }).map((_, i) => {
-    const d = addDays(weekStart, i);
-    const key = format(d, "yyyy-MM-dd");
+    const d = new Date();
+    d.setDate(today.getDate() - 6 + i);
+    const key = toLocalYmd(d);
     const count = byDay.get(key) ?? 0;
     return {
       key,
       count,
-      isToday: isSameDay(d, today),
+      isToday: key === todayKey,
       reached: count >= DAILY_GOAL,
       pct: Math.min(100, (count / DAILY_GOAL) * 100),
     };
