@@ -74,7 +74,13 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
     : undefined;
 
   return (
-    <div className={leadingSpacer ? "" : "grid grid-cols-7 gap-1"} style={grid}>
+    <div
+      className={cn(
+        "rounded-md bg-muted/30 p-1.5",
+        leadingSpacer ? "" : "grid grid-cols-7 gap-1"
+      )}
+      style={grid}
+    >
       {leadingSpacer && (
         <div className="flex items-center justify-center">
           <Footprints className="h-4 w-4 text-muted-foreground" />
