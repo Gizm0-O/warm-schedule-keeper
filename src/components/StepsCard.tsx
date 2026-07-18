@@ -75,7 +75,11 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
 
   return (
     <div className={leadingSpacer ? "" : "grid grid-cols-7 gap-1"} style={grid}>
-      {leadingSpacer && <div />}
+      {leadingSpacer && (
+        <div className="flex items-center justify-center">
+          <Footprints className="h-4 w-4 text-muted-foreground" />
+        </div>
+      )}
       {days.map((d) => {
         const color = d.isToday
           ? "text-primary"
