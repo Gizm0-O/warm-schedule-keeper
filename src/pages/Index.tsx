@@ -1182,7 +1182,7 @@ const Index = () => {
         {/* Calendar */}
         {viewMode === "month" ? (
           <div className="glass rounded-2xl p-4 animate-fade-in">
-            <StepsCard />
+            <StepsCard days={weekDays} />
             <div className="h-2" />
             <div className="mb-2 grid grid-cols-7 gap-1">
               {WEEKDAYS.map((day) => (
