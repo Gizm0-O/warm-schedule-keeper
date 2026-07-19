@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Footprints } from "lucide-react";
@@ -16,17 +16,33 @@ const toLocalYmd = (d: Date) => {
 
 const normalizeDay = (v: string) => (v || "").slice(0, 10);
 
-export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: boolean }) {
+export default function StepsCard({
+  leadingSpacer = false,
+  days: daysProp,
+}: {
+  leadingSpacer?: boolean;
+  days?: Date[];
+}) {
   const [byDay, setByDay] = useState<Map<string, number>>(new Map());
+
+  const targetDays = useMemo(() => {
+    if (daysProp && daysProp.length === 7) return daysProp;
+    const today = new Date();
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      d.setDate(today.getDate() - 6 + i);
+      return d;
+    });
+  }, [daysProp]);
+
+  const rangeKey = targetDays.map(toLocalYmd).join(",");
 
   useEffect(() => {
     let alive = true;
     const load = async () => {
-      const today = new Date();
-      const start = new Date();
-      start.setDate(today.getDate() - 6);
-      const since = toLocalYmd(start);
-      const until = toLocalYmd(today);
+      const keys = targetDays.map(toLocalYmd);
+      const since = keys[0];
+      const until = keys[keys.length - 1];
       const { data, error } = await supabase
         .from("steps")
         .select("day,count")
@@ -50,27 +66,27 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
       alive = false;
       supabase.removeChannel(channel);
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rangeKey]);
 
-  const today = new Date();
-  const todayKey = toLocalYmd(today);
+  const todayKey = toLocalYmd(new Date());
 
-  const days = Array.from({ length: 7 }).map((_, i) => {
-    const d = new Date();
-    d.setDate(today.getDate() - 6 + i);
+  const cells = targetDays.map((d) => {
     const key = toLocalYmd(d);
+    const has = byDay.has(key);
     const count = byDay.get(key) ?? 0;
     return {
       key,
       count,
+      has,
       isToday: key === todayKey,
-      reached: count >= DAILY_GOAL,
+      reached: has && count >= DAILY_GOAL,
       pct: Math.min(100, (count / DAILY_GOAL) * 100),
     };
   });
 
   const grid = leadingSpacer
-    ? { display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)" }
+    ? { display: "grid", gridTemplateColumns: "60px repeat(7, 1fr)", gap: 0 }
     : undefined;
 
   return (
@@ -80,7 +96,7 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
           <Footprints className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
-      {days.map((d) => {
+      {cells.map((d) => {
         const color = d.isToday
           ? "text-primary"
           : d.reached
@@ -98,13 +114,17 @@ export default function StepsCard({ leadingSpacer = false }: { leadingSpacer?: b
               "flex flex-col items-center gap-0.5 rounded-md py-1 px-1",
               d.isToday && "bg-primary/10"
             )}
-            title={`${d.count.toLocaleString("cs-CZ")} / ${DAILY_GOAL.toLocaleString("cs-CZ")} kroků`}
+            title={
+              d.has
+                ? `${d.count.toLocaleString("cs-CZ")} / ${DAILY_GOAL.toLocaleString("cs-CZ")} kroků`
+                : "žádná data"
+            }
           >
             <div className={cn("text-[11px] font-semibold tabular-nums leading-none", color)}>
-              {d.count.toLocaleString("cs-CZ")}
+              {d.has ? d.count.toLocaleString("cs-CZ") : "–"}
             </div>
             <div className="w-full h-1 rounded-full bg-muted/60 overflow-hidden mt-0.5">
-              <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${d.pct}%` }} />
+              <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${d.has ? d.pct : 0}%` }} />
             </div>
           </div>
         );
