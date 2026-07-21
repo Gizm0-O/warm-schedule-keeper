@@ -147,9 +147,39 @@ export default function StepsCard({
                 : "žádná data"
             }
           >
-            <div className={cn("text-[11px] font-semibold tabular-nums leading-none", color)}>
-              {d.has ? d.count.toLocaleString("cs-CZ") : "–"}
-            </div>
+            {editing === d.key ? (
+              <input
+                ref={inputRef}
+                autoFocus
+                type="number"
+                inputMode="numeric"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={() => saveEdit(d.key)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); saveEdit(d.key); }
+                  else if (e.key === "Escape") { e.preventDefault(); setEditing(null); }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full text-[11px] font-semibold tabular-nums leading-none text-center bg-background border border-primary/40 rounded px-0.5 py-0 outline-none"
+              />
+            ) : (
+              <div
+                className={cn(
+                  "text-[11px] font-semibold tabular-nums leading-none",
+                  color,
+                  isAdmin && "cursor-pointer hover:underline"
+                )}
+                onClick={isAdmin ? (e) => {
+                  e.stopPropagation();
+                  setDraft(d.has ? String(d.count) : "");
+                  setEditing(d.key);
+                } : undefined}
+                title={isAdmin ? "Kliknutím upravit" : undefined}
+              >
+                {d.has ? d.count.toLocaleString("cs-CZ") : "–"}
+              </div>
+            )}
             <div className="w-full h-1 rounded-full bg-muted/60 overflow-hidden mt-0.5">
               <div className={cn("h-full rounded-full transition-all", barColor)} style={{ width: `${d.has ? d.pct : 0}%` }} />
             </div>
