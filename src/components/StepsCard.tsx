@@ -26,6 +26,31 @@ export default function StepsCard({
   days?: Date[];
 }) {
   const [byDay, setByDay] = useState<Map<string, number>>(new Map());
+  const isAdmin = useAdminMode();
+  const [editing, setEditing] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const saveEdit = async (key: string) => {
+    const n = parseInt(draft.replace(/\s/g, ""), 10);
+    setEditing(null);
+    if (!Number.isFinite(n) || n < 0) return;
+    const prev = byDay.get(key);
+    if (prev === n) return;
+    setByDay((m) => new Map(m).set(key, n));
+    const { error } = await supabase
+      .from("steps")
+      .upsert({ day: key, count: n }, { onConflict: "day" });
+    if (error) {
+      toast({ title: "Nepodařilo se uložit", description: error.message, variant: "destructive" });
+      setByDay((m) => {
+        const next = new Map(m);
+        if (prev === undefined) next.delete(key);
+        else next.set(key, prev);
+        return next;
+      });
+    }
+  };
 
   const targetDays = useMemo(() => {
     if (daysProp && daysProp.length === 7) return daysProp;
