@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Footprints } from "lucide-react";
+import { useAdminMode } from "@/hooks/useAdminMode";
+import { toast } from "@/hooks/use-toast";
 
 const DAILY_GOAL = 8000;
 
