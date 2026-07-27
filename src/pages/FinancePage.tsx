@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import {
   formatMonth, currentMonth, shiftMonth,
 } from "@/hooks/useFinance";
 import { useAdminMode } from "@/hooks/useAdminMode";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { cn } from "@/lib/utils";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
@@ -30,7 +31,19 @@ export default function FinancePage() {
   const [month, setMonth] = useState(currentMonth());
   const [revealedMonths, setRevealedMonths] = useState<Set<string>>(new Set());
   const isAdmin = useAdminMode();
-  const { entries, loading, add, update, remove } = useFinance(month);
+  const { entries, loading, add, update, remove, restore } = useFinance(month);
+  const { pushAction } = useUndoRedo();
+
+  const handleRemove = useCallback(async (id: string) => {
+    const entry = entries.find(e => e.id === id);
+    await remove(id);
+    if (!entry) return;
+    pushAction({
+      undo: () => restore(entry),
+      redo: () => remove(entry.id),
+    });
+  }, [entries, remove, restore, pushAction]);
+
 
   const isPastMonth = month < currentMonth();
   const isLocked = isPastMonth && !isAdmin;
@@ -176,9 +189,9 @@ export default function FinancePage() {
         <div className="relative">
           <div className={cn("space-y-4 transition-all", showOverlay && "blur-md pointer-events-none select-none")}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <SectionCard accent="emerald" title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("income")} positive paidToggle readOnly={readOnly} />
-              <SectionCard accent="violet" title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("subscription")} paidToggle showDue readOnly={readOnly} />
-              <SectionCard accent="amber" title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("fixed")} showDue paidToggle readOnly={readOnly} />
+              <SectionCard accent="emerald" title={SECTION_LABELS.income} items={bySection.income} onUpdate={update} onRemove={handleRemove} onAdd={() => quickAdd("income")} positive paidToggle readOnly={readOnly} />
+              <SectionCard accent="violet" title={SECTION_LABELS.subscription} items={bySection.subscription} onUpdate={update} onRemove={handleRemove} onAdd={() => quickAdd("subscription")} paidToggle showDue readOnly={readOnly} />
+              <SectionCard accent="amber" title={SECTION_LABELS.fixed} items={bySection.fixed} onUpdate={update} onRemove={handleRemove} onAdd={() => quickAdd("fixed")} showDue paidToggle readOnly={readOnly} />
 
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -187,7 +200,7 @@ export default function FinancePage() {
                 title={SECTION_LABELS.food}
                 items={foodExtras}
                 onUpdate={update}
-                onRemove={remove}
+                onRemove={handleRemove}
                 onAdd={() => quickAdd("food")}
                 readOnly={readOnly}
                 showCategory
@@ -204,7 +217,7 @@ export default function FinancePage() {
                 }
                 emptyText="Žádné extra výdaje mimo budget"
               />
-              <SectionCard accent="sky" title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={remove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
+              <SectionCard accent="sky" title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={handleRemove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
             </div>
 
           </div>

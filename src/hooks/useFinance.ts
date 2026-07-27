@@ -130,7 +130,29 @@ export function useFinance(month: string) {
     setEntries(prev => prev.filter(e => e.id !== id));
   }, []);
 
-  return { entries, loading, add, update, remove, refetch: fetch };
+  const restore = useCallback(async (entry: FinanceEntry) => {
+    const { data, error } = await supabase.from("finance_entries").insert({
+      id: entry.id,
+      month: entry.month,
+      section: entry.section,
+      category: entry.category,
+      name: entry.name,
+      planned: entry.planned,
+      actual: entry.actual,
+      due_day: entry.due_day,
+      note: entry.note,
+    }).select().single();
+    if (error) { console.error("[finance] restore", error); return false; }
+    if (data) setEntries(prev => {
+      if (prev.some(e => e.id === (data as FinanceEntry).id)) return prev;
+      return [...prev, data as FinanceEntry].sort(
+        (a, b) => a.created_at.localeCompare(b.created_at)
+      );
+    });
+    return true;
+  }, []);
+
+  return { entries, loading, add, update, remove, restore, refetch: fetch };
 }
 
 export const MONTH_NAMES_CS = [
