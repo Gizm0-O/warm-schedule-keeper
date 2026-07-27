@@ -44,20 +44,6 @@ export default function FinancePage() {
     });
   }, [entries, remove, restore, pushAction]);
 
-  const handleUpdate = useCallback(async (id: string, patch: Partial<FinanceEntry>) => {
-    const before = entries.find(e => e.id === id);
-    const ok = await update(id, patch);
-    if (!ok || !before) return ok;
-    const prevPatch: Partial<FinanceEntry> = {};
-    (Object.keys(patch) as (keyof FinanceEntry)[]).forEach(k => {
-      (prevPatch as any)[k] = (before as any)[k];
-    });
-    pushAction({
-      undo: () => update(id, prevPatch),
-      redo: () => update(id, patch),
-    });
-    return ok;
-  }, [entries, update, pushAction]);
 
   const isPastMonth = month < currentMonth();
   const isLocked = isPastMonth && !isAdmin;
