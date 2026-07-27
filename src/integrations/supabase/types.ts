@@ -206,6 +206,54 @@ export type Database = {
         }
         Relationships: []
       }
+      finance_entries_deleted_log: {
+        Row: {
+          actual: number
+          category: string | null
+          deleted_at: string
+          deleted_by: string | null
+          due_day: string | null
+          entry_id: string
+          id: string
+          month: string
+          name: string
+          note: string | null
+          original_created_at: string | null
+          planned: number
+          section: string
+        }
+        Insert: {
+          actual: number
+          category?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          due_day?: string | null
+          entry_id: string
+          id?: string
+          month: string
+          name: string
+          note?: string | null
+          original_created_at?: string | null
+          planned: number
+          section: string
+        }
+        Update: {
+          actual?: number
+          category?: string | null
+          deleted_at?: string
+          deleted_by?: string | null
+          due_day?: string | null
+          entry_id?: string
+          id?: string
+          month?: string
+          name?: string
+          note?: string | null
+          original_created_at?: string | null
+          planned?: number
+          section?: string
+        }
+        Relationships: []
+      }
       gift_ideas: {
         Row: {
           created_at: string
