@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import {
   formatMonth, currentMonth, shiftMonth,
 } from "@/hooks/useFinance";
 import { useAdminMode } from "@/hooks/useAdminMode";
+import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { cn } from "@/lib/utils";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
