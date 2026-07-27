@@ -9,6 +9,7 @@ import {
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { cn } from "@/lib/utils";
+import { FinanceDeletedLog } from "@/components/FinanceDeletedLog";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
   income: "Příjmy",
@@ -139,7 +140,9 @@ export default function FinancePage() {
             <ChevronRight className="h-6 w-6" />
           </Button>
         </div>
-        <div className="w-[100px]" /> {/* spacer to keep month centered */}
+        <div className="w-[100px] flex justify-end">
+          <FinanceDeletedLog onRestored={() => window.location.reload()} />
+        </div>
       </div>
 
       {/* Summary + Chart */}
