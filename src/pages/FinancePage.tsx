@@ -9,6 +9,7 @@ import {
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { useUndoRedo } from "@/hooks/useUndoRedo";
 import { cn } from "@/lib/utils";
+import { FinanceDeletedLog } from "@/components/FinanceDeletedLog";
 
 const SECTION_LABELS: Record<FinanceSection, string> = {
   income: "Příjmy",
