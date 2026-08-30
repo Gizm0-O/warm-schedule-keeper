@@ -332,6 +332,7 @@ export type Database = {
           month: string
           name: string
           person: string
+          position: number | null
           rate_per_hour: number
           unit_amount: number
           updated_at: string
@@ -348,6 +349,7 @@ export type Database = {
           month?: string
           name: string
           person?: string
+          position?: number | null
           rate_per_hour?: number
           unit_amount?: number
           updated_at?: string
@@ -364,6 +366,7 @@ export type Database = {
           month?: string
           name?: string
           person?: string
+          position?: number | null
           rate_per_hour?: number
           unit_amount?: number
           updated_at?: string
