@@ -45,6 +45,7 @@ export function useHourlyTasks() {
       .from('hourly_tasks')
       .select('*')
       .eq('month', month)
+      .order('position', { ascending: true })
       .order('created_at', { ascending: true });
 
     // Pokud v aktuálním měsíci nejsou žádné hodinové úkoly,
@@ -70,7 +71,7 @@ export function useHourlyTasks() {
             .maybeSingle();
           const snapshot = (lastArchive?.hourly_tasks_snapshot as any[]) || [];
           if (snapshot.length === 0) return;
-          const rows = snapshot.map((t: any) => ({
+          const rows = snapshot.map((t: any, idx: number) => ({
             name: t.name,
             rate_per_hour: t.rate_per_hour ?? 250,
             milestone_hours: t.milestone_hours ?? 5,
