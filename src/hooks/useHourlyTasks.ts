@@ -83,6 +83,7 @@ export function useHourlyTasks() {
             unit_amount: t.unit_amount ?? 0,
             month,
             hours_worked: 0,
+            position: idx + 1,
           }));
           await supabase.from('hourly_tasks').insert(rows);
         })();
@@ -92,6 +93,7 @@ export function useHourlyTasks() {
         .from('hourly_tasks')
         .select('*')
         .eq('month', month)
+        .order('position', { ascending: true })
         .order('created_at', { ascending: true });
       data = refetched || [];
     }
@@ -150,6 +152,7 @@ export function useHourlyTasks() {
         person: input.person ?? 'Tadeáš',
         xp_per_hour: input.xp_per_hour ?? 10,
         month: currentMonth(),
+        position: tasks.length > 0 ? Math.max(...tasks.map(t => t.position ?? 0)) + 1 : 1,
       })
       .select()
       .single();
