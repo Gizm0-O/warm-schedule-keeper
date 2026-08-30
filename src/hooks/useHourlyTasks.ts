@@ -14,6 +14,7 @@ export interface HourlyTask {
   xp_per_hour: number;
   kind: 'hourly' | 'progressive';
   unit_amount: number;
+  position: number;
   created_at: string;
   updated_at: string;
 }
@@ -45,6 +46,7 @@ export function useHourlyTasks() {
       .from('hourly_tasks')
       .select('*')
       .eq('month', month)
+      .order('position', { ascending: true })
       .order('created_at', { ascending: true });
 
     // Pokud v aktuálním měsíci nejsou žádné hodinové úkoly,
@@ -70,7 +72,7 @@ export function useHourlyTasks() {
             .maybeSingle();
           const snapshot = (lastArchive?.hourly_tasks_snapshot as any[]) || [];
           if (snapshot.length === 0) return;
-          const rows = snapshot.map((t: any) => ({
+          const rows = snapshot.map((t: any, idx: number) => ({
             name: t.name,
             rate_per_hour: t.rate_per_hour ?? 250,
             milestone_hours: t.milestone_hours ?? 5,
@@ -82,6 +84,7 @@ export function useHourlyTasks() {
             unit_amount: t.unit_amount ?? 0,
             month,
             hours_worked: 0,
+            position: idx + 1,
           }));
           await supabase.from('hourly_tasks').insert(rows);
         })();
@@ -91,6 +94,7 @@ export function useHourlyTasks() {
         .from('hourly_tasks')
         .select('*')
         .eq('month', month)
+        .order('position', { ascending: true })
         .order('created_at', { ascending: true });
       data = refetched || [];
     }
@@ -149,6 +153,7 @@ export function useHourlyTasks() {
         person: input.person ?? 'Tadeáš',
         xp_per_hour: input.xp_per_hour ?? 10,
         month: currentMonth(),
+        position: tasks.length > 0 ? Math.max(...tasks.map(t => t.position ?? 0)) + 1 : 1,
       })
       .select()
       .single();
