@@ -76,7 +76,7 @@ export default function ItalySavingsBanner() {
     const rawNote = depNoteRef.current?.value ?? depNote;
     const rawDate = depDateRef.current?.value || depDate;
     const amt = parseInt(rawAmount, 10);
-    if (!amt || amt <= 0) {
+    if (!amt || isNaN(amt)) {
       console.warn("[italy] invalid amount:", rawAmount);
       return;
     }
