@@ -34,6 +34,8 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  useStoriesReminder();
+
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") === "dark";
