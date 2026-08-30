@@ -10,6 +10,7 @@ import VouchersButton from "@/components/VouchersButton";
 import UserMenu from "@/components/UserMenu";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import bgImage from "@/assets/bckg_malkovice.asset.json";
+import { useStoriesReminder } from "@/hooks/useStoriesReminder";
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -34,6 +35,8 @@ const navItems = [
 ];
 
 const AppLayout = () => {
+  useStoriesReminder();
+
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("theme") === "dark";
