@@ -247,8 +247,8 @@ export default function ItalySavingsBanner() {
                     <span style={{ color: "hsl(25 30% 35%)" }}>
                       {format(new Date(e.created_at), "d.M.yyyy", { locale: cs })}
                     </span>
-                    <span className="font-semibold" style={{ color: "hsl(25 40% 30%)" }}>
-                      +{e.amount.toLocaleString("cs-CZ")} Kč
+                    <span className="font-semibold" style={{ color: e.amount < 0 ? "hsl(0 60% 40%)" : "hsl(25 40% 30%)" }}>
+                      {e.amount < 0 ? "−" : "+"}{Math.abs(e.amount).toLocaleString("cs-CZ")} Kč
                     </span>
                     {e.note && (
                       <span className="flex-1 mx-2 truncate" style={{ color: "hsl(25 20% 50%)" }}>
