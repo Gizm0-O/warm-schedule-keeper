@@ -43,5 +43,5 @@ export function useStoriesReminder(enabled = true) {
     return () => {
       cancelled = true;
     };
-  }, [user, isAdmin]);
+  }, [enabled, user, isAdmin]);
 }
