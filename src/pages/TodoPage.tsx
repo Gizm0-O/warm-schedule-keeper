@@ -34,6 +34,7 @@ import { cs } from "date-fns/locale";
 import { RECURRENCE_LABELS, WEEKDAY_SHORT, WEEKDAY_ORDER, type Todo, type Category, type Person, type Recurrence } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { useHourlyTasks } from "@/hooks/useHourlyTasks";
+import { FEATURES } from "@/config/features";
 import { HourlyTaskRow, NewHourlyTaskButton } from "@/components/HourlyTaskRow";
 import { supabase } from "@/integrations/supabase/client";
 import { useRewards } from "@/hooks/useRewards";
@@ -834,7 +835,7 @@ const TodoPage = () => {
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-2xl font-bold text-foreground">Úkoly</h2>
         <div className="flex items-center gap-2">
-          {isAdmin && (
+          {isAdmin && FEATURES.monthlyStories && (
             <Button
               size="sm"
               variant="outline"
@@ -848,7 +849,7 @@ const TodoPage = () => {
               📚 Generovat příběhy
             </Button>
           )}
-          <NewHourlyTaskButton />
+          {FEATURES.rewards && <NewHourlyTaskButton />}
           <Button onClick={() => setShowDialog(true)} size="sm">
             <Plus className="mr-1 h-4 w-4" /> Nový úkol
           </Button>
@@ -874,7 +875,7 @@ const TodoPage = () => {
         <div className="animate-fade-in space-y-4">
           {(() => {
             const filteredHourly = activeTab === "all" ? hourlyTasks : hourlyTasks.filter((t) => t.person === activeTab);
-            if (filteredHourly.length === 0) return null;
+            if (!FEATURES.rewards || filteredHourly.length === 0) return null;
             return (
               <div className="glass rounded-2xl shadow-sm overflow-hidden">
                 <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50">

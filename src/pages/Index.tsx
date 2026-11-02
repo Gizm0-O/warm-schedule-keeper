@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
+import { FEATURES } from "@/config/features";
 import ItalySavingsBanner from "@/components/ItalySavingsBanner";
 import { RewardsBanner } from "@/components/RewardsBanner";
 import StepsCard from "@/components/StepsCard";
@@ -1108,8 +1109,8 @@ const Index = () => {
   return (
     <div className="space-y-6" onClick={() => setSelectedDate(null)}>
       {/* Italy Savings Banner */}
-      <ItalySavingsBanner />
-        <RewardsBanner />
+      {FEATURES.italySavings && <ItalySavingsBanner />}
+        {FEATURES.rewards && <RewardsBanner />}
 
       {/* Header */}
       <div>
@@ -2223,9 +2224,9 @@ const Index = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-foreground">Dnešní úkoly</h3>
-                    <NewHourlyTaskButton />
+                    {FEATURES.rewards && <NewHourlyTaskButton />}
                   </div>
-                  {hourlyTasks.length > 0 && (
+                  {FEATURES.rewards && hourlyTasks.length > 0 && (
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-muted-foreground" />

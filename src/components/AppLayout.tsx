@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import AdminToggle from "@/components/AdminToggle";
 import NotificationsBell from "@/components/NotificationsBell";
+import { FEATURES } from "@/config/features";
 import VouchersButton from "@/components/VouchersButton";
 import UserMenu from "@/components/UserMenu";
 import OfflineIndicator from "@/components/OfflineIndicator";
@@ -35,7 +36,7 @@ const navItems = [
 ];
 
 const AppLayout = () => {
-  useStoriesReminder();
+  useStoriesReminder(FEATURES.monthlyStories);
 
   const [dark, setDark] = useState(() => {
     if (typeof window !== "undefined") {
@@ -152,7 +153,7 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
-            <VouchersButton />
+            {FEATURES.rewards && <VouchersButton />}
             <NotificationsBell />
             <Button
               variant="ghost"
