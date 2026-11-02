@@ -9,11 +9,11 @@ const monthKey = (d = new Date()) =>
  * Jednou za měsíc pošle adminovi notifikaci, aby zkontroloval a odsouhlasil
  * příběhové úkoly pro Barču na daný měsíc.
  */
-export function useStoriesReminder() {
+export function useStoriesReminder(enabled = true) {
   const { user, isAdmin } = useAuth();
 
   useEffect(() => {
-    if (!user || !isAdmin) return;
+    if (!enabled || !user || !isAdmin) return;
     let cancelled = false;
 
     (async () => {
