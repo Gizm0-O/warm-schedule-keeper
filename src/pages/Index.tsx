@@ -1024,6 +1024,7 @@ const Index = () => {
   };
 
   const getShiftsForDay = (day: Date): DisplayShift[] => {
+    if (!FEATURES.shifts) return [];
     const dayKey = format(day, "yyyy-MM-dd");
     const defaults = getDefaultShiftsForDay(day);
     const localKeys = defaults
@@ -1300,7 +1301,7 @@ const Index = () => {
             <div className="overflow-y-auto scrollbar-hidden max-h-[600px] 2xl:max-h-[900px] relative" ref={timelineRef}>
             <div className="grid border-b border-border sticky top-0 z-20 bg-background/80 backdrop-blur-md" style={{ gridTemplateColumns: "60px repeat(7, 1fr)" }}>
               <div className="border-r border-border flex items-center justify-center relative">
-                {isAdmin && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
+                {isAdmin && FEATURES.shifts && weekDays.some((d) => hiddenSwitchBreaks.has(format(d, "yyyy-MM-dd"))) && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -1700,6 +1701,7 @@ const Index = () => {
                 {/* SWITCH BREAK – per day, podle aktuálního rozvrhu (s admin overrides) */}
                 {weekDays.map((day, dayIdx) => {
                   const dateKey = format(day, "yyyy-MM-dd");
+                  if (!FEATURES.shifts) return null;
                   if (hiddenSwitchBreaks.has(dateKey)) return null;
                   const defaultBrk = getSwitchBreakForIsoDay(isoDayOf(day));
                   const override = switchBreakOverrides[dateKey];
