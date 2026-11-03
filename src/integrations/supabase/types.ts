@@ -1138,6 +1138,7 @@ export type Database = {
       }
       is_approved: { Args: { _user_id: string }; Returns: boolean }
       person_to_user_id: { Args: { _person: string }; Returns: string }
+      update_food_budget: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
