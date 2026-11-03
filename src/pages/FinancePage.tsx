@@ -209,15 +209,11 @@ export default function FinancePage() {
                 showCategory
                 categoryOptions={FOOD_CATEGORIES}
                 hidePlan
-                headerExtra={
-                  <FoodBudgetChip
-                    entry={foodBudget}
-                    defaultValue={FOOD_BUDGET}
-                    onToggle={toggleFoodBudget}
-                    onChangeAmount={updateFoodBudgetAmount}
-                    readOnly={readOnly}
-                  />
-                }
+                headerExtra={<FoodBudgetSummary entry={foodBudget} />}
+                headerOverride={foodBudget ? {
+                  actual: sum(bySection.food, "actual"),
+                  planned: Number(foodBudget.planned) || 0,
+                } : undefined}
                 emptyText="Žádné extra výdaje mimo budget"
               />
               <SectionCard accent="sky" title={SECTION_LABELS.daily} items={bySection.daily} onUpdate={update} onRemove={handleRemove} onAdd={() => quickAdd("daily")} showCategory categoryOptions={DAILY_CATEGORIES} hidePlan readOnly={readOnly} />
@@ -283,6 +279,7 @@ function SectionCard({
   paidCheck?: boolean;
   readOnly?: boolean;
   headerExtra?: React.ReactNode;
+  headerOverride?: { actual: number; planned: number };
   emptyText?: string;
   categoryOptions?: string[];
   hidePlan?: boolean;
@@ -308,9 +305,9 @@ function SectionCard({
         </div>
         <div className="text-sm text-muted-foreground">
           <span className={cn("font-semibold", positive ? "text-green-500" : "text-foreground")}>
-            {fmt(totalA)}
+            {fmt(headerOverride ? headerOverride.actual : totalA)}
           </span>
-          <span className="text-xs ml-2">/ {fmt(totalP)}</span>
+          <span className="text-xs ml-2">/ {fmt(headerOverride ? headerOverride.planned : totalP)}</span>
         </div>
       </div>
       <div className="px-4 py-1.5 border-b border-border/50 text-xs text-muted-foreground flex items-center gap-2 select-none">
@@ -466,6 +463,27 @@ function Row({
         </button>
       )}
       {readOnly && <div className="w-6 shrink-0" />}
+    </div>
+  );
+}
+
+// Read-only budget jídla – hodnoty plní databáze (planned = 300 Kč × dny v měsíci, actual = 300 Kč × dnešní den).
+// Původní editovatelný FoodBudgetChip je ponechán níže pro případný návrat.
+function FoodBudgetSummary({ entry }: { entry: FinanceEntry | null }) {
+  if (!entry) {
+    return <span className="text-xs text-muted-foreground">Budget: –</span>;
+  }
+  const planned = Number(entry.planned) || 0;
+  const actual = Number(entry.actual) || 0;
+  const pct = planned > 0 ? Math.min(100, (actual / planned) * 100) : 0;
+  return (
+    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <span className="tabular-nums">
+        Budget: <span className="font-semibold text-foreground">{fmt(actual)}</span> / {fmt(planned)}
+      </span>
+      <div className="h-1.5 w-16 rounded-full bg-secondary overflow-hidden">
+        <div className="h-full bg-rose-500 transition-all" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
