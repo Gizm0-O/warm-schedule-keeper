@@ -9,4 +9,5 @@ export const FEATURES = {
   steps: false, // karta kroků (StepsCard) nad kalendářem
   tokens: false, // odznak tokenů (TokensBadge) – data a logika zůstávají
   shifts: false, // směny v kalendáři + oddělovače směn (switch break separátory)
+  todosInCalendar: true, // nesplněné úkoly s termínem přímo v buňkách kalendáře
 };

@@ -15,6 +15,7 @@ export interface CalendarEvent {
   recurrence?: CalendarRecurrence;
   seriesId?: string | null;
   recurrenceEndDate?: string | null;
+  endDate?: string | null;
 }
 
 export interface CalendarEventInput extends Omit<CalendarEvent, "id"> {
@@ -32,6 +33,7 @@ const rowToEvent = (r: any): CalendarEvent => ({
   recurrence: (r.recurrence ?? "none") as CalendarRecurrence,
   seriesId: r.series_id ?? null,
   recurrenceEndDate: r.recurrence_end_date ?? null,
+  endDate: r.end_date ?? null,
 });
 
 const nextDate = (d: Date, rec: CalendarRecurrence): Date => {
@@ -71,6 +73,7 @@ export function useCalendarEvents() {
         recurrence: ev.recurrence ?? "none",
         series_id: ev.seriesId ?? null,
         recurrence_end_date: ev.recurrenceEndDate ?? null,
+        end_date: ev.endDate ?? null,
       })
       .select()
       .single();
@@ -128,6 +131,7 @@ export function useCalendarEvents() {
     if (updates.hour !== undefined) row.hour = updates.hour;
     if (updates.endHour !== undefined) row.end_hour = updates.endHour;
     if (updates.allDay !== undefined) row.all_day = updates.allDay;
+    if (updates.endDate !== undefined) row.end_date = updates.endDate;
     // Optimistic
     let prev: CalendarEvent | undefined;
     setEvents((list) => {

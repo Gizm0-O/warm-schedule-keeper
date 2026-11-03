@@ -16,6 +16,7 @@ import {
   isBefore,
   startOfDay,
   differenceInDays,
+  parseISO,
   getDay,
   addDays,
 } from "date-fns";
@@ -459,6 +460,7 @@ const Index = () => {
   const [newEventDate, setNewEventDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [newEventRecurrence, setNewEventRecurrence] = useState<"none" | "daily" | "weekly" | "biweekly" | "monthly">("none");
   const [newEventRecurrenceEnd, setNewEventRecurrenceEnd] = useState<string>(format(addMonths(new Date(), 3), "yyyy-MM-dd"));
+  const [newEventEndDate, setNewEventEndDate] = useState<string>("");
   const [showNewEventDialog, setShowNewEventDialog] = useState(false);
   const [anniversaryDismissed, setAnniversaryDismissed] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -480,6 +482,7 @@ const Index = () => {
   const [editHour, setEditHour] = useState(9);
   const [editEndHour, setEditEndHour] = useState(10);
   const [editColor, setEditColor] = useState(EVENT_COLORS[0].value);
+  const [editEndDate, setEditEndDate] = useState<string>("");
 
   // Edit shift dialog
   const [editingShift, setEditingShift] = useState<DisplayShift | null>(null);
@@ -874,6 +877,7 @@ const Index = () => {
       endHour: newEventAllDay ? undefined : newEventEndHour,
       allDay: newEventAllDay,
     };
+    if (newEventRecurrence === "none" && newEventEndDate && newEventEndDate > dateStr) (evData as any).endDate = newEventEndDate;
     if (newEventRecurrence !== "none") {
       const seriesId = await addRecurringSeries(evData, newEventRecurrence, newEventRecurrenceEnd);
       if (seriesId) {
@@ -903,6 +907,7 @@ const Index = () => {
     setNewEventColor(EVENT_COLORS[0].value);
     setNewEventDate(selectedDate ? format(selectedDate, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"));
     setNewEventRecurrence("none");
+    setNewEventEndDate("");
     setNewEventRecurrenceEnd(format(addMonths(selectedDate ?? new Date(), 3), "yyyy-MM-dd"));
     setShowNewEventDialog(true);
   };
@@ -912,7 +917,7 @@ const Index = () => {
     await removeEventFromDb(id);
     if (ev) {
       pushAction({
-        undo: () => addEventToDb({ id: ev.id, date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined }),
+        undo: () => addEventToDb({ id: ev.id, date: ev.date, title: ev.title, color: ev.color, hour: ev.hour ?? undefined, endHour: ev.endHour ?? undefined, allDay: ev.allDay, endDate: ev.endDate ?? null }),
         redo: () => removeEventFromDb(ev.id),
       });
     }
@@ -924,15 +929,17 @@ const Index = () => {
     setEditHour(ev.hour ?? 9);
     setEditEndHour(ev.endHour ?? (ev.hour !== undefined ? ev.hour + 1 : 10));
     setEditColor(ev.color);
+    setEditEndDate(ev.endDate ?? "");
   };
 
   const saveEditEvent = async () => {
     if (!editingEvent) return;
     const isAllDay = !!editingEvent.allDay;
-    const prevData = { title: editingEvent.title, hour: editingEvent.hour, endHour: editingEvent.endHour, color: editingEvent.color };
+    const prevData: any = { title: editingEvent.title, hour: editingEvent.hour, endHour: editingEvent.endHour, color: editingEvent.color, endDate: editingEvent.endDate ?? null };
     const newData: any = isAllDay
       ? { title: editTitle, color: editColor, hour: null, endHour: null, allDay: true }
       : { title: editTitle, hour: editHour, endHour: editEndHour, color: editColor };
+    if (!editingEvent.seriesId) newData.endDate = editEndDate && editEndDate > editingEvent.date ? editEndDate : null;
     const evId = editingEvent.id;
     await updateEventInDb(evId, newData);
     pushAction({
@@ -957,11 +964,23 @@ const Index = () => {
     setEditingShift(null);
   };
 
+  const occursOn = (e: CalendarEvent, ds: string) => e.date === ds || (!!e.endDate && e.endDate > e.date && e.date <= ds && ds <= e.endDate);
+  const multiDayLabel = (e: CalendarEvent, ds: string) => {
+    if (!e.endDate || e.endDate <= e.date) return "";
+    const total = differenceInDays(parseISO(e.endDate), parseISO(e.date)) + 1;
+    const idx = differenceInDays(parseISO(ds), parseISO(e.date)) + 1;
+    return `${idx}/${total}`;
+  };
   const getEventsForDate = (date: Date) =>
-    events.filter((e) => e.date === format(date, "yyyy-MM-dd"));
+    events.filter((e) => occursOn(e, format(date, "yyyy-MM-dd")));
+  const getTodosForDate = (date: Date) => {
+    if (!FEATURES.todosInCalendar) return [];
+    const ds = format(date, "yyyy-MM-dd");
+    return todos.filter((t) => !t.completed && t.deadline && format(t.deadline, "yyyy-MM-dd") === ds);
+  };
 
   const getEventsForDateAndHour = (date: Date, hour: number) =>
-    events.filter((e) => e.date === format(date, "yyyy-MM-dd") && e.hour === hour);
+    events.filter((e) => occursOn(e, format(date, "yyyy-MM-dd")) && e.hour === hour);
 
   const getHourTop = (hour: number) =>
     HOURS.slice(0, hour).reduce((sum, h) => sum + getHourHeight(h), 0);
@@ -1097,7 +1116,7 @@ const Index = () => {
 
   // Event spans multiple hours in weekly view
   const getEventBlocksForDay = (day: Date) => {
-    const dayEvents = events.filter((e) => e.date === format(day, "yyyy-MM-dd") && e.hour !== undefined);
+    const dayEvents = events.filter((e) => occursOn(e, format(day, "yyyy-MM-dd")) && e.hour !== undefined);
     return dayEvents;
   };
 
@@ -1280,9 +1299,23 @@ const Index = () => {
                           <span className="truncate">{b.name}</span>
                         </div>
                       ))}
-                      {dayEvents.slice(0, 2).map((ev) => (
-                        <div key={ev.id} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
-                          {ev.title}
+                      {dayEvents.slice(0, 2).map((ev) => {
+                        const md = multiDayLabel(ev, format(day, "yyyy-MM-dd"));
+                        return (
+                        <div key={ev.id} onClick={(e) => { e.stopPropagation(); setSelectedDate(day); openEditEvent(ev); }} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
+                          {md && <span className="opacity-60 mr-1">{md}</span>}{ev.title}
+                        </div>
+                        );
+                      })}
+                      {getTodosForDate(day).slice(0, 3).map((t) => (
+                        <div key={`todo-${t.id}`} className="flex items-center gap-1 px-0.5 text-[10px] leading-tight w-full" title={t.text}>
+                          <span
+                            role="checkbox"
+                            aria-checked={t.completed}
+                            onClick={(e) => { e.stopPropagation(); handleToggleTodo(t.id); }}
+                            className={cn("h-2.5 w-2.5 shrink-0 rounded-[3px] border cursor-pointer", t.person === "Barča" ? "border-pink-500" : "border-sky-500", t.completed && (t.person === "Barča" ? "bg-pink-500" : "bg-sky-500"))}
+                          />
+                          <span className={cn("truncate", t.person === "Barča" ? "text-pink-700 dark:text-pink-300" : "text-sky-700 dark:text-sky-300", t.completed && "line-through opacity-60")}>{t.text}</span>
                         </div>
                       ))}
                       {dayEvents.length > 2 && (
@@ -1361,7 +1394,7 @@ const Index = () => {
               <div className="relative" style={{ height: totalGridHeight }}>
                 {/* Celodenní události – plovoucí nad kalendářem */}
                 {weekDays.map((day, dayIdx) => {
-                  const allDayEvs = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay);
+                  const allDayEvs = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay);
                   if (allDayEvs.length === 0) return null;
                   return allDayEvs.map((ev, evIdx) => {
                     const isHex = isHexColor(ev.color);
@@ -1399,7 +1432,7 @@ const Index = () => {
                 {weekDays.map((day, dayIdx) => {
                   const bdays = getBirthdaysForDate(birthdays, day);
                   if (bdays.length === 0) return null;
-                  const allDayCount = events.filter(e => e.date === format(day, "yyyy-MM-dd") && e.allDay).length;
+                  const allDayCount = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay).length;
                   return bdays.map((b, bi) => (
                     <div
                       key={`bday-${b.id}`}
@@ -2013,6 +2046,12 @@ const Index = () => {
 
               {/* Event list */}
               <div className="space-y-2">
+                {getTodosForDate(selectedDate).map((t) => (
+                  <label key={`todo-${t.id}`} className="flex items-center gap-2 rounded-lg px-3 py-1.5 border border-dashed cursor-pointer">
+                    <input type="checkbox" checked={t.completed} onChange={() => handleToggleTodo(t.id)} className={cn("h-3.5 w-3.5", t.person === "Barča" ? "accent-pink-500" : "accent-sky-500")} />
+                    <span className={cn("text-sm", t.person === "Barča" ? "text-pink-700 dark:text-pink-300" : "text-sky-700 dark:text-sky-300", t.completed && "line-through opacity-60")}>{t.text}</span>
+                  </label>
+                ))}
                 {getEventsForDate(selectedDate).length === 0 ? (
                   <p className="text-sm text-muted-foreground">Žádné události</p>
                 ) : (
@@ -2022,7 +2061,7 @@ const Index = () => {
                         className="flex flex-col cursor-pointer flex-1"
                         onClick={() => openEditEvent(ev)}
                       >
-                        <span className="text-sm font-medium">{ev.title}</span>
+                        <span className="text-sm font-medium">{ev.title}{multiDayLabel(ev, format(selectedDate, "yyyy-MM-dd")) && <span className="ml-1.5 text-[10px] opacity-60">{multiDayLabel(ev, format(selectedDate, "yyyy-MM-dd"))}</span>}</span>
                         {ev.hour !== undefined && (
                           <span className="text-[10px] opacity-70">
                             {floatToTime(ev.hour)}
@@ -2285,6 +2324,12 @@ const Index = () => {
                 className="mt-1"
               />
             </div>
+            {editingEvent && !editingEvent.seriesId && (
+            <div>
+              <label className="text-sm font-medium text-foreground">Do data <span className="text-xs text-muted-foreground">(volitelné, vícedenní událost)</span></label>
+              <Input type="date" value={editEndDate} min={editingEvent.date} onChange={(e) => setEditEndDate(e.target.value)} className="mt-1" />
+            </div>
+            )}
             <TimeRangePicker
               start={editHour}
               end={editEndHour}
@@ -2486,6 +2531,12 @@ const Index = () => {
                 className="mt-1"
               />
             </div>
+            {newEventRecurrence === "none" && (
+            <div>
+              <label className="text-sm font-medium text-foreground">Do data <span className="text-xs text-muted-foreground">(volitelné, vícedenní událost)</span></label>
+              <Input type="date" value={newEventEndDate} min={newEventDate} onChange={(e) => setNewEventEndDate(e.target.value)} className="mt-1" />
+            </div>
+            )}
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setNewEventAllDay(!newEventAllDay)}

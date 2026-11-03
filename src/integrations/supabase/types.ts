@@ -47,6 +47,7 @@ export type Database = {
           color: string
           created_at: string
           date: string
+          end_date: string | null
           end_hour: number | null
           hour: number | null
           id: string
@@ -60,6 +61,7 @@ export type Database = {
           color: string
           created_at?: string
           date: string
+          end_date?: string | null
           end_hour?: number | null
           hour?: number | null
           id?: string
@@ -73,6 +75,7 @@ export type Database = {
           color?: string
           created_at?: string
           date?: string
+          end_date?: string | null
           end_hour?: number | null
           hour?: number | null
           id?: string
@@ -264,6 +267,7 @@ export type Database = {
           recipient: string
           updated_at: string
           url: string | null
+          urls: string[]
         }
         Insert: {
           created_at?: string
@@ -274,6 +278,7 @@ export type Database = {
           recipient: string
           updated_at?: string
           url?: string | null
+          urls?: string[]
         }
         Update: {
           created_at?: string
@@ -284,6 +289,7 @@ export type Database = {
           recipient?: string
           updated_at?: string
           url?: string | null
+          urls?: string[]
         }
         Relationships: []
       }
@@ -297,6 +303,7 @@ export type Database = {
           owner: string
           updated_at: string
           url: string | null
+          urls: string[]
         }
         Insert: {
           created_at?: string
@@ -307,6 +314,7 @@ export type Database = {
           owner: string
           updated_at?: string
           url?: string | null
+          urls?: string[]
         }
         Update: {
           created_at?: string
@@ -317,6 +325,7 @@ export type Database = {
           owner?: string
           updated_at?: string
           url?: string | null
+          urls?: string[]
         }
         Relationships: []
       }
