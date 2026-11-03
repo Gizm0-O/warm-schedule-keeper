@@ -265,7 +265,7 @@ function SummaryCard({
 
 function SectionCard({
   title, items, onUpdate, onRemove, onAdd, positive, showDue, showCategory, paidToggle, paidCheck, readOnly,
-  headerExtra, emptyText, categoryOptions, hidePlan, accent,
+  headerExtra, headerOverride, emptyText, categoryOptions, hidePlan, accent,
 }: {
   title: string;
   items: FinanceEntry[];
