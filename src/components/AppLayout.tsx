@@ -153,7 +153,7 @@ const AppLayout = () => {
                 </RouterNavLink>
               ))}
             </nav>
-            {FEATURES.rewards && <VouchersButton />}
+            {FEATURES.vouchers && <VouchersButton />}
             <NotificationsBell />
             <Button
               variant="ghost"
