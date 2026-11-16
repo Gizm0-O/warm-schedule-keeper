@@ -32,6 +32,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { calendarEventLanes, isMultiDayEvent } from "@/lib/calendarEventLanes";
 import { RECURRENCE_LABELS, type Todo } from "@/data/todos";
 import { useTodos } from "@/contexts/TodoContext";
 import { FEATURES } from "@/config/features";
@@ -508,7 +509,7 @@ const Index = () => {
     if (!timelineRef.current) return 0;
     const rect = timelineRef.current.getBoundingClientRect();
     const headerEl = timelineRef.current.querySelector(".sticky") as HTMLElement | null;
-    const headerHeight = headerEl ? headerEl.offsetHeight : 0;
+    const headerHeight = (headerEl?.offsetHeight ?? 0) + (timelineRef.current.querySelector<HTMLElement>("[data-all-day-band]")?.offsetHeight ?? 0);
     const y = clientY - rect.top + timelineRef.current.scrollTop - headerHeight;
     let acc = 0;
     for (const h of HOURS) {
@@ -1116,7 +1117,7 @@ const Index = () => {
 
   // Event spans multiple hours in weekly view
   const getEventBlocksForDay = (day: Date) => {
-    const dayEvents = events.filter((e) => occursOn(e, format(day, "yyyy-MM-dd")) && e.hour !== undefined);
+    const dayEvents = events.filter((e) => occursOn(e, format(day, "yyyy-MM-dd")) && e.hour !== undefined && !e.allDay && !isMultiDayEvent(e));
     return dayEvents;
   };
 
@@ -1125,6 +1126,30 @@ const Index = () => {
     const dayName = format(now, "EEEE", { locale: cs });
     return `Dnes je ${dayName}, ${format(now, "d")}. ${MONTH_GENITIVE[now.getMonth()]}`;
   }, [now]);
+
+  const monthWeeks = Array.from({ length: days.length / 7 }, (_, index) => days.slice(index * 7, index * 7 + 7));
+  const weekLanes = calendarEventLanes(events, weekDays.map(day => format(day, "yyyy-MM-dd")));
+  const weekSingleRows = Math.max(0, ...weekDays.map(day =>
+    getEventsForDate(day).filter(event => event.allDay && !isMultiDayEvent(event)).length + getBirthdaysForDate(birthdays, day).length
+  ));
+  const renderEventBars = (layout: ReturnType<typeof calendarEventLanes>, top: number) => (
+    <div className="absolute inset-x-0 grid grid-cols-7 pointer-events-none z-10" style={{ top, gridAutoRows: "22px" }}>
+      {layout.segments.map(({ event, start, end, lane }) => (
+        <Button
+          key={event.id}
+          data-event-bar={event.id}
+          variant="ghost"
+          title={event.title}
+          aria-label={`Upravit událost ${event.title}`}
+          className={cn("pointer-events-auto mx-0.5 h-5 min-w-0 justify-start overflow-hidden rounded-md border px-1.5 py-0 text-[10px] font-semibold hover:opacity-80", isHexColor(event.color) ? "" : event.color)}
+          style={{ gridColumn: `${start + 1} / ${end + 2}`, gridRow: lane + 1, ...(isHexColor(event.color) ? hexEventStyle(event.color) : {}) }}
+          onClick={click => { click.stopPropagation(); openEditEvent(event); }}
+        >
+          <span className="truncate">{event.title}</span>
+        </Button>
+      ))}
+    </div>
+  );
 
   return (
     <div className="space-y-6" onClick={() => setSelectedDate(null)}>
@@ -1212,9 +1237,14 @@ const Index = () => {
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-1">
-              {days.map((day) => {
-                const dayEvents = getEventsForDate(day);
+            <div className="space-y-1">
+              {monthWeeks.map(week => {
+                const lanes = calendarEventLanes(events, week.map(day => format(day, "yyyy-MM-dd")));
+                return (
+                <div key={week[0].toISOString()} className="relative grid grid-cols-7 gap-1">
+                  {renderEventBars(lanes, 54)}
+              {week.map((day) => {
+                const dayEvents = getEventsForDate(day).filter(event => !isMultiDayEvent(event));
                 const dayShifts = getShiftsForDay(day);
                 const selected = selectedDate && isSameDay(day, selectedDate);
                 return (
@@ -1271,6 +1301,7 @@ const Index = () => {
                         {NAME_DAYS[format(day, "MM-dd")]}
                       </span>
                     )}
+                    <div aria-hidden="true" className="w-full shrink-0" style={{ height: lanes.laneCount * 22 + 4 }} />
                     {dayShifts.length > 0 && (
                       <div className="flex flex-col gap-0.5 w-full">
                         {dayShifts.map((shift, si) => (
@@ -1300,7 +1331,7 @@ const Index = () => {
                         </div>
                       ))}
                       {dayEvents.slice(0, 2).map((ev) => {
-                        const md = multiDayLabel(ev, format(day, "yyyy-MM-dd"));
+                        const md = ""; // Multi-day events are rendered as shared bars above.
                         return (
                         <div key={ev.id} onClick={(e) => { e.stopPropagation(); setSelectedDate(day); openEditEvent(ev); }} className={cn("truncate rounded-md px-1.5 py-0.5 text-[10px] font-medium border", isHexColor(ev.color) ? "" : ev.color)} style={isHexColor(ev.color) ? hexEventStyle(ev.color) : undefined}>
                           {md && <span className="opacity-60 mr-1">{md}</span>}{ev.title}
@@ -1323,6 +1354,9 @@ const Index = () => {
                       )}
                     </div>
                   </button>
+                );
+              })}
+                </div>
                 );
               })}
             </div>
@@ -1391,10 +1425,13 @@ const Index = () => {
                 </button>
               ))}
             </div>
-              <div className="relative" style={{ height: totalGridHeight }}>
+              <div data-all-day-band className="relative border-b border-border bg-background/60" style={{ height: Math.max(0, (weekLanes.laneCount + weekSingleRows) * 22 + 8), display: weekLanes.laneCount + weekSingleRows ? undefined : "none" }}>
+                <div className="absolute inset-y-0 left-[60px] right-0">
+                  {renderEventBars(weekLanes, 4)}
+                </div>
                 {/* Celodenní události – plovoucí nad kalendářem */}
                 {weekDays.map((day, dayIdx) => {
-                  const allDayEvs = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay);
+                  const allDayEvs = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay && !isMultiDayEvent(e));
                   if (allDayEvs.length === 0) return null;
                   return allDayEvs.map((ev, evIdx) => {
                     const isHex = isHexColor(ev.color);
@@ -1405,7 +1442,7 @@ const Index = () => {
                         key={ev.id}
                         className="absolute z-30"
                         style={{
-                          top: 4 + evIdx * 22,
+                          top: 4 + (weekLanes.laneCount + evIdx) * 22,
                           left: `calc(60px + ${dayIdx} * ((100% - 60px) / 7) + 2px)`,
                           width: `calc((100% - 60px) / 7 - 4px)`,
                         }}
@@ -1432,13 +1469,13 @@ const Index = () => {
                 {weekDays.map((day, dayIdx) => {
                   const bdays = getBirthdaysForDate(birthdays, day);
                   if (bdays.length === 0) return null;
-                  const allDayCount = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay).length;
+                  const allDayCount = events.filter(e => occursOn(e, format(day, "yyyy-MM-dd")) && e.allDay && !isMultiDayEvent(e)).length;
                   return bdays.map((b, bi) => (
                     <div
                       key={`bday-${b.id}`}
                       className="absolute z-30"
                       style={{
-                        top: 4 + (allDayCount + bi) * 22,
+                        top: 4 + (weekLanes.laneCount + allDayCount + bi) * 22,
                         left: `calc(60px + ${dayIdx} * ((100% - 60px) / 7) + 2px)`,
                         width: `calc((100% - 60px) / 7 - 4px)`,
                       }}
@@ -1459,6 +1496,8 @@ const Index = () => {
                 })}
                 
                 
+              </div>
+              <div className="relative" style={{ height: totalGridHeight }}>
       {/* Birthday column overlay */}
         {weekDays.map((day, dayIdx) => {
           const colWidth = `calc((100% - 60px) / 7)`;
