@@ -36,15 +36,24 @@ export default function AuthPage() {
     setBusy(true);
     try {
       const id = loginId.trim();
-      let email = id;
       if (!id.includes("@")) {
-        const { data, error } = await supabase.rpc("get_email_by_username", { _username: id });
-        if (error) { toast.error("Chyba při ověřování uživatele"); return; }
-        if (!data) { toast.error("Uživatel nenalezen"); return; }
-        email = data as string;
+        const { data, error } = await supabase.functions.invoke("login-with-username", {
+          body: { username: id, password: loginPass },
+        });
+        if (error || !data?.access_token || !data?.refresh_token) {
+          toast.error("Nesprávné přihlašovací údaje");
+          return;
+        }
+        const { error: sErr } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+        if (sErr) toast.error("Nesprávné přihlašovací údaje");
+        else toast.success("Přihlášeno");
+        return;
       }
-      const { error } = await supabase.auth.signInWithPassword({ email, password: loginPass });
-      if (error) toast.error(error.message);
+      const { error } = await supabase.auth.signInWithPassword({ email: id, password: loginPass });
+      if (error) toast.error("Nesprávné přihlašovací údaje");
       else toast.success("Přihlášeno");
     } finally {
       setBusy(false);
@@ -78,25 +87,10 @@ export default function AuthPage() {
     if (!email) return;
     setForgotBusy(true);
     try {
-      // Check if account exists for this email via SECURITY DEFINER RPC (bypasses RLS for anon users)
-      const { data: exists, error: rpcErr } = await supabase
-        .rpc("email_has_account", { _email: email });
-      if (rpcErr) {
-        toast.error("Chyba při ověřování e-mailu");
-        return;
-      }
-      if (!exists) {
-        toast.error("Na tento e-mail nebyl založen žádný účet");
-        return;
-      }
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
-      if (error) {
-        toast.error(error.message);
-        return;
-      }
-      toast.success("Poslali jsme ti e-mail s odkazem na změnu hesla");
+      toast.success("Pokud na tento e-mail existuje účet, poslali jsme odkaz na změnu hesla");
       setForgotOpen(false);
       setForgotEmail("");
     } finally {

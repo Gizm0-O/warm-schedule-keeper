@@ -20,10 +20,22 @@ Deno.serve(async (req) => {
     const { data: { user }, error: uErr } = await userClient.auth.getUser();
     if (uErr || !user) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
-    const { email, password, username } = await req.json();
+    const { email, password, username, currentPassword } = await req.json();
     const admin = createClient(supaUrl, serviceKey);
     const cleanEmail = typeof email === "string" ? email.trim() : "";
     const cleanUsername = typeof username === "string" ? username.trim() : "";
+
+    const changesEmail = !!cleanEmail && cleanEmail !== user.email;
+    if (changesEmail || password) {
+      if (typeof currentPassword !== "string" || !currentPassword || !user.email) {
+        return new Response(JSON.stringify({ error: "Současné heslo není správné." }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const verifier = createClient(supaUrl, anonKey, { auth: { persistSession: false } });
+      const { error: vErr } = await verifier.auth.signInWithPassword({ email: user.email, password: currentPassword });
+      if (vErr) {
+        return new Response(JSON.stringify({ error: "Současné heslo není správné." }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
 
     if (cleanUsername) {
       const { error } = await admin

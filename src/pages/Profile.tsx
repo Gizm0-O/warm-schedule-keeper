@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [newPass, setNewPass] = useState("");
+  const [currentPass, setCurrentPass] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -74,6 +75,7 @@ export default function ProfilePage() {
       const normalizedEmail = email.trim();
       const needsCredentialUpdate = normalizedEmail !== (profile?.email || "") || !!newPass;
       if (needsCredentialUpdate) {
+        if (!currentPass) throw new Error("Pro změnu e-mailu nebo hesla zadej současné heslo.");
         const resp = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/update-user-credentials`,
           {
@@ -87,11 +89,16 @@ export default function ProfilePage() {
               username: username.trim(),
               email: normalizedEmail || undefined,
               password: newPass || undefined,
+              currentPassword: currentPass,
             }),
           }
         );
         const text = await resp.text();
-        if (!resp.ok) throw new Error(text || `HTTP ${resp.status}`);
+        if (!resp.ok) {
+          let msg = text;
+          try { msg = JSON.parse(text)?.error || text; } catch { /* plain text */ }
+          throw new Error(msg || `HTTP ${resp.status}`);
+        }
         if (newPass) {
           const { error: signInErr } = await supabase.auth.signInWithPassword({
             email: normalizedEmail || profile?.email || "",
@@ -108,6 +115,7 @@ export default function ProfilePage() {
       }
 
       setNewPass("");
+      setCurrentPass("");
       await refresh();
       toast.success("Změny uloženy");
     } catch (e: any) {
@@ -180,6 +188,11 @@ export default function ProfilePage() {
         <div className="space-y-2">
           <Label>Nové heslo</Label>
           <Input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} placeholder="Nech prázdné pro zachování" />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Současné heslo</Label>
+          <Input type="password" autoComplete="current-password" value={currentPass} onChange={(e) => setCurrentPass(e.target.value)} placeholder="Vyžadováno při změně e-mailu nebo hesla" />
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-border">
